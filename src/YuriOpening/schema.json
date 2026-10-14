@@ -1,0 +1,549 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "玩家": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "_姓名": {
+          "default": "未命名",
+          "type": "string"
+        },
+        "_称呼": {
+          "default": "",
+          "type": "string"
+        },
+        "_性别": {
+          "default": "女性",
+          "type": "string",
+          "const": "女性"
+        },
+        "_年龄": {
+          "default": 24,
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "_自我呈现": {
+          "default": "自然、舒适",
+          "type": "string"
+        },
+        "_外貌": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "_身高": {
+              "default": "中等",
+              "type": "string",
+              "enum": [
+                "娇小",
+                "中等",
+                "高挑"
+              ]
+            },
+            "_发型": {
+              "default": "中长发",
+              "type": "string"
+            },
+            "_气质": {
+              "default": "清爽",
+              "type": "string"
+            },
+            "_穿衣": {
+              "default": "简约通勤",
+              "type": "string"
+            },
+            "_特征": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        },
+        "_职业": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "_方向": {
+              "default": "专业/办公室",
+              "type": "string",
+              "enum": [
+                "专业/办公室",
+                "服务/生活",
+                "自由/创作"
+              ]
+            },
+            "_具体": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        },
+        "_能力": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "共情": {
+              "default": 2,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "表达": {
+              "default": 2,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "观察": {
+              "default": 2,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "勇气": {
+              "default": 2,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "边界感": {
+              "default": 2,
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "_主特长": {
+          "default": "摄影",
+          "type": "string"
+        },
+        "_兴趣": {
+          "default": [
+            "阅读"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "开场": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "_情境": {
+          "default": "温和日常",
+          "type": "string",
+          "enum": [
+            "温和日常",
+            "意外事件",
+            "暧昧试探",
+            "自定义"
+          ]
+        },
+        "$已提交": {
+          "default": false,
+          "type": "boolean"
+        }
+      }
+    },
+    "环境": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "日期": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "时间": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "天气": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "晴",
+            "多云",
+            "阴",
+            "小雨",
+            "大雨",
+            "雷雨",
+            "雾",
+            "雪"
+          ]
+        },
+        "主题覆盖": {
+          "default": "自动",
+          "type": "string",
+          "enum": [
+            "自动",
+            "室内暖光",
+            "特殊夜景",
+            "停电应急",
+            "节日灯光"
+          ]
+        },
+        "地点": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "城市": {
+              "default": "待设定",
+              "type": "string"
+            },
+            "区域": {
+              "default": "待设定",
+              "type": "string"
+            },
+            "具体地点": {
+              "default": "待设定",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "玩家状态": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "心情": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "平静",
+            "愉快",
+            "紧张",
+            "低落",
+            "心动",
+            "烦躁"
+          ]
+        },
+        "精力": {
+          "default": "待设定",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "string",
+              "const": "待设定"
+            }
+          ]
+        },
+        "身体状态": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "健康",
+            "疲惫",
+            "轻微不适",
+            "生病",
+            "受伤"
+          ]
+        },
+        "当前行动": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "工作",
+            "通勤",
+            "休息",
+            "用餐",
+            "独处",
+            "与主要角色相处",
+            "移动中"
+          ]
+        },
+        "关系姿态": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "保持距离",
+            "试探靠近",
+            "自然相处",
+            "主动靠近",
+            "暧昧拉扯",
+            "坚定边界"
+          ]
+        },
+        "当前穿着": {
+          "default": "待设定",
+          "type": "string"
+        }
+      }
+    },
+    "林清": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "亲近": {
+          "default": "待设定",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "string",
+              "const": "待设定"
+            }
+          ]
+        },
+        "心动": {
+          "default": "待设定",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "string",
+              "const": "待设定"
+            }
+          ]
+        },
+        "心情": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "平静",
+            "愉快",
+            "害羞",
+            "心动",
+            "紧张",
+            "低落",
+            "生气",
+            "吃醋"
+          ]
+        },
+        "当前行动": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "当前穿着": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "关系身份": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "初识",
+            "熟人",
+            "朋友",
+            "挚友",
+            "暧昧",
+            "恋人"
+          ]
+        },
+        "所在地点": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "心声": {
+          "default": "",
+          "type": "string"
+        }
+      }
+    },
+    "苏玥": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "亲近": {
+          "default": "待设定",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "string",
+              "const": "待设定"
+            }
+          ]
+        },
+        "心动": {
+          "default": "待设定",
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "string",
+              "const": "待设定"
+            }
+          ]
+        },
+        "心情": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "平静",
+            "愉快",
+            "害羞",
+            "心动",
+            "紧张",
+            "低落",
+            "生气",
+            "吃醋"
+          ]
+        },
+        "当前行动": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "当前穿着": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "关系身份": {
+          "default": "待设定",
+          "type": "string",
+          "enum": [
+            "待设定",
+            "初识",
+            "熟人",
+            "朋友",
+            "挚友",
+            "暧昧",
+            "恋人"
+          ]
+        },
+        "所在地点": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "心声": {
+          "default": "",
+          "type": "string"
+        }
+      }
+    },
+    "地图": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "当前地点": {
+          "default": "待设定",
+          "type": "string"
+        },
+        "地点状态": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "状态": {
+                "default": "正常",
+                "type": "string"
+              },
+              "备注": {
+                "default": "",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "微信": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "_已添加林清": {
+          "default": false,
+          "type": "boolean"
+        },
+        "_已添加苏玥": {
+          "default": false,
+          "type": "boolean"
+        },
+        "_林清已知事件": {
+          "default": "",
+          "type": "string"
+        },
+        "_苏玥已知事件": {
+          "default": "",
+          "type": "string"
+        },
+        "_聊天摘要历史": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "_苏玥聊天摘要历史": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "_朋友圈": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "作者": {
+                "default": "林清",
+                "type": "string"
+              },
+              "内容": {
+                "type": "string"
+              },
+              "时间": {
+                "type": "string"
+              },
+              "心情": {
+                "type": "string"
+              },
+              "点赞数": {
+                "default": 0,
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "内容",
+              "时间",
+              "心情"
+            ]
+          }
+        },
+        "_未读数": {
+          "default": 0,
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      }
+    }
+  }
+}
