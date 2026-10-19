@@ -338,10 +338,13 @@ packages:
     resolution: {integrity: sha512-c+xgSWboV2pdwXP67BUWDVRHi2BO5Q3KwxyFVs7taVTY+fsK47/L51ZXQoV9rozHJDNHvJ4v4WEsI/IlxV2l2A==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
+<<<<<<< HEAD
   '@bramus/specificity@2.4.3':
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   '@cacheable/memory@2.2.0':
     resolution: {integrity: sha512-CTLKqLItRCEixEAewD3/j9DB3/o96gpTPD4eJ1v+DGOlxZRZncRQkGYqqnAGCscYd6RNeXfGeiuCphsPtqyIfQ==}
 
@@ -2915,9 +2918,12 @@ packages:
   mdn-data@2.0.4:
     resolution: {integrity: sha512-iV3XNKw06j5Q7mi6h+9vbx23Tv7JkjEVgKHW4pimwyDGWm0OIQntJJ+u1C6mg6mK1EaTv42XQ7w76yuzH7M2cA==}
 
+<<<<<<< HEAD
   mdn-data@2.27.1:
     resolution: {integrity: sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==}
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   mdn-data@2.37.2:
     resolution: {integrity: sha512-rz9YOBGItdSbe7HcSArUbhiAv4SB/4DKRYg96CSFS2CcIYMbUvBtZlzA1NCbk2AdgbmYwMqwNblLpR441lLeiQ==}
 
@@ -3647,8 +3653,13 @@ packages:
     resolution: {integrity: sha512-SHiNtMOUGWBQJwzISiVYKu82GiV4QYGePp3odlY1tuKO7gPtphAT5R/py0fA6xtbgLL/RvtJZnU9b8s0F1q0Xg==}
     engines: {node: '>= 8.9.0'}
 
+<<<<<<< HEAD
   schema-utils@4.8.0:
     resolution: {integrity: sha512-D6ak0FU4RNCpVJQ+IOVURXKprTSij0dkyWAGjMXs/UddfdSFcjjjIFYJ4PwYU+3UKr+1BcDk2ze6IisgpvZtmw==}
+=======
+  schema-utils@4.8.1:
+    resolution: {integrity: sha512-x39pYlJPyH7Uge5QO64B9XGP9zLDc9WNmiQZc+CE3IzZPvMu3lHOuAMGpYNoPixEL7MSWlGhYTg5UlLSL8G6iw==}
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
     engines: {node: '>= 10.13.0'}
     hasBin: true
     peerDependencies:
@@ -4300,10 +4311,13 @@ packages:
       typescript:
         optional: true
 
+<<<<<<< HEAD
   w3c-xmlserializer@6.0.0:
     resolution: {integrity: sha512-4Nsy8K5Tr6SPDH9jhKJOHf7ChDrc1zufZTVSF7x72hwuEXBqxqk9G6cK+K2NRUtB3iELRJqjXb4JPDMBjMTl2Q==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   watchpack@2.6.3:
     resolution: {integrity: sha512-s3NZy0QpTY9qGqzc0wtz4qI28z3+5qKbbAec4MV4G9N3CfgZ9wgvQRr0cl2jh/tqkWG1NWHkmVMHZpCamev5Wg==}
     engines: {node: '>=10.13.0'}
@@ -4529,10 +4543,13 @@ snapshots:
       '@babel/helper-string-parser': 8.0.6
       '@babel/helper-validator-identifier': 8.0.6
 
+<<<<<<< HEAD
   '@bramus/specificity@2.4.3':
     dependencies:
       css-tree: 3.2.1
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   '@cacheable/memory@2.2.0':
     dependencies:
       '@cacheable/utils': 2.5.0
@@ -6335,7 +6352,11 @@ snapshots:
       eslint: 10.13.0(jiti@2.7.0)
       micromatch: 4.0.8
       normalize-path: 3.0.0
+<<<<<<< HEAD
       schema-utils: 4.8.0(webpack@5.112.0)
+=======
+      schema-utils: 4.8.1(webpack@5.112.0)
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       webpack: 5.112.0(postcss@8.5.31)(webpack-cli@7.2.3)
 
   eslint@10.13.0(jiti@2.7.0):
@@ -7305,8 +7326,11 @@ snapshots:
 
   mdn-data@2.0.4: {}
 
+<<<<<<< HEAD
   mdn-data@2.27.1: {}
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   mdn-data@2.37.2: {}
 
   mediaquery-text@1.2.0:
@@ -7471,7 +7495,11 @@ snapshots:
 
   mini-css-extract-plugin@2.10.2(webpack@5.112.0):
     dependencies:
+<<<<<<< HEAD
       schema-utils: 4.8.0(webpack@5.112.0)
+=======
+      schema-utils: 4.8.1(webpack@5.112.0)
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       tapable: 2.3.3
       webpack: 5.112.0(postcss@8.5.31)(webpack-cli@7.2.3)
 
@@ -7489,7 +7517,11 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
+<<<<<<< HEAD
       schema-utils: 4.8.0(webpack@5.112.0)
+=======
+      schema-utils: 4.8.1(webpack@5.112.0)
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       terser: 5.51.2
       webpack: 5.112.0(postcss@8.5.31)(webpack-cli@7.2.3)
     optionalDependencies:
@@ -8064,7 +8096,11 @@ snapshots:
       ajv: 6.15.0
       ajv-keywords: 3.5.2(ajv@6.15.0)
 
+<<<<<<< HEAD
   schema-utils@4.8.0(webpack@5.112.0):
+=======
+  schema-utils@4.8.1(webpack@5.112.0):
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
@@ -8324,7 +8360,11 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
+<<<<<<< HEAD
       schema-utils: 4.8.0(webpack@5.112.0)
+=======
+      schema-utils: 4.8.1(webpack@5.112.0)
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       terser: 5.51.2
       webpack: 5.112.0(postcss@8.5.31)(webpack-cli@7.2.3)
     optionalDependencies:
@@ -8492,8 +8532,11 @@ snapshots:
   undici@6.29.1: {}
 
   undici@7.30.1: {}
+<<<<<<< HEAD
 
   undici@8.12.2: {}
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
 
   unified@11.0.5:
     dependencies:
@@ -8794,16 +8837,22 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
+<<<<<<< HEAD
   w3c-xmlserializer@6.0.0:
     dependencies:
       xml-name-validator: 5.0.0
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   watchpack@2.6.3:
     dependencies:
       graceful-fs: 4.2.11
 
+<<<<<<< HEAD
   webidl-conversions@8.0.1: {}
 
+=======
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
   webpack-cli@7.2.3(js-yaml@4.3.2)(json5@2.2.3)(webpack@5.112.0):
     dependencies:
       '@discoveryjs/json-ext': 1.1.0
@@ -8851,7 +8900,11 @@ snapshots:
       graceful-fs: 4.2.11
       mime-db: 1.54.0
       minimizer-webpack-plugin: 5.13.1(postcss@8.5.31)(webpack@5.112.0)
+<<<<<<< HEAD
       schema-utils: 4.8.0(webpack@5.112.0)
+=======
+      schema-utils: 4.8.1(webpack@5.112.0)
+>>>>>>> a5317b873d6a11e0ca2f71d53e45bc23e81faf2a
       tapable: 2.3.3
       watchpack: 2.6.3
       webpack-sources: 3.6.0
