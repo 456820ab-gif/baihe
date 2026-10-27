@@ -1,5 +1,5 @@
 <template>
-  <div class="opening-shell" :class="{ 'is-submitting': submitting }">
+  <div ref="shellRef" class="opening-shell" :class="{ 'is-submitting': submitting }">
     <div class="ambient ambient-one" aria-hidden="true"></div>
     <div class="ambient ambient-two" aria-hidden="true"></div>
     <div class="ornament ornament-top" aria-hidden="true">
@@ -183,7 +183,7 @@
                   {{ item.value }}
                 </button>
               </div>
-              <p class="choice-note"><span aria-hidden="true">✦</span> 主要攻略角色属于「专业/办公室」方向，选择它，你和她会更容易遇见。</p>
+              <p class="choice-note"><span aria-hidden="true">✦</span> 林清常出现在「专业/办公室」；苏玥在夜樱街的昙夜酒吧。选择生活方向，会让初遇更自然。</p>
               <label class="field">
                 <span>具体职位 / 行业 <em>可选</em></span>
                 <input v-model.trim="draft.jobDetail" maxlength="60" placeholder="例如：品牌公司的初级策划 / 独立摄影师 / 社区咖啡店店员" />
@@ -246,7 +246,7 @@
             <section v-else-if="step === 3" key="flavor" class="step-content">
               <div class="section-intro">
                 <span class="section-symbol" aria-hidden="true">04</span>
-                <p>最后放入两颗属于你的生活锚点，再选一扇进入第一幕的门。</p>
+                <p>最后放入两颗属于你的生活锚点，先决定第一眼遇见谁，再选一扇进入第一幕的门。</p>
               </div>
 
               <div class="talent-block">
@@ -303,7 +303,26 @@
 
               <div class="subsection-heading left-heading scene-heading">
                 <span class="tiny-line"></span>
-                <h3>第一幕的情绪入口</h3>
+                <h3>第一眼遇见谁</h3>
+              </div>
+              <div class="scene-grid">
+                <button
+                  v-for="person in firstCharacters"
+                  :key="person.value"
+                  type="button"
+                  class="scene-option"
+                  :class="{ selected: draft.firstCharacter === person.value }"
+                  @click="draft.firstCharacter = person.value"
+                >
+                  <span class="scene-glyph" aria-hidden="true">{{ person.glyph }}</span>
+                  <span class="scene-text"><strong>{{ person.value }}</strong><small>{{ person.note }}<br />{{ person.preview }}</small></span>
+                  <span class="select-mark" aria-hidden="true">{{ draft.firstCharacter === person.value ? '✓' : '' }}</span>
+                </button>
+              </div>
+
+              <div class="subsection-heading left-heading scene-heading">
+                <span class="tiny-line"></span>
+                <h3>第一幕：从哪种气氛开始</h3>
               </div>
               <div class="scene-grid">
                 <button
@@ -336,9 +355,11 @@
                 <div class="preview-lines">
                   <div><span>自我呈现</span><strong>{{ draft.presentation || '保持自然，让细节在故事里慢慢出现。' }}</strong></div>
                   <div><span>生活落点</span><strong>{{ draft.jobDirection }}<template v-if="draft.jobDetail"> · {{ draft.jobDetail }}</template></strong></div>
+                  <div><span>初遇对象</span><strong>{{ draft.firstCharacter }}</strong></div>
                   <div><span>外貌印象</span><strong>{{ draft.height }} · {{ resolvedHair }} · {{ resolvedClothing }}</strong></div>
                   <div><span>特长 / 兴趣</span><strong>{{ resolvedMainTalent }} / {{ resolvedInterests.join('、') }}</strong></div>
                 </div>
+                <div class="preview-scene"><span>{{ selectedFirst.glyph }}</span><div><small>初遇</small><strong>{{ draft.firstCharacter }} · {{ selectedFirst.note }}</strong><p>{{ selectedFirst.preview }}</p></div></div>
                 <div class="preview-scene"><span>{{ selectedScene.glyph }}</span><div><small>第一幕</small><strong>{{ draft.scenario }}</strong><p>{{ selectedScene.preview }}</p></div></div>
               </div>
 
@@ -385,11 +406,30 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
+import { CHARACTERS } from '../../characters';
 import { Schema, type OpeningState } from '../../schema';
 import { buildUserProfile, writeUserProfileToWorldbook } from './user-profile';
 
+const props = defineProps<{
+  embedded?: boolean;
+  onSubmitStart?: () => void;
+  onSubmitted?: () => void;
+}>();
+
+const shellRef = ref<HTMLElement | null>(null);
+
+/** 楼层消息 iframe 里取当前楼层；嵌在全屏脚本里时退回最新楼层 */
+function messageOption(): VariableOption {
+  try {
+    return { type: 'message', message_id: getCurrentMessageId() };
+  } catch {
+    return { type: 'message', message_id: 'latest' };
+  }
+}
+
 type AbilityKey = '共情' | '表达' | '观察' | '勇气' | '边界感';
 type Scenario = '温和日常' | '意外事件' | '暧昧试探';
+type FirstCharacter = '林清' | '苏玥';
 type Draft = {
   name: string;
   callName: string;
@@ -410,6 +450,7 @@ type Draft = {
   customMainTalent: string;
   interests: string[];
   customInterest: string;
+  firstCharacter: FirstCharacter;
   scenario: Scenario;
 };
 
@@ -417,7 +458,7 @@ const steps = [
   { id: 'identity', label: '关于你', kicker: 'A LITTLE ABOUT YOU', title: '先从你开始', description: '名字、年龄，以及你希望被看见的方式。' },
   { id: 'life', label: '生活质地', kicker: 'YOUR EVERYDAY TEXTURE', title: '给日常一点轮廓', description: '那些不必解释太多，却会悄悄留下痕迹的细节。' },
   { id: 'ability', label: '关系能力', kicker: 'YOUR RELATIONSHIP TONE', title: '你怎样靠近一个人', description: '选择你的本能方向，再把剩下的五点放到心里。' },
-  { id: 'flavor', label: '第一幕', kicker: 'THE FIRST ENTRANCE', title: '选一扇进入故事的门', description: '主特长、兴趣和第一幕情绪，会成为最初的空气。' },
+  { id: 'flavor', label: '第一幕', kicker: 'THE FIRST ENTRANCE', title: '选一扇进入故事的门', description: '主特长、兴趣、初遇对象和第一幕情绪，会成为最初的空气。' },
   { id: 'preview', label: '确认', kicker: 'ONE LAST LOOK', title: '这就是此刻的你', description: '确认后仍可返回修改，直到你准备好让故事向前。' },
 ] as const;
 
@@ -461,6 +502,16 @@ const scenes = [
   { value: '意外事件' as Scenario, glyph: '✧', preview: '一件小小的意外把两个人推到同一处，故事因此有了第一声回响。' },
   { value: '暧昧试探' as Scenario, glyph: '◌', preview: '有人先递出一根看不见的线，等你决定要不要轻轻牵住。' },
 ];
+const FIRST_PREVIEWS: Record<string, string> = {
+  linqing: '在花信大厦的走廊或电梯口，先遇见那位副总。',
+  suyue: '在昙夜酒吧打烊前的吧台边，先遇见她。',
+};
+const firstCharacters = CHARACTERS.map(character => ({
+  value: character.name as FirstCharacter,
+  glyph: character.glyph,
+  note: character.phone.tagline,
+  preview: FIRST_PREVIEWS[character.id] ?? '',
+}));
 
 const step = ref(0);
 const selectedPreset = ref('均衡');
@@ -489,6 +540,7 @@ const draft = reactive<Draft>({
   customMainTalent: '',
   interests: ['阅读'],
   customInterest: '',
+  firstCharacter: '林清',
   scenario: '温和日常',
 });
 
@@ -506,6 +558,7 @@ const resolvedInterests = computed(() => {
   return chosen;
 });
 const selectedScene = computed(() => scenes.find(scene => scene.value === draft.scenario) ?? scenes[0]);
+const selectedFirst = computed(() => firstCharacters.find(person => person.value === draft.firstCharacter) ?? firstCharacters[0]);
 const profilePreview = computed(() => buildUserProfile(buildState(false)));
 
 function applyPreset(name: string) {
@@ -577,6 +630,10 @@ function jumpTo(index: number) {
 }
 
 function scrollToTop() {
+  if (props.embedded) {
+    shellRef.value?.closest('.front-opening')?.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -605,6 +662,7 @@ function buildState(submitted: boolean): OpeningState {
     },
     开场: {
       _情境: draft.scenario,
+      _初遇对象: draft.firstCharacter,
       $已提交: submitted,
     },
   });
@@ -612,7 +670,7 @@ function buildState(submitted: boolean): OpeningState {
 
 function persistState(submitted: boolean) {
   const state = buildState(submitted);
-  const option: VariableOption = { type: 'message', message_id: getCurrentMessageId() };
+  const option: VariableOption = messageOption();
   updateVariablesWith(variables => {
     const current = _.get(variables, 'stat_data', {});
     const merged = _.merge({}, current, state);
@@ -638,7 +696,7 @@ function buildOpeningMessage(state: OpeningState) {
     `我叫${player._姓名}，希望被称为${name}。我是一名 ${player._年龄} 岁的女性。`,
     `我希望以这样的方式被看见：${player._自我呈现}。我的外貌印象是${appearance}${player._外貌._特征 ? `，显著特征是${player._外貌._特征}` : ''}。`,
     `我目前的生活落点是${job || '一段正在展开的新生活'}。我的主特长是${player._主特长}，平时喜欢${player._兴趣.join('、')}。`,
-    `在与人靠近时，我更擅长${abilityFocus || '慢慢观察再做决定'}。我想从“${state.开场._情境}”的氛围开始这段故事。`,
+    `在与人靠近时，我更擅长${abilityFocus || '慢慢观察再做决定'}。我想先遇见${state.开场._初遇对象}，从“${state.开场._情境}”的氛围开始这段故事。`,
   ].join('\n\n');
 }
 
@@ -650,6 +708,7 @@ async function submitOpening() {
     errorText.value = message;
     return;
   }
+  props.onSubmitStart?.();
   submitting.value = true;
   errorText.value = '';
   let messageCreated = false;
@@ -671,6 +730,7 @@ async function submitOpening() {
     locked.value = true;
     submitStatus.value = '档案已保存，正在把第一句话交给故事……';
     await triggerSlash('/trigger');
+    props.onSubmitted?.();
   } catch (error) {
     console.error('[百合花期] opening submit failed', error);
     if (!messageCreated) {
@@ -683,6 +743,7 @@ async function submitOpening() {
     } else {
       locked.value = true;
       submitStatus.value = '档案已保存，但自动生成未完成。你可以直接在酒馆输入框继续。';
+      props.onSubmitted?.();
     }
   } finally {
     submitting.value = false;
@@ -692,7 +753,7 @@ async function submitOpening() {
 function loadExistingState() {
   // 未安装酒馆助手时没有变量接口：跳过回填，由介绍页的红灯提示先装扩展
   if (typeof getVariables !== 'function' || typeof getCurrentMessageId !== 'function') return;
-  const option: VariableOption = { type: 'message', message_id: getCurrentMessageId() };
+  const option: VariableOption = messageOption();
   const raw = _.get(getVariables(option), 'stat_data', {});
   const result = Schema.safeParse(raw);
   if (!result.success) return;
@@ -723,6 +784,7 @@ function loadExistingState() {
     draft.customInterest = '';
   }
   draft.scenario = state.开场._情境;
+  draft.firstCharacter = state.开场._初遇对象;
   locked.value = state.开场.$已提交;
 }
 
@@ -738,1340 +800,5 @@ function handlePrimary() {
 </script>
 
 <style lang="scss" scoped>
-:global(*) {
-  box-sizing: border-box;
-}
-
-:global(body) {
-  margin: 0;
-  min-width: 0;
-  background: #fffaf8;
-  color: #4f3e46;
-  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-}
-
-:global(button),
-:global(input),
-:global(select),
-:global(textarea) {
-  font: inherit;
-}
-
-:global(button) {
-  cursor: pointer;
-}
-
-.opening-shell {
-  --ink: #4f3e46;
-  --muted: #8d737d;
-  --line: #ead8dc;
-  --soft-line: #f2e7e8;
-  --paper: #fffdfb;
-  --pink: #d9899e;
-  --pink-deep: #a95773;
-  --pink-soft: #fbecef;
-  --sage: #8ba59c;
-  --cream: #fff6ed;
-  position: relative;
-  isolation: isolate;
-  width: min(100%, 780px);
-  min-height: 100vh;
-  margin: 0 auto;
-  overflow: hidden;
-  padding: 30px 24px 24px;
-  background: #fffaf8;
-}
-
-.ambient {
-  position: absolute;
-  z-index: -1;
-  width: 150px;
-  height: 150px;
-  border: 1px solid rgba(217, 137, 158, 0.22);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: float-slow 8s ease-in-out infinite;
-}
-
-.ambient-one {
-  top: 110px;
-  right: -70px;
-}
-
-.ambient-two {
-  bottom: 120px;
-  left: -95px;
-  width: 190px;
-  height: 190px;
-  border-color: rgba(139, 165, 156, 0.22);
-  animation-delay: -3s;
-}
-
-.ornament-top {
-  position: absolute;
-  top: 16px;
-  right: 28px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--pink);
-  font-family: Georgia, serif;
-  font-size: 12px;
-  letter-spacing: 0;
-  opacity: 0.75;
-}
-
-.ornament-top i {
-  display: block;
-  width: 22px;
-  height: 1px;
-  background: var(--line);
-}
-
-.opening-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-  padding: 16px 4px 28px;
-}
-
-.brand-mark {
-  position: relative;
-  flex: 0 0 58px;
-  width: 58px;
-  height: 58px;
-  color: var(--pink-deep);
-}
-
-.brand-star,
-.brand-heart {
-  position: absolute;
-  display: block;
-  font-family: Georgia, serif;
-}
-
-.brand-star {
-  top: -4px;
-  left: 3px;
-  color: var(--sage);
-  font-size: 16px;
-  animation: twinkle 2.8s ease-in-out infinite;
-}
-
-.brand-heart {
-  right: 2px;
-  bottom: -2px;
-  font-size: 42px;
-  line-height: 1;
-  animation: breathe 3.8s ease-in-out infinite;
-}
-
-.brand-ring {
-  position: absolute;
-  top: 14px;
-  left: 11px;
-  width: 31px;
-  height: 31px;
-  border: 1px solid var(--pink);
-  border-radius: 50%;
-}
-
-.brand-copy {
-  min-width: 0;
-}
-
-.eyebrow {
-  margin: 0 0 5px;
-  color: var(--pink-deep);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  line-height: 1.4;
-}
-
-h1,
-h2,
-h3,
-p {
-  overflow-wrap: anywhere;
-}
-
-h1 {
-  margin: 0;
-  color: var(--ink);
-  font-family: Georgia, 'Songti SC', serif;
-  font-size: 31px;
-  font-weight: 500;
-  line-height: 1.15;
-}
-
-.subtitle {
-  margin: 7px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.world-note {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-left: auto;
-  padding: 7px 10px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.3;
-  white-space: nowrap;
-}
-
-.note-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--sage);
-  box-shadow: 0 0 0 3px rgba(139, 165, 156, 0.14);
-}
-
-.stepper {
-  display: flex;
-  gap: 3px;
-  margin-bottom: 14px;
-  padding: 5px;
-  border: 1px solid var(--line);
-  background: rgba(255, 253, 251, 0.76);
-}
-
-.step-item {
-  display: flex;
-  flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-width: 0;
-  min-height: 38px;
-  padding: 6px 4px;
-  border: 0;
-  background: transparent;
-  color: #b49ba3;
-  font-size: 11px;
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-.step-item:hover,
-.step-item:focus-visible {
-  color: var(--pink-deep);
-  outline: none;
-  background: #fff7f6;
-}
-
-.step-item.active {
-  background: var(--pink-soft);
-  color: var(--pink-deep);
-}
-
-.step-item.done {
-  color: var(--sage);
-}
-
-.step-number {
-  display: grid;
-  place-items: center;
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-size: 9px;
-  line-height: 1;
-}
-
-.step-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.form-panel,
-.locked-panel {
-  position: relative;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  box-shadow: 0 12px 28px rgba(148, 91, 111, 0.08);
-}
-
-.form-panel {
-  padding: 28px 30px 20px;
-}
-
-.panel-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 23px;
-  border-bottom: 1px solid var(--soft-line);
-}
-
-.panel-heading h2,
-.locked-panel h2 {
-  margin: 0;
-  color: var(--ink);
-  font-family: Georgia, 'Songti SC', serif;
-  font-size: 25px;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-.heading-description {
-  max-width: 470px;
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.page-count {
-  flex: 0 0 auto;
-  padding-top: 4px;
-  color: var(--muted);
-  font-family: Georgia, serif;
-  white-space: nowrap;
-}
-
-.page-count strong {
-  color: var(--pink-deep);
-  font-size: 27px;
-  font-weight: 500;
-}
-
-.page-count span {
-  font-size: 11px;
-}
-
-.step-content {
-  min-height: 430px;
-  padding-top: 24px;
-}
-
-.section-intro {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 24px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.section-intro p {
-  max-width: 530px;
-  margin: 0;
-}
-
-.section-symbol {
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--pink);
-  border-radius: 50%;
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 10px;
-}
-
-.field-grid {
-  display: grid;
-  gap: 16px;
-}
-
-.two-columns {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field,
-.static-field {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 7px;
-}
-
-.field > span,
-.static-field > span {
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.field b {
-  color: var(--pink-deep);
-  font-weight: 700;
-}
-
-.field em {
-  margin-left: 5px;
-  color: #b69da5;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 400;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fffaf9;
-  color: var(--ink);
-  font-size: 13px;
-  line-height: 1.5;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.field input,
-.field select {
-  min-height: 42px;
-  padding: 9px 11px;
-}
-
-.field textarea {
-  min-height: 86px;
-  resize: vertical;
-  padding: 10px 11px;
-}
-
-.field input::placeholder,
-.field textarea::placeholder {
-  color: #c4afb5;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: var(--pink);
-  background: #fffdfc;
-  box-shadow: 0 0 0 3px rgba(217, 137, 158, 0.13);
-}
-
-.field small,
-.static-field small {
-  color: #b1979f;
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.field-count {
-  align-self: flex-end;
-  margin-top: -4px;
-}
-
-.identity-row {
-  margin-top: 16px;
-}
-
-.static-field {
-  justify-content: center;
-  min-height: 75px;
-  padding: 10px 12px;
-  border-left: 2px solid var(--sage);
-  background: #f8fbf8;
-}
-
-.static-field strong {
-  color: var(--ink);
-  font-family: Georgia, serif;
-  font-size: 17px;
-  font-weight: 500;
-}
-
-.subsection-heading {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 25px 0 14px;
-}
-
-.subsection-heading h3 {
-  margin: 0;
-  color: var(--ink);
-  font-family: Georgia, 'Songti SC', serif;
-  font-size: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.subsection-heading em {
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 400;
-}
-
-.interest-count {
-  margin-left: auto;
-  color: #b1979f;
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.interest-count.full {
-  color: var(--pink-deep);
-}
-
-.tiny-line {
-  display: block;
-  width: 18px;
-  height: 1px;
-  background: var(--pink);
-}
-
-.choice-row,
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.choice-note {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin: 10px 0 0;
-  color: #b1979f;
-  font-size: 10px;
-  line-height: 1.6;
-}
-
-.choice-note span {
-  color: var(--sage);
-  font-family: Georgia, serif;
-  font-size: 11px;
-}
-
-.choice-pill,
-.talent-chip,
-.preset-button {
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: #fffdfb;
-  color: var(--muted);
-  font-size: 11px;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-}
-
-.choice-pill:hover,
-.choice-pill:focus-visible,
-.talent-chip:hover:not(:disabled),
-.talent-chip:focus-visible:not(:disabled),
-.preset-button:hover,
-.preset-button:focus-visible {
-  border-color: var(--pink);
-  color: var(--pink-deep);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-.choice-pill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 8px 11px;
-}
-
-.choice-pill.selected,
-.talent-chip.selected,
-.preset-button.selected {
-  border-color: var(--pink);
-  background: var(--pink-soft);
-  color: var(--pink-deep);
-}
-
-.pill-mark {
-  color: var(--sage);
-  font-family: Georgia, serif;
-  font-size: 15px;
-}
-
-.ability-intro {
-  position: relative;
-  padding-right: 85px;
-}
-
-.points-meter {
-  position: absolute;
-  top: -5px;
-  right: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 64px;
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-}
-
-.points-meter strong {
-  font-size: 24px;
-  font-weight: 500;
-}
-
-.points-meter span {
-  align-self: flex-end;
-  padding-bottom: 3px;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.points-meter small {
-  flex-basis: 100%;
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 9px;
-  text-align: center;
-}
-
-.preset-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 7px;
-  padding: 10px;
-  border: 1px solid var(--soft-line);
-  background: #fffbf8;
-}
-
-.preset-label {
-  margin-right: 2px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.preset-button {
-  min-height: 29px;
-  padding: 5px 9px;
-}
-
-.ability-list {
-  margin-top: 15px;
-  border-top: 1px solid var(--soft-line);
-}
-
-.ability-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  min-width: 0;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--soft-line);
-}
-
-.ability-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 3px;
-}
-
-.ability-copy strong {
-  color: var(--ink);
-  font-size: 13px;
-}
-
-.ability-copy span {
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.ability-control {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: 7px;
-}
-
-.stepper-button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: #fffdfb;
-  color: var(--pink-deep);
-  font-size: 18px;
-  line-height: 1;
-  transition: background-color 0.2s ease, opacity 0.2s ease;
-}
-
-.stepper-button:hover:not(:disabled),
-.stepper-button:focus-visible:not(:disabled) {
-  background: var(--pink-soft);
-  outline: none;
-}
-
-.stepper-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.35;
-}
-
-.ability-value {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  color: var(--ink);
-  font-family: Georgia, serif;
-  font-size: 18px;
-}
-
-.ability-value.level-high {
-  color: var(--pink-deep);
-}
-
-.ability-note {
-  margin-top: 16px;
-  padding: 10px 12px;
-  background: #f8fbf8;
-  color: #718c83;
-  font-size: 10px;
-  line-height: 1.6;
-}
-
-.ability-note span {
-  margin-right: 5px;
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 15px;
-}
-
-.talent-block {
-  margin-bottom: 22px;
-}
-
-.left-heading {
-  justify-content: flex-start;
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-.talent-group {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin: 9px 0;
-}
-
-.group-label {
-  flex: 0 0 57px;
-  padding-top: 7px;
-  color: #b18e9a;
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.talent-chip {
-  min-height: 29px;
-  padding: 5px 9px;
-}
-
-.talent-chip:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.compact-field {
-  margin: 12px 0 0 69px;
-  max-width: 360px;
-}
-
-.scene-heading {
-  margin-top: 28px;
-}
-
-.scene-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.scene-option {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  min-width: 0;
-  min-height: 106px;
-  padding: 13px 10px;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  background: #fffdfb;
-  color: var(--ink);
-  text-align: left;
-  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
-}
-
-.scene-option:hover,
-.scene-option:focus-visible {
-  border-color: var(--pink);
-  outline: none;
-  transform: translateY(-2px);
-}
-
-.scene-option.selected {
-  border-color: var(--pink);
-  background: var(--pink-soft);
-}
-
-.scene-glyph {
-  flex: 0 0 auto;
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 19px;
-  line-height: 1;
-}
-
-.scene-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  gap: 5px;
-}
-
-.scene-text strong {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.scene-text small {
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.select-mark {
-  position: absolute;
-  top: 7px;
-  right: 8px;
-  color: var(--pink-deep);
-  font-size: 12px;
-}
-
-.preview-content {
-  min-height: 430px;
-}
-
-.preview-sheet {
-  position: relative;
-  padding: 22px 20px 18px;
-  border: 1px solid var(--line);
-  background: #fffaf8;
-}
-
-.preview-ribbon {
-  position: absolute;
-  top: 0;
-  right: 18px;
-  padding: 5px 8px;
-  background: var(--pink-soft);
-  color: var(--pink-deep);
-  font-size: 9px;
-  letter-spacing: 0.12em;
-}
-
-.preview-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--soft-line);
-}
-
-.preview-avatar {
-  display: grid;
-  place-items: center;
-  flex: 0 0 45px;
-  width: 45px;
-  height: 45px;
-  border: 1px solid var(--pink);
-  border-radius: 50%;
-  background: #fffdfb;
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 22px;
-}
-
-.preview-header h3 {
-  margin: 0;
-  color: var(--ink);
-  font-family: Georgia, 'Songti SC', serif;
-  font-size: 19px;
-  font-weight: 500;
-}
-
-.preview-header p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.preview-lines {
-  display: grid;
-  gap: 10px;
-  padding: 16px 0;
-}
-
-.preview-lines > div {
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  gap: 9px;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
-.preview-lines span {
-  color: #b18e9a;
-}
-
-.preview-lines strong {
-  min-width: 0;
-  color: var(--ink);
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-
-.preview-scene {
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  padding: 12px;
-  border-left: 2px solid var(--sage);
-  background: #f8fbf8;
-}
-
-.preview-scene > span {
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 22px;
-}
-
-.preview-scene div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.preview-scene small {
-  color: #78938a;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-}
-
-.preview-scene strong {
-  color: var(--ink);
-  font-size: 13px;
-}
-
-.preview-scene p {
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-.preview-abilities {
-  margin-top: 23px;
-}
-
-.preview-ability-list {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.preview-ability {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.preview-ability span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.preview-ability i {
-  display: block;
-  width: 100%;
-  height: 4px;
-  background: #f0e4e5;
-}
-
-.preview-ability i.filled {
-  background: var(--pink);
-}
-
-.profile-write-note {
-  display: flex;
-  align-items: baseline;
-  gap: 7px;
-  margin-top: 18px;
-  padding: 10px 12px;
-  border-left: 2px solid var(--sage);
-  background: #f8fbf8;
-  color: #718c83;
-  font-size: 10px;
-  line-height: 1.7;
-}
-
-.profile-write-note span {
-  color: var(--pink-deep);
-  font-family: Georgia, serif;
-  font-size: 13px;
-}
-
-.profile-write-note p {
-  margin: 0;
-}
-
-.profile-preview {
-  margin-top: 12px;
-  border: 1px solid var(--soft-line);
-  background: #fffbf8;
-}
-
-.profile-preview summary {
-  padding: 10px 12px;
-  color: var(--pink-deep);
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.profile-preview summary:hover,
-.profile-preview summary:focus-visible {
-  outline: none;
-  background: var(--pink-soft);
-}
-
-.profile-preview pre {
-  max-height: 280px;
-  margin: 0;
-  padding: 0 12px 12px;
-  overflow: auto;
-  color: var(--ink);
-  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  font-size: 11px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.form-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 23px;
-  padding-top: 17px;
-  border-top: 1px solid var(--soft-line);
-}
-
-.text-button,
-.primary-button {
-  min-height: 42px;
-  border-radius: 5px;
-  font-size: 12px;
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-}
-
-.text-button {
-  padding: 8px 4px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-}
-
-.text-button:hover,
-.text-button:focus-visible {
-  color: var(--pink-deep);
-  outline: none;
-}
-
-.text-button span {
-  margin-right: 5px;
-  font-size: 17px;
-  vertical-align: -1px;
-}
-
-.primary-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  min-width: 126px;
-  padding: 8px 16px;
-  border: 1px solid var(--pink-deep);
-  background: var(--pink-deep);
-  color: #fffdfb;
-  box-shadow: 0 6px 14px rgba(169, 87, 115, 0.16);
-}
-
-.primary-button:hover:not(:disabled),
-.primary-button:focus-visible:not(:disabled) {
-  background: #934863;
-  outline: none;
-  transform: translateY(-2px);
-}
-
-.primary-button:disabled {
-  cursor: wait;
-  opacity: 0.7;
-}
-
-.button-arrow {
-  font-family: Georgia, serif;
-  font-size: 17px;
-}
-
-.button-loader {
-  width: 14px;
-  height: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.action-spacer {
-  width: 1px;
-}
-
-.form-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 9px 11px;
-  border-left: 2px solid var(--pink-deep);
-  background: #fff2f3;
-  color: var(--pink-deep);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.form-alert > span {
-  display: grid;
-  place-items: center;
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.locked-panel {
-  padding: 58px 30px;
-  text-align: center;
-}
-
-.locked-symbol {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 17px;
-  border: 1px solid var(--sage);
-  border-radius: 50%;
-  color: var(--sage);
-  font-family: Georgia, serif;
-  font-size: 25px;
-  animation: breathe 3.8s ease-in-out infinite;
-}
-
-.locked-panel h2 {
-  margin-top: 9px;
-}
-
-.locked-panel > p:not(.eyebrow):not(.submit-status) {
-  max-width: 420px;
-  margin: 12px auto 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
-.locked-line {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  max-width: 360px;
-  margin: 30px auto 0;
-  color: #78938a;
-  font-size: 10px;
-}
-
-.locked-line span:first-child,
-.locked-line span:last-child {
-  flex: 1;
-  height: 1px;
-  background: #d7e4df;
-}
-
-.submit-status {
-  margin: 21px 0 0;
-  color: var(--pink-deep);
-  font-size: 11px;
-}
-
-.opening-footer {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 9px;
-  padding: 18px 4px 0;
-  color: #b49ba3;
-  font-size: 10px;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-
-.page-enter-from {
-  opacity: 0;
-  transform: translateX(10px);
-}
-
-.page-leave-to {
-  opacity: 0;
-  transform: translateX(-10px);
-}
-
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, 10px, 0);
-  }
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.9) rotate(0deg);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.12) rotate(12deg);
-  }
-}
-
-@keyframes breathe {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.04);
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 620px) {
-  .opening-shell {
-    padding: 24px 12px 18px;
-  }
-
-  .opening-header {
-    align-items: flex-start;
-    padding-top: 18px;
-  }
-
-  .world-note {
-    display: none;
-  }
-
-  .form-panel {
-    padding: 22px 16px 16px;
-  }
-
-  .panel-heading h2,
-  .locked-panel h2 {
-    font-size: 22px;
-  }
-
-  .two-columns,
-  .scene-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stepper {
-    overflow-x: auto;
-  }
-
-  .step-item {
-    flex: 0 0 auto;
-    min-width: 82px;
-  }
-
-  .step-label {
-    display: none;
-  }
-
-  .scene-option {
-    min-height: 82px;
-  }
-
-  .preview-ability-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .preview-ability:nth-child(4),
-  .preview-ability:nth-child(5) {
-    grid-column: span 1;
-  }
-
-  .compact-field {
-    margin-left: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+@use './form-base.scss';
 </style>
