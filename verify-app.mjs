@@ -26,12 +26,16 @@ async function run() {
     `<!DOCTYPE html><html><head></head><body>
       <div id="chat"><div id="chat_history"></div></div>
       <form id="send_form"><textarea id="send_textarea"></textarea><button id="send_but" type="button">发送</button></form>
-      <button class="phone-fab" type="button">手机</button>
     </body></html>`,
     { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://local.test/' },
   );
   const { window } = dom;
   const doc = window.document;
+  // 手机本地状态：预置林清 2 条未读 + 已加好友，供角标与「点横幅进聊天」断言使用
+  window.localStorage.setItem('YuriOpening:phone:default:notify:v1', JSON.stringify({
+    unread: { linqing: 2 }, notices: [], cursor: {}, seen: [],
+  }));
+  window.localStorage.setItem('YuriOpening:phone:default:hasAdded:v1', 'true');
   const errors = [];
   window.addEventListener('error', event => errors.push(String(event.error ?? event.message)));
 
@@ -127,8 +131,6 @@ async function run() {
     return { one() { return this; }, on() { return this; }, off() { return this; } };
   };
   window._ = { get: (object, key) => object?.[key], clamp: (value, lower, upper) => Math.min(Math.max(value, lower), upper) };
-  let phoneClicks = 0;
-  doc.querySelector('.phone-fab')?.addEventListener('click', () => { phoneClicks += 1; });
   let nativeClicks = 0;
   doc.getElementById('send_but')?.addEventListener('click', () => { nativeClicks += 1; });
 
@@ -233,10 +235,59 @@ async function run() {
   emit('message_received', messages[3]);
   check('楼层事件后聊天追加', doc.querySelectorAll('.story-msg').length === 4);
 
-  doc.querySelector('.front-action:nth-child(2)')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('手机按钮触发现有手机入口', phoneClicks === 1);
+  // ── 内嵌手机：面板开合 / 横幅 / 角标 ──────────────────────
+  const phoneLayer = doc.querySelector('.phone-layer');
+  const phoneButton = doc.querySelector('.front-action:nth-child(2)');
+  const phoneBadge = doc.querySelector('.front-action-badge');
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const pushNotice = (id, preview) => sharedFront?.phone?.notify({
+    id, charId: 'linqing', charName: '林清', preview, at: Date.now(), kind: 'message',
+  });
+
+  check('手机面板层建在主应用里', Boolean(phoneLayer) && phoneLayer.hidden === true);
+  check('顶栏角标显示存量未读', phoneBadge?.hidden === false && phoneBadge?.textContent === '2',
+    `${phoneBadge?.hidden}/${phoneBadge?.textContent}`);
+
+  phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await wait(30);
+  check('手机按钮打开内嵌面板', phoneLayer?.hidden === false && Boolean(doc.querySelector('.phone-mount .phone-shell.is-open')));
+  phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await wait(30);
+  check('再点手机按钮收起面板', phoneLayer?.hidden === true && !doc.querySelector('.phone-shell.is-open'));
+
+  pushNotice('n1', '今晚有空吗？');
+  await wait(10);
+  const firstBanner = doc.querySelector('.phone-banner');
+  check('手机通知弹出横幅', Boolean(firstBanner) && (firstBanner?.textContent ?? '').includes('林清')
+    && (firstBanner?.textContent ?? '').includes('今晚有空吗'));
+  check('横幅带头像且容器是 live region', Boolean(doc.querySelector('.phone-banner-avatar svg'))
+    && doc.querySelector('.phone-banner-stack')?.getAttribute('aria-live') === 'polite');
+
+  firstBanner?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await wait(40);
+  check('点横幅打开对应聊天', phoneLayer?.hidden === false && Boolean(doc.querySelector('.phone-mount .wc-chatpage')));
+  check('进聊天后角标清零', phoneBadge?.hidden === true, `${phoneBadge?.hidden}/${phoneBadge?.textContent}`);
+
+  pushNotice('n2', '第二条');
+  pushNotice('n3', '第三条');
+  pushNotice('n4', '第四条');
+  await wait(10);
+  check('横幅最多同时 3 条', doc.querySelectorAll('.phone-banner').length === 3,
+    String(doc.querySelectorAll('.phone-banner').length));
+
+  const hovered = doc.querySelector('.phone-banner');
+  hovered?.dispatchEvent(new window.MouseEvent('pointerenter'));
+  await wait(4300);
+  check('悬停暂停横幅计时', hovered?.isConnected === true && doc.querySelectorAll('.phone-banner').length === 1,
+    String(doc.querySelectorAll('.phone-banner').length));
+  hovered?.dispatchEvent(new window.MouseEvent('pointerleave'));
+  await wait(4200);
+  check('离开后恢复计时并自动消失', doc.querySelectorAll('.phone-banner').length === 0,
+    String(doc.querySelectorAll('.phone-banner').length));
+
   doc.querySelector('.front-action-quiet')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('原生视图隐藏画布', root?.style.display === 'none');
+  check('原生视图收起手机面板', phoneLayer?.hidden === true);
   const launcher = doc.querySelector('.front-launcher');
   check('原生视图保留启动按钮', Boolean(launcher) && launcher.hidden === false);
   launcher?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));

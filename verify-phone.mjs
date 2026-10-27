@@ -25,6 +25,10 @@ const built = fs.readFileSync(dist, 'utf8');
 const scriptMatch = built.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!scriptMatch) throw new Error('未找到内联 module 脚本');
 
+// 手机入口导出 mountPhone，产物是 <script type="module">；jsdom 的 eval 只能跑经典脚本，
+// 验证时去掉末尾的导出语句（嵌入用例走 window.__YURI_PHONE_MOUNT__ 钩子）。
+const scriptBody = scriptMatch[1].replace(/export\s*\{[^}]*\}\s*;?/g, '');
+
 const CHAT_ID = 'verify';
 const PKEY = 'YuriOpening:phone:' + CHAT_ID + ':';
 
@@ -175,7 +179,7 @@ function boot(scenarioName) {
     replaceMvuData: data => { scenario.mvu = data.stat_data; return Promise.resolve(); },
   };
   // 世界书接口不提供：wechat-log 会走「不支持则跳过」的分支
-  window.eval(scriptMatch[1]);
+  window.eval(scriptBody);
   return { window, dom, errors, scenario };
 }
 
@@ -208,9 +212,10 @@ console.log('【类名覆盖审查】');
 
 // 宽松扫描：类名在产物里大多以模板串拼成（`wc-msg-row wc-msg-${out}`），
 // 按引号切分只能拿到一部分，所以直接扫全部 wc-/phone- 前缀的 token。
-const PREFIX_TOKENS = new Set(['phone-root-host', 'phone-root-style', 'wc-dispose']);
+// 排除项：容器 id、页面事件名，以及 dev 构建里 eval 包装带出的模块路径（./phone-icons）。
+const PREFIX_TOKENS = new Set(['phone-root-host', 'phone-root-style', 'wc-dispose', 'phone-icons']);
 const usedClasses = new Set();
-for (const m of scriptMatch[1].matchAll(/\b((?:wc|phone)-[a-z0-9-]+)/g)) {
+for (const m of scriptBody.matchAll(/\b((?:wc|phone)-[a-z0-9-]+)/g)) {
   if (!PREFIX_TOKENS.has(m[1])) usedClasses.add(m[1]);
 }
 
@@ -555,6 +560,171 @@ for (const name of Object.keys(scenarios)) {
   // 每个场景跑完必须显式 close，否则脚本永不退出。
   dom.window.close();
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// 嵌入模式（主应用面板）+ 通知与未读
+// ────────────────────────────────────────────────────────────────────────────
+
+async function runEmbedded() {
+  console.log('\n【嵌入模式 · 通知与未读】');
+  const before = failures.length;
+  const mvu = {
+    玩家: { _姓名: '林栖' },
+    林清: { 关系身份: '朋友', 亲近: 58, 心动: 34, 心情: '愉快' },
+    微信: { _已添加林清: true, _未读数: 0, _朋友圈: [] },
+    环境: { 日期: '2025-06-01', 时间: '21:00' },
+  };
+  const dom = new JSDOM(
+    '<!DOCTYPE html><html><head></head><body><div id="yuri-front"><div id="phone-slot"></div></div></body></html>',
+    { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://local.test/' },
+  );
+  const { window } = dom;
+  const errors = [];
+  window.addEventListener('error', e => errors.push(String(e.error ?? e.message)));
+  window.SillyTavern = { getCurrentChatId: () => 'embedded', name1: '林栖', getContext: () => ({ name1: '林栖' }) };
+  window.localStorage.clear();
+  window.localStorage.setItem('YuriOpening:phone:embedded:hasAdded:v1', 'true');
+  window.localStorage.setItem('YuriOpening:phone:embedded:chat-history:v1', JSON.stringify([
+    { role: 'assistant', content: '回来了？', date: '2025-06-01', time: '20:58' },
+  ]));
+  window.localStorage.setItem('YuriOpening:phone:ai-config:v1', JSON.stringify({
+    baseUrl: 'https://mock.test/v1', apiKey: '', model: 'mock', systemPromptPrefix: '',
+  }));
+  window.waitGlobalInitialized = () => Promise.resolve();
+  window.errorCatched = fn => () => fn();
+  window.eventOn = () => ({ stop() {} });
+  window.tavern_events = { CHAT_CHANGED: 'chat_changed' };
+  window.$ = arg => {
+    if (typeof arg === 'function') { arg(); return window.$; }
+    return { one() { return this; }, on() { return this; }, off() { return this; } };
+  };
+  window.Mvu = {
+    events: { VARIABLE_INITIALIZED: 'mvu_init', VARIABLE_UPDATE_ENDED: 'mvu_ended' },
+    getMvuData: () => ({ stat_data: mvu }),
+    replaceMvuData: data => {
+      // 写入的 stat_data 就是这份内存对象（模拟真实 MVU 的原地更新）
+      if (data.stat_data !== mvu) {
+        for (const key of Object.keys(mvu)) delete mvu[key];
+        Object.assign(mvu, data.stat_data);
+      }
+      return Promise.resolve();
+    },
+  };
+
+  // 流式接口的最小替身：延迟返回一段 SSE，用来验证「回复落盘后才算未读」
+  const replies = ['路上小心。', '到家了说一声。'];
+  let replyIndex = 0;
+  window.fetch = async () => {
+    const content = replies[Math.min(replyIndex, replies.length - 1)];
+    replyIndex += 1;
+    await wait(180);
+    const bytes = new TextEncoder().encode(
+      `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\ndata: [DONE]\n\n`,
+    );
+    let served = false;
+    return {
+      ok: true,
+      json: async () => ({ choices: [{ message: { content } }] }),
+      body: {
+        getReader: () => ({
+          async read() {
+            if (served) return { done: true, value: undefined };
+            served = true;
+            return { done: false, value: bytes };
+          },
+        }),
+      },
+    };
+  };
+
+  window.__YURI_PHONE_EMBEDDED__ = true;
+  window.eval(scriptBody);
+  await wait(40);
+  check('嵌入标记下不自动挂载', q(window, '#phone-root-host') === null);
+
+  const notices = [];
+  const unreadLog = [];
+  const phone = window.__YURI_PHONE_MOUNT__({
+    embedded: true,
+    host: window.document,
+    hostWin: window,
+    root: window.document.getElementById('phone-slot'),
+    onNotify: n => notices.push(n),
+    onUnread: n => unreadLog.push(n),
+  });
+  await wait(120);
+
+  check('无运行时异常', errors.length === 0, errors.slice(0, 2).join(' | '));
+  check('挂载进指定 root', window.document.querySelector('#phone-slot > #phone-root-host') !== null);
+  check('容器标记 data-embedded', q(window, '#phone-root-host')?.getAttribute('data-embedded') === 'true');
+  check('嵌入模式不建悬浮按钮', q(window, '.phone-fab') === null);
+  check('嵌入模式不建小窗切换键', q(window, '.phone-mode-btn') === null);
+  check('外壳初始隐藏', q(window, '.phone-shell')?.classList.contains('is-open') === false);
+  check('外壳不写内联尺寸', !q(window, '.phone-shell')?.style.width, q(window, '.phone-shell')?.style.width);
+  check('铃铛入口在', Boolean(q(window, '.phone-bell')));
+  check('初始未读为 0', phone.getUnread() === 0, String(phone.getUnread()));
+
+  phone.open();
+  await wait(80);
+  check('open() 展开外壳', q(window, '.phone-shell')?.classList.contains('is-open') === true);
+  check('四个页签', qa(window, '.phone-tab').length === 4, String(qa(window, '.phone-tab').length));
+
+  click(q(window, '.wc-chat-item'));
+  await wait(120);
+  check('进入对话页', Boolean(q(window, '.wc-chatpage')));
+
+  // 发一条就立刻收起手机：回复落盘时手机已关，应记未读并通知宿主
+  q(window, '.wc-input').value = '今天会晚一点';
+  click(q(window, '.wc-send-btn'));
+  await wait(40);
+  phone.close();
+  await wait(700);
+  check('收起后外壳隐藏', q(window, '.phone-shell')?.classList.contains('is-open') === false);
+  check('手机收起后回复仍记未读', phone.getUnread() === 1, String(phone.getUnread()));
+  check('宿主收到 onNotify', notices.length === 1, String(notices.length));
+  check('通知预览取自回复', notices[0]?.preview?.includes('路上小心') === true, JSON.stringify(notices[0]));
+  check('通知角色与类型正确', notices[0]?.charId === 'linqing' && notices[0]?.kind === 'message');
+  check('宿主收到 onUnread', unreadLog.includes(1), JSON.stringify(unreadLog));
+  check('未读数防抖镜像回 MVU', mvu.微信._未读数 === 1, String(mvu.微信._未读数));
+  check('铃铛未读点亮起', q(window, '.phone-bell-dot')?.classList.contains('is-on') === true);
+  check('通知按存档落盘', (window.localStorage.getItem('YuriOpening:phone:embedded:notify:v1') ?? '').includes('路上小心'));
+
+  // 通知中心：点条目进入对应聊天，只清这条聊天的未读
+  phone.openNotifications();
+  await wait(80);
+  check('打开通知中心', Boolean(q(window, '.wc-notify-page')));
+  check('通知条目标记未读', qa(window, '.wc-notify-item.is-unread').length === 1,
+    String(qa(window, '.wc-notify-item.is-unread').length));
+  click(q(window, '.wc-notify-item'));
+  await wait(150);
+  check('点通知进入对应聊天', Boolean(q(window, '.wc-chatpage')) && text(window, '.wc-chat-title') === '林清');
+  check('进入聊天后未读清零', phone.getUnread() === 0, String(phone.getUnread()));
+  check('铃铛未读点熄灭', q(window, '.phone-bell-dot')?.classList.contains('is-on') === false);
+
+  // 正看着这条聊天时回复完成：不记未读，但通知留档（算已读）
+  q(window, '.wc-input').value = '到楼下了';
+  click(q(window, '.wc-send-btn'));
+  await wait(500);
+  check('正在看的聊天不记未读', phone.getUnread() === 0, String(phone.getUnread()));
+  check('正在看的聊天不发 onNotify', notices.length === 1, String(notices.length));
+
+  phone.openNotifications();
+  await wait(80);
+  check('通知留档两条', qa(window, '.wc-notify-item').length === 2, String(qa(window, '.wc-notify-item').length));
+  check('已读条目不标未读', qa(window, '.wc-notify-item.is-unread').length === 0);
+
+  phone.destroy();
+  await wait(60);
+  check('destroy() 移除容器', q(window, '#phone-root-host') === null);
+  check('destroy() 后未读出异常', errors.length === 0, errors.slice(0, 2).join(' | '));
+
+  notes.forEach(line => console.log(line));
+  notes.length = 0;
+  if (failures.length === before) console.log('  全部通过');
+  dom.window.close();
+}
+
+await runEmbedded();
 
 // ────────────────────────────────────────────────────────────────────────────
 // 类名是否都有对应 CSS 规则

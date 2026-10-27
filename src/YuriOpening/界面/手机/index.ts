@@ -2,17 +2,20 @@
  * index.ts — 手机模块主入口
  *
  * 职责：
- * 1. 在宿主文档注入悬浮手机按钮（.phone-fab）
- * 2. 按钮点击弹出/收起手机外壳（.phone-shell）
+ * 1. 导出 mountPhone：既可挂在酒馆页做悬浮手机（overlay），也可嵌进主应用面板（embedded）
+ * 2. 悬浮按钮（.phone-fab）只在 overlay 模式注入；按钮点击弹出/收起手机外壳（.phone-shell）
  * 3. 从 MVU 读取游戏数据，传给 wechat.ts 渲染四个页面
- * 4. 四页路由（聊天/好友/朋友圈/设置）与对话子路由
+ * 4. 四页路由（聊天/好友/朋友圈/设置）、对话子路由与通知中心
  * 5. 通过 Mvu.replaceMvuData 把摘要写回消息层变量；聊天记录同步到世界书「微信记录」（wechat-log.ts）
  * 6. 监听 MVU 事件，收到更新时刷新手机数据
  * 7. 本地状态按聊天存档隔离，换档时自动切换（storage.ts）
+ * 8. 她的回复落盘后记未读与通知（notify.ts），未读数防抖镜像回 微信._未读数
  */
 
 import phoneCss from './style.scss?raw';
 import {
+  avatarLQ,
+  iconBack,
   iconBattery,
   iconChat,
   iconClose,
@@ -25,12 +28,28 @@ import {
   iconWifiBar,
 } from './phone-icons';
 import { phoneKey, invalidateChatKey, getStorageGeneration, getCurrentChatId } from './storage';
+import {
+  type InboundMessage,
+  type PhoneNotice,
+  cursorOf,
+  destroyNotify,
+  getUnreadOf,
+  getUnreadTotal,
+  initNotify,
+  listNotices,
+  markAllRead,
+  markChatRead,
+  pushInbound,
+  resetNotify,
+  unreadMap,
+} from './notify';
 import { CHARACTERS, type CharacterId, relationAtLeast } from '../../characters';
 import {
   type CharacterChatData,
   type ChatPageHandle,
   type WechatCallbacks,
   type WechatData,
+  type WechatMoment,
   renderChatList,
   renderChatPage,
   renderContactsPage,
@@ -40,6 +59,8 @@ import {
   chatHistoryKeyOf,
 } from './wechat';
 import { syncWechatLogToWorldbook } from './wechat-log';
+
+export type { PhoneNotice };
 
 // ────────────────────────────────────────────────────────────────────────────
 // 常量
@@ -53,6 +74,41 @@ const TAB_ITEMS: Array<{ id: TabId; icon: () => string; label: string }> = [
   { id: 'moments', icon: iconMoments, label: '朋友圈' },
   { id: 'settings', icon: iconSettings, label: '设置' },
 ];
+
+// ────────────────────────────────────────────────────────────────────────────
+// 对外契约：主应用（或独立脚本）通过 mountPhone 拿到一个可嵌入的手机面板
+// ────────────────────────────────────────────────────────────────────────────
+
+export type PhoneMountOptions = {
+  /** 手机 DOM 与样式注入到哪个 document（缺省：overlay = 父页面） */
+  host?: Document;
+  /** 量视口、挂监听用哪个 window（缺省：host.defaultView） */
+  hostWin?: Window;
+  /** true = 嵌入主应用面板：不建 FAB，外壳绝对定位填满 root */
+  embedded?: boolean;
+  /** 嵌入时的挂载容器（缺省：host.body） */
+  root?: HTMLElement;
+  onNotify?: (n: PhoneNotice) => void;
+  onUnread?: (n: number) => void;
+};
+
+export type PhoneHandle = {
+  open(): void;
+  close(): void;
+  toggle(): void;
+  openChat(id?: CharacterId): void;
+  openNotifications(): void;
+  getUnread(): number;
+  destroy(): void;
+};
+
+// 宿主环境：overlay = 独立脚本挂在酒馆页；embedded = 主应用面板内的挂载点
+let envDoc: Document = document;
+let envWin: Window = window;
+let envRoot: HTMLElement | null = null;
+let embeddedMode = false;
+let mounted = false;
+let notifyHandlers: Pick<PhoneMountOptions, 'onNotify' | 'onUnread'> = {};
 
 // ────────────────────────────────────────────────────────────────────────────
 // 状态
@@ -115,12 +171,19 @@ let active = true;
 let phoneOpen = false;
 let activeTab: TabId = 'chat';
 let inChatPage = false;
+/** 通知中心页是否在前台 */
+let inNotifyPage = false;
+/** 聊天页正在看的角色（未读判定：正看着这条聊天就算已读） */
+let activeChatId: CharacterId | null = null;
 let chatHandle: ChatPageHandle | null = null;
 let shellMode: ShellMode = loadShellMode();
 let shellPos: { left: number; top: number } | null = loadShellPos();
 let modeBtn: HTMLElement | null = null;
 let fab: HTMLElement | null = null;
 let shell: HTMLElement | null = null;
+let navbarEl: HTMLElement | null = null;
+let bellBtn: HTMLElement | null = null;
+let bellDot: HTMLElement | null = null;
 let contentArea: HTMLElement | null = null;
 let badge: HTMLElement | null = null;
 let statusTime: HTMLElement | null = null;
@@ -287,7 +350,7 @@ function saveFabPos(pos: { left: number; top: number }) {
 
 function applyFabPos(pos: { left: number; top: number }) {
   if (!fab) return;
-  const hostWin = hostDoc().defaultView ?? window;
+  const hostWin = envWin;
   const rect = fab.getBoundingClientRect();
   const margin = 4;
   const maxLeft = Math.max(margin, hostWin.innerWidth - rect.width - margin);
@@ -370,11 +433,11 @@ function enableFabDrag(btn: HTMLElement) {
 }
 
 function buildFab(): HTMLElement {
-  const btn = document.createElement('button');
+  const btn = hostDoc().createElement('button');
   btn.className = 'phone-fab';
   btn.setAttribute('aria-label', '打开手机');
   btn.innerHTML = iconPhone();
-  badge = document.createElement('span');
+  badge = hostDoc().createElement('span');
   badge.className = 'phone-fab-badge';
   badge.setAttribute('aria-hidden', 'true');
   btn.appendChild(badge);
@@ -388,40 +451,56 @@ function updateBadge(count: number) {
   badge.style.display = count > 0 ? '' : 'none';
 }
 
+/** 状态栏铃铛（通知中心入口） */
+function bellIconSvg(): string {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>';
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // 手机外壳
 // ────────────────────────────────────────────────────────────────────────────
 
 function buildShell(): HTMLElement {
-  const s = document.createElement('div');
+  const doc = hostDoc();
+  const s = doc.createElement('div');
   s.className = 'phone-shell';
   s.setAttribute('role', 'dialog');
   s.setAttribute('aria-label', '手机');
 
   // 状态栏
-  const statusBar = document.createElement('div');
+  const statusBar = doc.createElement('div');
   statusBar.className = 'phone-status-bar';
-  statusTime = document.createElement('span');
+  statusTime = doc.createElement('span');
   statusTime.className = 'phone-time';
   updateStatusTime();
   statusBar.appendChild(statusTime);
-  const icons = document.createElement('div');
+  const icons = doc.createElement('div');
   icons.className = 'phone-status-icons';
   icons.innerHTML = iconWifiBar() + iconBattery();
+  bellBtn = doc.createElement('button');
+  bellBtn.className = 'phone-bell';
+  bellBtn.setAttribute('aria-label', '通知');
+  bellBtn.innerHTML = bellIconSvg();
+  bellDot = doc.createElement('span');
+  bellDot.className = 'phone-bell-dot';
+  bellBtn.appendChild(bellDot);
+  bellBtn.addEventListener('click', openNotifications);
+  icons.insertBefore(bellBtn, icons.firstChild);
   statusBar.appendChild(icons);
   s.appendChild(statusBar);
   enableShellDrag(statusBar);
 
   // 内容区
-  contentArea = document.createElement('div');
+  contentArea = doc.createElement('div');
   contentArea.className = 'phone-content';
   s.appendChild(contentArea);
 
   // 底部导航
-  const navbar = document.createElement('div');
+  const navbar = doc.createElement('div');
   navbar.className = 'phone-navbar';
+  navbarEl = navbar;
   TAB_ITEMS.forEach(tab => {
-    const btn = document.createElement('button');
+    const btn = doc.createElement('button');
     btn.className = `phone-tab${tab.id === activeTab ? ' is-active' : ''}`;
     btn.dataset.tab = tab.id;
     btn.setAttribute('aria-label', tab.label);
@@ -431,11 +510,11 @@ function buildShell(): HTMLElement {
         // 离开聊天页：中断流式、后台生成摘要
         chatHandle?.beforeLeave();
         chatHandle = null;
+        inChatPage = false;
+        activeChatId = null;
       }
       activeTab = tab.id;
-      Array.from(navbar.querySelectorAll('.phone-tab')).forEach(b =>
-        b.classList.toggle('is-active', (b as HTMLElement).dataset.tab === tab.id),
-      );
+      syncTabState();
       renderTabContent();
     });
     navbar.appendChild(btn);
@@ -443,20 +522,23 @@ function buildShell(): HTMLElement {
   s.appendChild(navbar);
 
   // 关闭按钮（右上角）
-  const closeBtn = document.createElement('button');
+  const closeBtn = doc.createElement('button');
   closeBtn.className = 'phone-close-btn';
   closeBtn.setAttribute('aria-label', '关闭手机');
   closeBtn.innerHTML = iconClose();
   closeBtn.addEventListener('click', togglePhone);
   s.appendChild(closeBtn);
 
-  // 小窗 / 全屏切换（关闭键左侧；图标指向将要进入的模式）
-  modeBtn = document.createElement('button');
-  modeBtn.className = 'phone-mode-btn';
-  modeBtn.addEventListener('click', () => setShellMode(shellMode === 'full' ? 'mini' : 'full'));
-  s.appendChild(modeBtn);
-  s.classList.toggle('is-mini', shellMode === 'mini');
-  updateModeBtn();
+  // 小窗 / 全屏切换（关闭键左侧；图标指向将要进入的模式）。
+  // 嵌入模式的外壳尺寸由 CSS 决定，这个开关没有意义，不建。
+  if (!embeddedMode) {
+    modeBtn = doc.createElement('button');
+    modeBtn.className = 'phone-mode-btn';
+    modeBtn.addEventListener('click', () => setShellMode(shellMode === 'full' ? 'mini' : 'full'));
+    s.appendChild(modeBtn);
+    s.classList.toggle('is-mini', shellMode === 'mini');
+    updateModeBtn();
+  }
 
   return s;
 }
@@ -485,20 +567,17 @@ function syncWechatLog() {
 // 页面渲染路由
 // ────────────────────────────────────────────────────────────────────────────
 
-function renderTabContent() {
-  if (!contentArea) return;
-  // 告知上一页释放自己起的定时器（如设置页的键盘诊断）
-  if (contentArea.children.length > 0) contentArea.dispatchEvent(new Event('wc-dispose'));
-  contentArea.innerHTML = '';
-  inChatPage = false;
-  chatHandle = null;
-  typing = false;
+/** 宿主数据 + 本地未读快照，四页共用一份 */
+function currentData(): WechatData {
+  const data = buildWechatData(readMvu());
+  data.unread = unreadMap();
+  return data;
+}
 
-  const raw = readMvu();
-  const data = buildWechatData(raw);
+/** 页面回调：每建一次页各取一份，捕获当时的存储代际，换档后的迟到写入直接丢弃 */
+function buildCallbacks(): WechatCallbacks {
   const storageGen = getStorageGeneration();
-
-  const callbacks: WechatCallbacks = {
+  return {
     onSyncSummary: (char, summary) => {
       if (getStorageGeneration() !== storageGen) return;
       updateMvu(wx => {
@@ -516,7 +595,7 @@ function renderTabContent() {
     onAddMoment: (moment) => {
       if (getStorageGeneration() !== storageGen) return;
       void updateMvu(wx => {
-        const list = Array.isArray(wx._朋友圈) ? (wx._朋友圈 as typeof data.moments) : [];
+        const list = Array.isArray(wx._朋友圈) ? (wx._朋友圈 as WechatMoment[]) : [];
         // MVU 回读的是反序列化新对象，按「内容+时间」定位同一条，避免点赞时产生重复条目
         const idx = list.findIndex(m => m.内容 === moment.内容 && m.时间 === moment.时间);
         if (idx >= 0) {
@@ -553,40 +632,193 @@ function renderTabContent() {
     },
     onUnreadClear: () => {
       if (getStorageGeneration() !== storageGen) return;
-      updateMvu(wx => {
-        wx._未读数 = 0;
-      });
-      updateBadge(0);
+      markAllRead();
+    },
+    onMessageCommitted: (charId, message) => {
+      if (getStorageGeneration() !== storageGen) return;
+      handleMessageCommitted(charId, message);
     },
   };
+}
+
+/** 切页/换档前清空内容区，并告知上一页释放自己起的定时器（如设置页的键盘诊断） */
+function clearContent() {
+  if (!contentArea) return;
+  if (contentArea.children.length > 0) contentArea.dispatchEvent(new Event('wc-dispose'));
+  contentArea.innerHTML = '';
+}
+
+function renderTabContent() {
+  if (!contentArea) return;
+  clearContent();
+  inChatPage = false;
+  inNotifyPage = false;
+  activeChatId = null;
+  chatHandle = null;
+  typing = false;
 
   const doc = hostDoc();
+  const data = currentData();
 
   if (activeTab === 'chat') {
-    const list = renderChatList(doc, data, (char) => {
-      contentArea!.innerHTML = '';
-      inChatPage = true;
-      updateMvu(wx => {
-        wx._未读数 = 0;
-      });
-      updateBadge(0);
-      const freshData = buildWechatData(readMvu());
-      const freshChar = freshData.characters.find(c => c.def.id === char.def.id) ?? char;
-      const handle = renderChatPage(doc, freshData, freshChar, callbacks, () => {
-        inChatPage = false;
-        renderTabContent();
-      });
-      chatHandle = handle;
-      contentArea!.appendChild(handle.el);
-    });
-    contentArea.appendChild(list);
+    contentArea.appendChild(renderChatList(doc, data, enterChat));
   } else if (activeTab === 'contacts') {
-    contentArea.appendChild(renderContactsPage(doc, data, callbacks));
+    contentArea.appendChild(renderContactsPage(doc, data, buildCallbacks()));
   } else if (activeTab === 'moments') {
-    contentArea.appendChild(renderMomentsPage(doc, data, callbacks));
+    contentArea.appendChild(renderMomentsPage(doc, data, buildCallbacks()));
   } else if (activeTab === 'settings') {
     contentArea.appendChild(renderSettingsPage(doc, describeViewport));
   }
+}
+
+/** 进入某个聊天页：只清这个聊天的未读，其余聊天不受影响 */
+function enterChat(char: CharacterChatData) {
+  if (!contentArea) return;
+  clearContent();
+  inChatPage = true;
+  inNotifyPage = false;
+  activeChatId = char.def.id;
+  markChatRead(char.def.id);
+  refreshUnreadIndicators();
+
+  const freshData = currentData();
+  const freshChar = freshData.characters.find(c => c.def.id === char.def.id) ?? char;
+  const handle = renderChatPage(hostDoc(), freshData, freshChar, buildCallbacks(), () => {
+    inChatPage = false;
+    activeChatId = null;
+    renderTabContent();
+  });
+  chatHandle = handle;
+  contentArea.appendChild(handle.el);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 未读与通知
+// ────────────────────────────────────────────────────────────────────────────
+
+/** 未读数统一的落点：FAB 角标（overlay）与状态栏铃铛（两种模式都有） */
+function refreshUnreadIndicators() {
+  const total = getUnreadTotal();
+  updateBadge(total);
+  if (bellDot) bellDot.classList.toggle('is-on', total > 0);
+  if (bellBtn) bellBtn.setAttribute('aria-label', total > 0 ? `通知（${total} 条未读）` : '通知');
+}
+
+/** 未读/通知变化：就地刷新角标与当前页 */
+function onNotifyStateChange() {
+  refreshUnreadIndicators();
+  if (!phoneOpen) return;
+  if (inNotifyPage) renderNotifyPage();
+  else if (!inChatPage) renderTabContent();
+}
+
+/** 未读数镜像回 微信._未读数（notify.ts 里已防抖） */
+function mirrorUnread(total: number) {
+  void updateMvu(wx => {
+    wx._未读数 = total;
+  });
+}
+
+/**
+ * 她的回复已落盘：正在看这条聊天就直接算已读，否则记未读并通知宿主。
+ * 手机收起（或已离开聊天页）同样走未读分支。
+ */
+function handleMessageCommitted(charId: CharacterId, message: InboundMessage) {
+  const def = CHARACTERS.find(c => c.id === charId);
+  const viewing = phoneOpen && inChatPage && activeChatId === charId;
+  const notice = pushInbound(charId, def?.name ?? charId, message, { unread: !viewing });
+  refreshUnreadIndicators();
+  if (viewing || !notice) return;
+  notifyHandlers.onNotify?.(notice);
+  notifyHandlers.onUnread?.(getUnreadTotal());
+}
+
+function formatNoticeTime(at: number): string {
+  const d = new Date(at);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderNotifyPage() {
+  if (!contentArea) return;
+  clearContent();
+  inChatPage = false;
+  inNotifyPage = true;
+  activeChatId = null;
+  chatHandle = null;
+  typing = false;
+  contentArea.appendChild(buildNotifyPage(hostDoc()));
+}
+
+function buildNotifyPage(doc: Document): HTMLElement {
+  const wrap = doc.createElement('div');
+  wrap.className = 'wc-page wc-notify-page';
+
+  const head = doc.createElement('div');
+  head.className = 'wc-notify-head';
+  const back = doc.createElement('button');
+  back.className = 'wc-icon-btn';
+  back.setAttribute('aria-label', '返回');
+  back.innerHTML = iconBack();
+  back.addEventListener('click', () => {
+    inNotifyPage = false;
+    renderTabContent();
+  });
+  head.appendChild(back);
+  const title = doc.createElement('span');
+  title.className = 'wc-notify-title';
+  title.textContent = '通知';
+  head.appendChild(title);
+  const clear = doc.createElement('button');
+  clear.className = 'wc-notify-clear';
+  clear.textContent = '全部已读';
+  clear.addEventListener('click', () => markAllRead());
+  head.appendChild(clear);
+  wrap.appendChild(head);
+
+  const list = doc.createElement('div');
+  list.className = 'wc-notify-list';
+  const notices = listNotices();
+  if (notices.length === 0) {
+    const empty = doc.createElement('div');
+    empty.className = 'wc-notify-empty';
+    empty.textContent = '还没有新消息';
+    list.appendChild(empty);
+  } else {
+    // 列表按时间倒序；游标之前的条目算已读
+    for (const notice of notices) {
+      const unread = notice.at > cursorOf(notice.charId) && getUnreadOf(notice.charId) > 0;
+      const item = doc.createElement('div');
+      item.className = `wc-notify-item${unread ? ' is-unread' : ''}`;
+
+      const avatar = doc.createElement('span');
+      avatar.className = 'wc-notify-avatar';
+      const def = CHARACTERS.find(c => c.id === notice.charId);
+      avatar.innerHTML = def ? avatarLQ({ key: def.id, stops: def.phone.avatarStops, glyph: def.glyph }) : '';
+      item.appendChild(avatar);
+
+      const body = doc.createElement('div');
+      body.className = 'wc-notify-body';
+      const name = doc.createElement('span');
+      name.className = 'wc-notify-name';
+      name.textContent = notice.charName;
+      body.appendChild(name);
+      const text = doc.createElement('div');
+      text.className = 'wc-notify-text';
+      text.textContent = notice.preview;
+      body.appendChild(text);
+      const time = doc.createElement('span');
+      time.className = 'wc-notify-time';
+      time.textContent = formatNoticeTime(notice.at);
+      body.appendChild(time);
+      item.appendChild(body);
+
+      item.addEventListener('click', () => openChatById(notice.charId));
+      list.appendChild(item);
+    }
+  }
+  wrap.appendChild(list);
+  return wrap;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -676,28 +908,81 @@ function enableShellDrag(bar: HTMLElement) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// 开关手机
+// 开关手机与对外入口
 // ────────────────────────────────────────────────────────────────────────────
 
-function togglePhone() {
-  phoneOpen = !phoneOpen;
-  if (!shell) return;
-  if (phoneOpen) {
-    shell.classList.add('is-open');
+function openPhone() {
+  if (!shell || phoneOpen) return;
+  phoneOpen = true;
+  shell.classList.add('is-open');
+  if (!embeddedMode) {
     syncShellViewport();
     startViewportHeartbeat();
-    renderTabContent();
-  } else {
-    shell.classList.remove('is-open');
-    stopViewportHeartbeat();
-    typing = false;
-    if (inChatPage) {
-      // 收起手机等同于离开聊天页：后台生成摘要与朋友圈，保留进行中的回复
-      chatHandle?.beforeHide();
-      chatHandle = null;
-      inChatPage = false;
-    }
   }
+  refreshUnreadIndicators();
+}
+
+function closePhone() {
+  if (!shell || !phoneOpen) return;
+  phoneOpen = false;
+  shell.classList.remove('is-open');
+  stopViewportHeartbeat();
+  typing = false;
+  inNotifyPage = false;
+  if (inChatPage) {
+    // 收起手机等同于离开聊天页：后台生成摘要与朋友圈，保留进行中的回复
+    // （回复跑完时手机已收起，所以会记未读并通知）
+    chatHandle?.beforeHide();
+    chatHandle = null;
+    inChatPage = false;
+    activeChatId = null;
+  }
+}
+
+function togglePhone() {
+  if (phoneOpen) {
+    closePhone();
+    return;
+  }
+  openPhone();
+  renderTabContent();
+}
+
+function syncTabState() {
+  navbarEl?.querySelectorAll('.phone-tab').forEach(b => {
+    b.classList.toggle('is-active', (b as HTMLElement).dataset.tab === activeTab);
+  });
+}
+
+/** 离开当前聊天页（不重渲）：摘要与朋友圈在后台跑 */
+function leaveChatPage() {
+  if (!inChatPage) return;
+  chatHandle?.beforeLeave();
+  chatHandle = null;
+  inChatPage = false;
+  activeChatId = null;
+}
+
+/** 打开某个角色的聊天（主应用 openChat 与通知条目共用） */
+function openChatById(id: CharacterId) {
+  openPhone();
+  activeTab = 'chat';
+  syncTabState();
+  if (inChatPage && activeChatId === id) return;
+  leaveChatPage();
+  const char = currentData().characters.find(c => c.def.id === id);
+  if (!char || !char.hasAdded) {
+    // 还没加好友：停在聊天列表，不硬开一个空对话
+    renderTabContent();
+    return;
+  }
+  enterChat(char);
+}
+
+function openNotifications() {
+  openPhone();
+  leaveChatPage();
+  renderNotifyPage();
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -705,6 +990,11 @@ function togglePhone() {
 // ────────────────────────────────────────────────────────────────────────────
 
 function hostDoc(): Document {
+  return envDoc;
+}
+
+/** overlay 模式的宿主文档：独立脚本跑在 TH-script iframe 里，界面挂在父页面 */
+function resolveHostDocument(): Document {
   try {
     const p = window.parent;
     if (p && p !== window && p.document) return p.document;
@@ -739,10 +1029,12 @@ function reportedKeyboardInset(hostWin: Window): number {
 }
 
 /** 把外壳对齐到真实可视区域（键盘弹出/收起、转屏时保持底部输入区可见）。
- *  全屏 = 铺满可视区；小窗 = 受限宽度浮窗，键盘弹出时先上移、不够再压缩高度。 */
+ *  全屏 = 铺满可视区；小窗 = 受限宽度浮窗，键盘弹出时先上移、不够再压缩高度。
+ *  嵌入模式下外壳尺寸由 CSS 按宿主区块决定，不做视口适配。 */
 function syncShellViewport() {
   if (!shell) return;
-  const hostWin = hostDoc().defaultView ?? window;
+  if (embeddedMode) return;
+  const hostWin = envWin;
   const baseHeight = Math.round(hostWin.innerHeight);
   if (!baseHeight) return;
   const baseWidth = Math.round(hostWin.innerWidth) || baseHeight;
@@ -807,7 +1099,7 @@ function isShellTextEntry(target: EventTarget | null): boolean {
 
 /** 设置页的键盘诊断读数：环境到底报告了什么 */
 function describeViewport(): string {
-  const hostWin = hostDoc().defaultView ?? window;
+  const hostWin = envWin;
   const vv = (hostWin as unknown as { visualViewport?: VisualViewport | null }).visualViewport;
   return [
     `模式 ${shellMode === 'mini' ? '小窗' : '全屏'}`,
@@ -826,20 +1118,20 @@ let viewportBurst: number | null = null;
 /** 打开手机期间的低频心跳：兜底不派发视口事件的环境 */
 function startViewportHeartbeat() {
   if (viewportHeartbeat !== null) return;
-  const hostWin = hostDoc().defaultView ?? window;
+  const hostWin = envWin;
   viewportHeartbeat = hostWin.setInterval(syncShellViewport, 600);
 }
 
 function stopViewportHeartbeat() {
   if (viewportHeartbeat === null) return;
-  const hostWin = hostDoc().defaultView ?? window;
+  const hostWin = envWin;
   hostWin.clearInterval(viewportHeartbeat);
   viewportHeartbeat = null;
 }
 
 /** 聚焦/失焦（键盘弹起/收起）瞬间的高频重试 */
 function burstSyncShellViewport() {
-  const hostWin = hostDoc().defaultView ?? window;
+  const hostWin = envWin;
   if (viewportBurst !== null) {
     hostWin.clearInterval(viewportBurst);
     viewportBurst = null;
@@ -856,14 +1148,12 @@ function burstSyncShellViewport() {
   syncShellViewport();
 }
 
-function mount() {
+function mountDom() {
   const host = hostDoc();
-  const existing = host.getElementById('phone-root-host');
-  if (existing) existing.remove();
+  host.getElementById('phone-root-host')?.remove();
+  host.getElementById('phone-root-style')?.remove();
 
   // 把编译后的 CSS 注入到宿主文档，确保样式与 DOM 在同一 document
-  const existingStyle = host.getElementById('phone-root-style');
-  if (existingStyle) existingStyle.remove();
   const styleEl = host.createElement('style');
   styleEl.id = 'phone-root-style';
   styleEl.textContent = phoneCss as unknown as string;
@@ -871,15 +1161,29 @@ function mount() {
 
   const container = host.createElement('div');
   container.id = 'phone-root-host';
-  host.body.appendChild(container);
+  if (embeddedMode) container.dataset.embedded = 'true';
+  (envRoot ?? host.body).appendChild(container);
 
-  fab = buildFab();
+  // 嵌入主应用时不建悬浮按钮：入口由宿主自己提供
+  if (!embeddedMode) {
+    fab = buildFab();
+    container.appendChild(fab);
+    const savedPos = loadFabPos();
+    if (savedPos) applyFabPos(savedPos);
+  }
+
   shell = buildShell();
-  container.appendChild(fab);
   container.appendChild(shell);
 
-  const savedPos = loadFabPos();
-  if (savedPos) applyFabPos(savedPos);
+  if (embeddedMode) {
+    // 嵌入时尺寸交给 CSS（绝对定位铺满宿主区块），清掉小窗模式遗留的内联宽高与坐标
+    shell.style.width = '';
+    shell.style.height = '';
+    shell.style.left = '';
+    shell.style.top = '';
+    shell.style.right = '';
+    shell.style.bottom = '';
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -895,22 +1199,40 @@ function addDisposer(value: unknown) {
 
 function destroy() {
   active = false;
+  mounted = false;
   while (disposers.length) disposers.pop()?.();
+  chatHandle?.abort();
+  chatHandle = null;
+  destroyNotify();
   const host = hostDoc();
   host.getElementById('phone-root-host')?.remove();
   host.getElementById('phone-root-style')?.remove();
   fab = null;
   shell = null;
+  navbarEl = null;
+  bellBtn = null;
+  bellDot = null;
   modeBtn = null;
   contentArea = null;
   statusTime = null;
+  badge = null;
+  phoneOpen = false;
+  inChatPage = false;
+  inNotifyPage = false;
+  activeChatId = null;
+  typing = false;
+  stopViewportHeartbeat();
+  if (viewportBurst !== null) {
+    envWin.clearInterval(viewportBurst);
+    viewportBurst = null;
+  }
 }
 
-async function init() {
-  await waitGlobalInitialized('Mvu');
-  if (!active) return;
-
-  mount();
+/** 视口与键盘适配的监听：overlay 需要，嵌入模式的尺寸交给宿主布局 */
+function wireViewport() {
+  if (embeddedMode) return;
+  const hostWin = envWin;
+  const hostDocument = hostDoc();
 
   // 视口变化（转屏/窗口缩放）时：悬浮按钮拉回可视范围 + 外壳适配
   const onViewportResize = () => {
@@ -918,7 +1240,6 @@ async function init() {
     if (saved) applyFabPos(saved);
     syncShellViewport();
   };
-  const hostWin = hostDoc().defaultView ?? window;
   hostWin.addEventListener('resize', onViewportResize);
 
   // 全屏外壳视口适配：四通道兜底（vv 事件 / 窗口 resize / 聚焦重试 / 打开期间心跳）
@@ -927,7 +1248,6 @@ async function init() {
     vv.addEventListener('resize', syncShellViewport);
     vv.addEventListener('scroll', syncShellViewport);
   }
-  const hostDocument = hostDoc();
   let typingCheckTimer: number | null = null;
   const onFocusIn = (event: Event) => {
     typing = isShellTextEntry(event.target);
@@ -945,7 +1265,12 @@ async function init() {
   hostDocument.addEventListener('focusin', onFocusIn);
   hostDocument.addEventListener('focusout', onFocusOut);
 
-  const vk = (navigator as unknown as { virtualKeyboard?: { addEventListener?: (t: string, f: () => void) => void; removeEventListener?: (t: string, f: () => void) => void } }).virtualKeyboard;
+  const vk = (navigator as unknown as {
+    virtualKeyboard?: {
+      addEventListener?: (t: string, f: () => void) => void;
+      removeEventListener?: (t: string, f: () => void) => void;
+    };
+  }).virtualKeyboard;
   if (vk && typeof vk.addEventListener === 'function') {
     vk.addEventListener('geometrychange', syncShellViewport);
   }
@@ -962,51 +1287,40 @@ async function init() {
     if (vk && typeof vk.removeEventListener === 'function') {
       vk.removeEventListener('geometrychange', syncShellViewport);
     }
+    hostWin.removeEventListener('resize', onViewportResize);
   });
+}
 
-  const onUpdate = () => {
-    if (!active) return;
-    const raw = readMvu();
-    // 正文剧情里加上了微信（AI 写入对应字段）时，同步到手机本地状态。
-    // 只单向打开，不回退——不能把玩家已经用上的功能收回去。
-    for (const def of CHARACTERS) {
-      if (!localAddedFlags.get(def.id) && raw.微信?.[def.phone.fields.added] === true) {
-        localAddedFlags.set(def.id, true);
-        localRejectedFlags.set(def.id, false);
-        writeLocalFlag(def.id, 'hasAdded:v1', true);
-        writeLocalFlag(def.id, 'addRejected:v1', false);
-      }
+/** 从 MVU 回读：正文里加上了微信、故事时间变化、列表页刷新 */
+function refreshFromMvu() {
+  if (!active) return;
+  const raw = readMvu();
+  // 正文剧情里加上了微信（AI 写入对应字段）时，同步到手机本地状态。
+  // 只单向打开，不回退——不能把玩家已经用上的功能收回去。
+  for (const def of CHARACTERS) {
+    if (!localAddedFlags.get(def.id) && raw.微信?.[def.phone.fields.added] === true) {
+      localAddedFlags.set(def.id, true);
+      localRejectedFlags.set(def.id, false);
+      writeLocalFlag(def.id, 'hasAdded:v1', true);
+      writeLocalFlag(def.id, 'addRejected:v1', false);
     }
-    const unread = raw.微信?._未读数 ?? 0;
-    updateBadge(Number(unread));
-    updateStatusTime(raw);
-    // 只在列表页刷新；聊天页正在进行中时不重渲，避免将聊天页清掉
-    if (phoneOpen && !inChatPage) renderTabContent();
-  };
+  }
+  refreshUnreadIndicators();
+  updateStatusTime(raw);
+  // 只在列表页刷新；聊天页/通知中心在前台时不重渲，避免把它们清掉
+  if (phoneOpen && !inChatPage && !inNotifyPage) renderTabContent();
+}
 
-  const onMvuInitialized = () => {
+function wireData() {
+  /**
+   * 酒馆消息变化后延迟一拍再回读：MVU 写入与消息落库都在同一轮事件里完成，
+   * 立刻读会拿到上一轮的数据。
+   */
+  const onTavernMessage = () => {
     if (!active) return;
-    onUpdate();
-  };
-
-  const onMvuUpdate = () => {
-    if (!active) return;
-    onUpdate();
-  };
-
-  const onMessageReceived = () => {
-    if (!active) return;
-    hostWin.setTimeout(() => {
+    envWin.setTimeout(() => {
       if (!active) return;
-      onUpdate();
-    }, 0);
-  };
-
-  const onMessageChanged = () => {
-    if (!active) return;
-    hostWin.setTimeout(() => {
-      if (!active) return;
-      onUpdate();
+      refreshFromMvu();
     }, 0);
   };
 
@@ -1024,7 +1338,11 @@ async function init() {
     invalidateChatKey();
     chatHandle?.abort();
     chatHandle = null;
+    inChatPage = false;
+    activeChatId = null;
     loadAllLocalFlags();
+    // 未读与通知跟着换档：读新存档的本地数据，镜像随之刷新
+    resetNotify();
     updateStatusTime();
     // 世界书跨存档共享：换档后用新存档的记录覆盖（无记录则禁用条目）
     syncWechatLog();
@@ -1032,29 +1350,124 @@ async function init() {
   };
 
   loadAllLocalFlags();
-  onUpdate();
+  refreshFromMvu();
   syncWechatLog();
-  addDisposer(eventOn(Mvu.events.VARIABLE_INITIALIZED, onMvuInitialized));
-  addDisposer(eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, onMvuUpdate));
+
   try {
-    addDisposer(eventOn(tavern_events.MESSAGE_RECEIVED, onMessageReceived));
-    addDisposer(eventOn(tavern_events.MESSAGE_UPDATED, onMessageChanged));
-    addDisposer(eventOn(tavern_events.MESSAGE_EDITED, onMessageChanged));
-    addDisposer(eventOn(tavern_events.MESSAGE_DELETED, onMessageChanged));
-    addDisposer(eventOn(tavern_events.MESSAGE_SWIPED, onMessageChanged));
+    addDisposer(eventOn(Mvu.events.VARIABLE_INITIALIZED, refreshFromMvu));
+    addDisposer(eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, refreshFromMvu));
+  } catch {
+    /* 旧版本助手未导出 MVU 事件时只保留手动刷新 */
+  }
+  try {
+    addDisposer(eventOn(tavern_events.MESSAGE_RECEIVED, onTavernMessage));
+    addDisposer(eventOn(tavern_events.MESSAGE_UPDATED, onTavernMessage));
+    addDisposer(eventOn(tavern_events.MESSAGE_EDITED, onTavernMessage));
+    addDisposer(eventOn(tavern_events.MESSAGE_DELETED, onTavernMessage));
+    addDisposer(eventOn(tavern_events.MESSAGE_SWIPED, onTavernMessage));
     addDisposer(eventOn(tavern_events.CHAT_CHANGED, onChatChanged));
-  } catch { /* 旧版本助手未导出 tavern_events 时不影响主体功能 */ }
-  addDisposer(() => hostWin.removeEventListener('resize', onViewportResize));
-  addDisposer(() => {
-    stopViewportHeartbeat();
-    if (viewportBurst !== null) {
-      hostWin.clearInterval(viewportBurst);
-      viewportBurst = null;
-    }
-  });
+  } catch {
+    /* 旧版本助手未导出 tavern_events 时不影响主体功能 */
+  }
+}
+
+/** 建 DOM + 通知层 + 视口监听：overlay 与 embedded 共用 */
+function startUi() {
+  mounted = true;
+  mountDom();
+  initNotify({ mirror: mirrorUnread, onChange: onNotifyStateChange });
+  wireViewport();
+  refreshUnreadIndicators();
+}
+
+/** 数据层：MVU 不可用时手机仍可只用本地记录 */
+async function startData() {
+  try {
+    await waitGlobalInitialized('Mvu');
+  } catch {
+    /* 宿主没提供 MVU */
+  }
+  if (!active) return;
+  wireData();
+  syncShellViewport();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// 对外挂载与自动启动
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * 挂载手机，返回操作句柄。
+ * 不传参 = 旧的 overlay 行为（挂在酒馆页、带悬浮按钮）；
+ * embedded: true + root = 嵌进主应用面板（绝对定位填满 root、无悬浮按钮）。
+ */
+export function mountPhone(opts: PhoneMountOptions = {}): PhoneHandle {
+  if (mounted) destroy();
+  const embedded = opts.embedded === true;
+  const doc = opts.host ?? (embedded ? document : resolveHostDocument());
+  const win = opts.hostWin ?? doc.defaultView ?? window;
+
+  notifyHandlers = { onNotify: opts.onNotify, onUnread: opts.onUnread };
+  envDoc = doc;
+  envWin = win;
+  envRoot = opts.root ?? (embedded ? (doc.body as HTMLElement) : null);
+  embeddedMode = embedded;
+  active = true;
+
+  startUi();
+  void startData();
+
+  return {
+    open() {
+      if (phoneOpen) return;
+      openPhone();
+      renderTabContent();
+    },
+    close() {
+      closePhone();
+    },
+    toggle() {
+      togglePhone();
+    },
+    openChat(id) {
+      openChatById(id ?? 'linqing');
+    },
+    openNotifications() {
+      openNotifications();
+    },
+    getUnread() {
+      return getUnreadTotal();
+    },
+    destroy() {
+      destroy();
+    },
+  };
+}
+
+/** overlay 自动启动：等 MVU 就绪后再挂，保持旧行为不变 */
+async function initOverlay() {
+  envDoc = resolveHostDocument();
+  envWin = envDoc.defaultView ?? window;
+  envRoot = null;
+  embeddedMode = false;
+  active = true;
+
+  await waitGlobalInitialized('Mvu');
+  if (!active) return;
+
+  startUi();
+  wireData();
+  syncShellViewport();
   $(window).one('pagehide', destroy);
 }
 
-$(() => {
-  errorCatched(init)();
-});
+const embeddedByHost = (window as unknown as { __YURI_PHONE_EMBEDDED__?: boolean }).__YURI_PHONE_EMBEDDED__ === true;
+
+if (embeddedByHost) {
+  // 嵌入方 import 后自行调用 mountPhone；这里留一个挂载钩子，供非打包环境与自动化验证使用
+  (window as unknown as Record<string, unknown>).__YURI_PHONE_MOUNT__ = mountPhone;
+} else {
+  $(() => {
+    errorCatched(initOverlay)();
+  });
+}

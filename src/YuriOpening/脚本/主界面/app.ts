@@ -1,10 +1,13 @@
 import { weatherLabel, weatherMarkSvg, weatherOverlaySvg, weatherTone, lilySprigSvg } from '../../界面/状态栏/icons';
+import type { PhoneNotice } from '../../界面/手机';
 import { mountChat } from './chat';
 import { hostDocument, hostWindow, teleportStyles } from './host';
 import { Observatory, type ObsTab } from './observatory';
 import { CharacterView } from './character-view';
 import { MapView } from './map-view';
 import { mountOpening } from './opening-view';
+import { mountBanner } from './phone-banner';
+import { phoneHost } from './phone-host';
 import { relationEnabled } from './relation';
 import { renderRelationView } from './relation-view';
 import { renderSettingsView } from './settings-view';
@@ -92,6 +95,9 @@ export function mountApp(options: { floor?: boolean } = {}) {
   const actions = make('div', 'front-actions');
   const fullButton = button('全屏', 'front-action');
   const phoneButton = button('手机', 'front-action');
+  const phoneBadge = make('span', 'front-action-badge');
+  phoneBadge.hidden = true;
+  phoneButton.append(phoneBadge);
   const nativeButton = button('原生视图', 'front-action front-action-quiet');
   actions.append(fullButton, phoneButton, nativeButton);
   head.append(env, actions);
@@ -138,6 +144,21 @@ export function mountApp(options: { floor?: boolean } = {}) {
   launcher.hidden = true;
   host.body.append(launcher);
   host.body.append(root);
+
+  const banner = mountBanner(root, {
+    onOpen: notice => phoneHost.openChat(notice.charId),
+  });
+  const setPhoneUnread = (count: number) => {
+    phoneBadge.textContent = count > 0 ? String(Math.min(count, 99)) : '';
+    phoneBadge.hidden = count <= 0;
+    phoneButton.setAttribute('aria-label', count > 0 ? `手机（${count} 条未读）` : '手机');
+  };
+  phoneHost.mount({
+    host: root,
+    onNotify: notice => banner.push(notice),
+    onUnread: setPhoneUnread,
+  });
+  setPhoneUnread(phoneHost.getUnread());
 
   const chat = mountChat(chatHost);
   /* 关系/地图动作只落到输入框：不发送、不改 MVU，发送权留给玩家 */
@@ -469,6 +490,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
   }
 
   function nativeView() {
+    phoneHost.close();
     nativeMode = true;
     mode = 'closed';
     open = false;
@@ -482,15 +504,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
     try { doc.querySelector<HTMLTextAreaElement>('#send_textarea')?.focus(); } catch { /* ignore */ }
   }
 
-  function openPhone() {
-    const fab = hostDocument().querySelector<HTMLElement>('.phone-fab');
-    if (fab) {
-      fab.click();
-      return;
-    }
-    chat.setStatus('手机界面尚未加载；请确认「手机」脚本已启用。');
-  }
-
   fullButton.addEventListener('click', () => {
     if (isFloorMode()) {
       toggleFloorFull();
@@ -498,7 +511,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     }
     void toggleFullscreen();
   });
-  phoneButton.addEventListener('click', openPhone);
+  phoneButton.addEventListener('click', () => phoneHost.toggle());
   nativeButton.addEventListener('click', nativeView);
   launcher.addEventListener('click', () => openMain());
   gate.querySelector<HTMLButtonElement>('[data-action="enter"]')?.addEventListener('click', () => void enterApp());
@@ -554,6 +567,8 @@ export function mountApp(options: { floor?: boolean } = {}) {
   }
   window.addEventListener('pagehide', () => {
     hideOpening();
+    banner.destroy();
+    phoneHost.destroy();
     chat.destroy();
     observatory.destroy();
     launcher.remove();
@@ -561,7 +576,21 @@ export function mountApp(options: { floor?: boolean } = {}) {
     host.body.classList.remove('yuri-front-open');
   }, { once: true });
 
-  const api = { openOpening, open: openMain, isOpen: () => mode !== 'closed' };
+  const api = {
+    openOpening,
+    open: openMain,
+    isOpen: () => mode !== 'closed',
+    phone: {
+      open: phoneHost.open,
+      close: phoneHost.close,
+      toggle: phoneHost.toggle,
+      openChat: phoneHost.openChat,
+      openNotifications: phoneHost.openNotifications,
+      getUnread: phoneHost.getUnread,
+      /** 宿主推一条手机通知：主应用负责横幅与角标 */
+      notify: (notice: PhoneNotice) => banner.push(notice),
+    },
+  };
   try {
     if (typeof initializeGlobal === 'function') initializeGlobal('YuriFront', api);
   } catch {

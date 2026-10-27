@@ -77,6 +77,16 @@ await new Promise(resolve => setTimeout(resolve, 60));
 check('提交后切到故事画布', root?.dataset.mode === 'main', root?.dataset.mode);
 check('故事画布三块结构', Boolean(doc.querySelector('.front-head')) && Boolean(doc.querySelector('.front-player')) && Boolean(doc.querySelector('.front-chat')));
 
+const phoneLayer = doc.querySelector('.phone-layer');
+const phoneButton = doc.querySelector('.front-action:nth-child(2)');
+check('手机面板层随画布建立', Boolean(phoneLayer) && phoneLayer.hidden === true);
+phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+await new Promise(resolve => setTimeout(resolve, 30));
+check('手机按钮打开内嵌面板', phoneLayer?.hidden === false && Boolean(doc.querySelector('.phone-mount .phone-shell.is-open')));
+phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+await new Promise(resolve => setTimeout(resolve, 30));
+check('再点手机按钮收起面板', phoneLayer?.hidden === true && !doc.querySelector('.phone-shell.is-open'));
+
 window.dispatchEvent(new window.Event('pagehide'));
 dom.window.close();
 if (failures.length) process.exitCode = 1;

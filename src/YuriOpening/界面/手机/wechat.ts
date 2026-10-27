@@ -59,6 +59,8 @@ export type WechatData = {
   storyDate: string;
   moments: WechatMoment[];
   characters: CharacterChatData[];
+  /** 每个聊天的未读数（本地通知状态），列表页据此显示角标 */
+  unread?: Partial<Record<CharacterId, number>>;
 };
 
 export type WechatCallbacks = {
@@ -71,6 +73,8 @@ export type WechatCallbacks = {
   /** 添加被拒：按存档记下，关系不到位前不再放行 */
   onAddRejected: (char: CharacterDef) => void;
   onUnreadClear: () => void;
+  /** 她的回复写进本地记录并落盘成功后回调（含空会话打招呼） */
+  onMessageCommitted: (charId: CharacterId, message: ChatMessage) => void;
 };
 
 // 聊天消息本地存储（键按存档隔离，见 storage.ts）
@@ -213,6 +217,10 @@ export function renderChatList(
     const info = el(doc, 'div', 'wc-item-info');
     const nameRow = el(doc, 'div', 'wc-item-name-row');
     nameRow.appendChild(el(doc, 'span', 'wc-item-name', char.def.name));
+    const unread = data.unread?.[char.def.id] ?? 0;
+    if (unread > 0) {
+      nameRow.appendChild(el(doc, 'span', 'wc-item-unread', unread > 99 ? '99+' : String(unread)));
+    }
     const previewEl = el(doc, 'span', 'wc-item-preview', preview);
     info.appendChild(nameRow);
     info.appendChild(previewEl);
@@ -339,6 +347,11 @@ export function renderChatPage(
     return saved;
   };
 
+  /** 落盘成功才算一条入站消息：写盘失败时不产生未读与通知 */
+  const commitReply = (message: ChatMessage) => {
+    if (commitHistory()) callbacks.onMessageCommitted(char.def.id, message);
+  };
+
   function appendMessageForCharacter(id: CharacterId, message: ChatMessage): boolean {
     if (id !== char.def.id) return false;
     if (message.photoEventId && history.some(item => item.photoEventId === message.photoEventId)) return true;
@@ -383,8 +396,9 @@ export function renderChatPage(
     }).then(full => {
       bubble.classList.remove('is-streaming');
       applyBubbleEmojiStyle(bubble, full);
-      history.push({ role: 'assistant', content: full, ...greetAt });
-      commitHistory();
+      const greeting: ChatMessage = { role: 'assistant', content: full, ...greetAt };
+      history.push(greeting);
+      commitReply(greeting);
     }).catch(() => {
       bubble.textContent = '[连接失败，请检查「设置」里的接口配置]';
       bubble.classList.remove('is-streaming');
@@ -448,8 +462,9 @@ export function renderChatPage(
       }, abortCtrl.signal);
       streamingBubble.classList.remove('is-streaming');
       applyBubbleEmojiStyle(streamingBubble, full);
-      history.push({ role: 'assistant', content: full, ...sentAt });
-      commitHistory();
+      const reply: ChatMessage = { role: 'assistant', content: full, ...sentAt };
+      history.push(reply);
+      commitReply(reply);
     } catch (err) {
       streamingBubble.textContent = String(err).includes('abort') ? '（已取消）' : `[失败：${String(err).slice(0, 30)}]`;
       streamingBubble.classList.remove('is-streaming');
