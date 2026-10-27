@@ -25,25 +25,7 @@ import {
 import { flowerMarkPath, flowerMeta, flowerName, flowerSvg } from './flowers';
 import { CHARACTERS, characterById, type CharacterDef, type FlowerId } from '../../characters';
 import { mistDefsSvg } from './mist-defs';
-import {
-  CARTOUCHE,
-  COMPASS,
-  FLORA_ART,
-  MAP_FIREFLIES,
-  MAP_FLORA,
-  MAP_HEIGHT,
-  MAP_NODE_BY_ID,
-  MAP_NODE_BY_LABEL,
-  MAP_NODES,
-  MAP_WIDTH,
-  NODE_ART,
-  REGION_COLORS,
-  REGION_LABELS,
-  RIVER_LABEL,
-  RIVER_PATH,
-  mapRoads,
-  type MapNode,
-} from './map';
+import { CARTOUCHE, COMPASS, FLORA_ART, MAP_FIREFLIES, MAP_FLORA, MAP_HEIGHT, MAP_NODE_BY_ID, MAP_NODE_BY_LABEL, MAP_NODES, MAP_WIDTH, NODE_ART, REGION_COLORS, REGION_LABELS, RIVER_LABEL, RIVER_PATH, mapRoads, type MapNode } from './map';
 
 type HudData = {
   环境: {
@@ -53,6 +35,7 @@ type HudData = {
     主题覆盖: string;
     地点: { 城市: string; 区域: string; 具体地点: string };
   };
+  玩家: { _年龄?: number };
   玩家状态: {
     心情: string;
     精力: number | '待设定';
@@ -277,6 +260,14 @@ function isUnset(value: string) {
   return value === '待设定' || value === '';
 }
 
+
+
+
+
+
+
+
+
 function getDaypart(time: string): 'day' | 'night' {
   const match = time.match(/(\d{1,2})[:：](\d{2})/);
   if (!match) return 'day';
@@ -403,7 +394,11 @@ function renderPlayer(data: HudData | null) {
     row.style.setProperty('--i', String(index));
     row.appendChild(createElement('span', 'status-index', String(index + 1).padStart(2, '0')));
     row.appendChild(createElement('span', 'status-name', field.label));
-    row.appendChild(field.kind === 'meter' ? renderMeter(data, field.path) : renderFigure(data, field.path));
+    row.appendChild(
+      field.kind === 'meter'
+        ? renderMeter(data, field.path)
+        : renderFigure(data, field.path),
+    );
     list.appendChild(row);
   });
   section.appendChild(list);
@@ -496,6 +491,12 @@ function switchCharacter(next: string | null) {
   rerenderPanel();
 }
 
+
+
+
+
+
+
 function renderCharStat(label: string, value: number | null) {
   const row = createElement('span', 'char-stat');
   row.appendChild(createElement('span', 'char-stat-label', label));
@@ -585,6 +586,8 @@ function renderCharacterDetail(data: HudData | null, entering: boolean, theme: T
   section.appendChild(sectionHeading(char.name, char.subtitle));
 
   const point = readHeroinePoint(data, char);
+  const relation = readPath(data, `${char.varRoot}.关系身份`);
+  const met = point !== null || !isUnset(relation);
   const { previous, trail } = point ? readHeroineHistory(point, char) : { previous: null, trail: [] };
   const key = `${char.id}:${safeMessageId()}:${point ? `${point.close},${point.heart}` : 'unset'}`;
   const play = entering || key !== lastHeroineKey;
@@ -592,7 +595,6 @@ function renderCharacterDetail(data: HudData | null, entering: boolean, theme: T
   const zone = point ? zoneOf(point) : null;
 
   const card = createElement('div', 'heroine-card');
-  const relation = readPath(data, `${char.varRoot}.关系身份`);
   const seal = createElement('span', `heroine-seal${isUnset(relation) ? ' is-unset' : ''}`);
   seal.appendChild(createElement('small', '', '关系'));
   seal.appendChild(createElement('strong', '', isUnset(relation) ? '未定' : relation));
@@ -679,12 +681,17 @@ function renderCharacterDetail(data: HudData | null, entering: boolean, theme: T
   section.appendChild(pulse);
 
   const list = createElement('div', 'status-list');
-  characterFields(char).forEach((field, index) => {
+  const visibleFields = characterFields(char);
+  visibleFields.forEach((field, index) => {
     const row = createElement('div', 'status-row');
     row.style.setProperty('--i', String(index));
     row.appendChild(createElement('span', 'status-index', String(index + 1).padStart(2, '0')));
     row.appendChild(createElement('span', 'status-name', field.label));
-    row.appendChild(field.kind === 'meter' ? renderMeter(data, field.path) : renderFigure(data, field.path));
+    row.appendChild(
+      field.kind === 'meter'
+        ? renderMeter(data, field.path)
+        : renderFigure(data, field.path),
+    );
     list.appendChild(row);
   });
   section.appendChild(list);
@@ -1225,7 +1232,6 @@ function buildShell() {
   statusText = createElement('p', 'hud-status');
   shell.append(snapshot, panel, statusText);
   root.appendChild(shell);
-
   snapshot.addEventListener('click', () => {
     panelOpen = !panelOpen;
     if (!panelOpen) lastRenderedTab = null;

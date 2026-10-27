@@ -1,8 +1,4 @@
-:global(*) {
-  box-sizing: border-box;
-}
-
-:global(body) {
+:global(body.hud-page) {
   margin: 0;
   min-width: 0;
   background: transparent;
@@ -12,18 +8,30 @@
   -webkit-font-smoothing: antialiased;
 }
 
-:global(button),
-:global(input) {
+#statusbar-root,
+#statusbar-root *,
+#statusbar-root *::before,
+#statusbar-root *::after {
+  box-sizing: border-box;
+}
+
+#statusbar-root button,
+#statusbar-root input,
+#statusbar-root textarea {
   font: inherit;
 }
 
-:global(button) {
+#statusbar-root button {
   cursor: pointer;
 }
 
 #statusbar-root {
   width: 100%;
   padding: 6px 10px 0;
+  color: var(--hud-ink, #33282e);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── 纸面基调 ───────────────────────────────────────────── */
@@ -2371,7 +2379,7 @@
   flex-direction: column;
   gap: 5px;
   flex: 0 0 auto;
-  width: 92px;
+  width: 112px;
 }
 
 .char-stat {
@@ -2381,7 +2389,7 @@
 }
 
 .char-stat-label {
-  flex: 0 0 20px;
+  flex: 0 0 27px;
   color: var(--hud-muted);
   font-size: 9px;
   letter-spacing: 0.08em;
@@ -2405,11 +2413,72 @@
 }
 
 .char-stat-figure {
-  flex: 0 0 22px;
+  flex: 0 0 24px;
   color: var(--hud-ink-soft);
   font-family: var(--hud-serif);
   font-size: 11px;
   text-align: right;
+}
+
+.intimacy-gate {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--hud-accent);
+  background: color-mix(in srgb, var(--hud-paper) 88%, var(--hud-accent-soft));
+}
+
+.intimacy-gate[data-ready='true'] {
+  border-left-color: var(--hud-jade);
+}
+
+.intimacy-gate-title {
+  color: var(--hud-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.intimacy-gate-detail {
+  margin: 0;
+  color: var(--hud-ink-soft);
+  font-size: 10.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.intimacy-gate-note {
+  color: var(--hud-muted);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.char-stat-desire {
+  justify-content: space-between;
+}
+
+.char-desire-figure {
+  color: var(--char-accent, var(--hud-accent));
+  font-family: var(--hud-serif);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.status-desire {
+  color: var(--hud-accent);
+  font-family: var(--hud-serif);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+}
+
+.status-desire.is-平静 {
+  color: var(--hud-muted);
+}
+
+.status-desire.is-难耐,
+.status-desire.is-灼热 {
+  color: var(--char-accent, var(--hud-accent));
 }
 
 .char-item-arrow {

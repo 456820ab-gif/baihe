@@ -321,7 +321,7 @@ const cleanupLabel = computed(() => {
   return '清理旧微信记录';
 });
 
-/** 进入第二个开场白：在开场白消息上划动即切换，用 /swipe 把本条换成开局表单 */
+/** 进入第二个开场白：在开场白消息上划动即切换，用 /swipe 把本条换成同层主界面 */
 async function enterForm() {
   if (entering.value) return;
   entering.value = true;

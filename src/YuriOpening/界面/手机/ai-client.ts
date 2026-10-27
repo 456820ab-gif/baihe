@@ -14,9 +14,13 @@ export type AiConfig = {
 export type ChatMessage = {
   role: 'system' | 'user' | 'assistant';
   content: string;
-  /** 发送时的故事内日期/时间（环境.日期 / 环境.时间），仅本地展示与同步世界书用 */
   date?: string;
   time?: string;
+  kind?: 'text' | 'photo';
+  photoId?: 'linqing' | 'suyue';
+  photoEventId?: string;
+  photoScene?: string;
+  photoVariant?: string;
 };
 
 // 部分兼容接口会拒绝 messages 里的未知字段，发请求前只保留 role/content

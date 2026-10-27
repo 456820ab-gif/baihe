@@ -40,6 +40,7 @@ export const Schema = z.object({
   开场: z
     .object({
       _情境: z.enum(['温和日常', '意外事件', '暧昧试探', '自定义']).prefault('温和日常'),
+      _初遇对象: z.enum(['林清', '苏玥']).prefault('林清'),
       $已提交: z.boolean().prefault(false),
     })
     .prefault({}),
@@ -53,8 +54,7 @@ export const Schema = z.object({
         .object({
           城市: z.string().prefault('待设定'),
           区域: z.string().prefault('待设定'),
-          具体地点: z.string().prefault('待设定'),
-        })
+            })
         .prefault({}),
     })
     .prefault({}),
