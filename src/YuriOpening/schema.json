@@ -144,10 +144,6 @@
             "自定义"
           ]
         },
-        "$已提交": {
-          "default": false,
-          "type": "boolean"
-        },
         "_初遇对象": {
           "default": "林清",
           "type": "string",
@@ -155,6 +151,10 @@
             "林清",
             "苏玥"
           ]
+        },
+        "$已提交": {
+          "default": false,
+          "type": "boolean"
         }
       }
     },
@@ -205,10 +205,6 @@
               "type": "string"
             },
             "区域": {
-              "default": "待设定",
-              "type": "string"
-            },
-            "具体地点": {
               "default": "待设定",
               "type": "string"
             }
