@@ -1015,7 +1015,7 @@
   --map-zoom: 1;
   position: relative;
   overflow: auto;
-  height: clamp(260px, 62vw, 420px);
+  height: clamp(300px, 62vw, 560px);
   border: 1px solid var(--hud-line);
   border-radius: 3px;
   background: var(--hud-paper-deep);
