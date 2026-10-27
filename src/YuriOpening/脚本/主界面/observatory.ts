@@ -1,7 +1,24 @@
+import overlayCss from './motion.overlay.scss?raw';
 import { lilySprigSvg } from '../../界面/状态栏/icons';
 import { hostDocument } from './host';
 
 export type ObsTab = 'character' | 'relation' | 'map' | 'settings';
+
+/** 观景窗与手机面板共用的显隐状态 */
+export type OverlayState = 'closed' | 'opening' | 'open' | 'closing';
+
+const MOTION_STYLE_ID = 'yuri-motion-overlay';
+const CLOSE_MS = 180;
+const DOCK_MS = 3000;
+
+/** 转场样式单独注入：styles.scss 只留布局与配色 */
+export function ensureOverlayMotionStyle(doc: Document = hostDocument()) {
+  if (doc.getElementById(MOTION_STYLE_ID)) return;
+  const style = doc.createElement('style');
+  style.id = MOTION_STYLE_ID;
+  style.textContent = overlayCss;
+  (doc.head ?? doc.body).append(style);
+}
 
 
 interface ObservatoryOptions {
@@ -36,10 +53,14 @@ export class Observatory {
   private readonly tabs = new Map<ObsTab, HTMLButtonElement>();
   private current: ObsTab = 'character';
   private open = false;
-  private timer: number | null = null;
+  private stateTimer: number | null = null;
+  private dockTimer: number | null = null;
+  private raf: number | null = null;
 
   constructor(private readonly options: ObservatoryOptions) {
+    ensureOverlayMotionStyle();
     this.section = make('section', 'obs-layer');
+    this.section.dataset.state = 'closed';
     this.section.hidden = true;
 
     this.windowEl = make('div', 'obs-window');
@@ -77,11 +98,18 @@ export class Observatory {
   }
 
   openTab(tab: ObsTab) {
+    const wasOpen = this.open;
     this.current = tab;
     this.windowEl.dataset.tab = tab;
-    this.section.hidden = false;
     this.open = true;
-    this.clearTimer();
+    this.clearTimers();
+    this.section.hidden = false;
+    if (!wasOpen) {
+      this.section.dataset.state = 'opening';
+      this.scheduleOpen();
+    } else if (this.section.dataset.state !== 'open') {
+      this.section.dataset.state = 'open';
+    }
     this.handle.classList.remove('is-docked', 'is-floating');
     this.handle.classList.add('is-open');
     this.handle.textContent = '▴';
@@ -97,20 +125,26 @@ export class Observatory {
   close() {
     if (!this.open) return;
     this.open = false;
-    this.section.hidden = true;
+    this.clearTimers();
+    const win = this.section.ownerDocument.defaultView ?? window;
+    this.section.dataset.state = 'closing';
+    this.section.hidden = false;
+    this.stateTimer = win.setTimeout(() => {
+      this.stateTimer = null;
+      this.section.hidden = true;
+      this.section.dataset.state = 'closed';
+    }, CLOSE_MS);
     this.handle.classList.remove('is-open', 'is-docked');
     this.handle.classList.add('is-floating');
     this.handle.textContent = '观景窗 ▾';
     this.handle.setAttribute('aria-label', '打开观景窗');
-    this.clearTimer();
-    this.timer = window.setTimeout(() => {
-      if (!this.open) {
-        this.handle.classList.remove('is-floating');
-        this.handle.classList.add('is-docked');
-        this.handle.textContent = '▾';
-      }
-      this.timer = null;
-    }, 3000);
+    this.dockTimer = win.setTimeout(() => {
+      this.dockTimer = null;
+      if (this.open) return;
+      this.handle.classList.remove('is-floating');
+      this.handle.classList.add('is-docked');
+      this.handle.textContent = '▾';
+    }, DOCK_MS);
   }
 
   render() {
@@ -120,7 +154,7 @@ export class Observatory {
   }
 
   destroy() {
-    this.clearTimer();
+    this.clearTimers();
     this.section.remove();
     this.handle.remove();
   }
@@ -152,10 +186,30 @@ export class Observatory {
     return button;
   }
 
-  private clearTimer() {
-    if (this.timer !== null) {
-      window.clearTimeout(this.timer);
-      this.timer = null;
+  /* 先 hidden=false 并停在 opening，下一帧才进 open，过渡才有起点 */
+  private scheduleOpen() {
+    const win = this.section.ownerDocument.defaultView ?? window;
+    this.raf = win.requestAnimationFrame(() => {
+      this.raf = win.requestAnimationFrame(() => {
+        this.raf = null;
+        if (this.open) this.section.dataset.state = 'open';
+      });
+    });
+  }
+
+  private clearTimers() {
+    const win = this.section.ownerDocument.defaultView ?? window;
+    if (this.stateTimer !== null) {
+      win.clearTimeout(this.stateTimer);
+      this.stateTimer = null;
+    }
+    if (this.dockTimer !== null) {
+      win.clearTimeout(this.dockTimer);
+      this.dockTimer = null;
+    }
+    if (this.raf !== null) {
+      win.cancelAnimationFrame(this.raf);
+      this.raf = null;
     }
   }
 }

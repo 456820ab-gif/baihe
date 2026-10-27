@@ -27,6 +27,16 @@ function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string,
 
 type MessageSegment = { kind: 'text' | 'page'; content: string };
 
+/* 内容签名取 FNV-1a：长消息只留摘要，逐条比对不涨内存 */
+function digest(value: string) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return `${(hash >>> 0).toString(36)}:${value.length}`;
+}
+
 function formatMessage(row: ChatRow, depth: number) {
   let text = String(row.message ?? '');
   text = text
@@ -127,7 +137,7 @@ function meta(row: ChatRow) {
 
 export function mountChat(host: HTMLElement): ChatHandle {
   const scroll = make('div', 'story-scroll');
-  let list = make('div', 'story-list');
+  const list = make('div', 'story-list');
   scroll.append(list);
   const composer = make('div', 'story-composer');
   const input = make('textarea', 'story-input');
@@ -200,54 +210,117 @@ export function mountChat(host: HTMLElement): ChatHandle {
     list.append(make('p', 'story-typing', '她正在回应…'));
   }
 
+  const seenIds = new Map<number, string>();
+  const nodes = new Map<number, HTMLElement>();
+  let painted = false;
+
+  /* 结尾那条的「重新生成」按钮与称呼会随后续消息变，一并进签名才能真正复用节点 */
+  function signature(row: ChatRow, name: string, isLast: boolean, segments: MessageSegment[]) {
+    const body = segments.map(segment => `${segment.kind}\u0001${segment.content}`).join('\u0002');
+    return `${row.message_id}\u0000${row.role}\u0000${isLast ? 1 : 0}\u0000${name}\u0000${digest(body)}`;
+  }
+
+  function buildMessage(row: ChatRow, segments: MessageSegment[], name: string, isLast: boolean) {
+    const article = make('article', `story-msg story-msg-${row.role === 'user' ? 'user' : 'assistant'}`);
+    const head = make('div', 'story-head');
+    if (name) head.append(make('div', 'story-speaker', name));
+    head.append(meta(row));
+    head.append(messageActions(row, isLast));
+    const content = make('div', 'story-content');
+    segments.forEach(segment => {
+      if (segment.kind === 'page') {
+        const frame = hostDocument().createElement('iframe');
+        frame.className = 'story-page-frame';
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        frame.setAttribute('title', '预设状态栏');
+        frame.srcdoc = pageSrcdoc(segment.content);
+        content.append(frame);
+        return;
+      }
+      if (/<[a-z][\s\S]*>/i.test(segment.content)) {
+        const frame = hostDocument().createElement('iframe');
+        frame.className = 'story-frame';
+        frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        frame.setAttribute('title', '消息内容');
+        frame.srcdoc = narrativeSrcdoc(segment.content);
+        content.append(frame);
+        return;
+      }
+      const text = make('div', 'story-bubble story-text');
+      text.textContent = segment.content;
+      content.append(text);
+    });
+    article.append(head, content);
+    return article;
+  }
+
   function render() {
     const lastId = getLastMessageId();
     const rows = messages();
-    const lastRow = rows[rows.length - 1];
-    const next = make('div', 'story-list');
+    const lastRowId = rows[rows.length - 1]?.message_id;
+    const ordered: HTMLElement[] = [];
+    const arriving: number[] = [];
+    const present = new Set<number>();
+
     rows.forEach(row => {
-      const article = make('article', `story-msg story-msg-${row.role === 'user' ? 'user' : 'assistant'}`);
-      const head = make('div', 'story-head');
-      const name = speaker(row);
-      if (name) head.append(make('div', 'story-speaker', name));
-      head.append(meta(row));
-      head.append(messageActions(row, row.message_id === lastRow?.message_id));
       const depth = Number.isInteger(lastId) ? Math.max(0, lastId - row.message_id) : 0;
       const segments = splitMessage(formatMessage(row, depth));
       if (!segments.length) return;
-      const content = make('div', 'story-content');
-      segments.forEach(segment => {
-        if (segment.kind === 'page') {
-          const frame = hostDocument().createElement('iframe');
-          frame.className = 'story-page-frame';
-          frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-          frame.setAttribute('title', '预设状态栏');
-          frame.srcdoc = pageSrcdoc(segment.content);
-          content.append(frame);
-          return;
-        }
-        if (/<[a-z][\s\S]*>/i.test(segment.content)) {
-          const frame = hostDocument().createElement('iframe');
-          frame.className = 'story-frame';
-          frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-          frame.setAttribute('title', '消息内容');
-          frame.srcdoc = narrativeSrcdoc(segment.content);
-          content.append(frame);
-          return;
-        }
-        const text = make('div', 'story-bubble story-text');
-        text.textContent = segment.content;
-        content.append(text);
-      });
-      if (!content.childElementCount) return;
-      article.append(head, content);
-      next.append(article);
+      const name = speaker(row);
+      const isLast = row.message_id === lastRowId;
+      const next = signature(row, name, isLast, segments);
+      const known = seenIds.get(row.message_id);
+      let article = nodes.get(row.message_id);
+      if (!article || known !== next) {
+        article?.remove();
+        article = buildMessage(row, segments, name, isLast);
+        nodes.set(row.message_id, article);
+        if (known === undefined) arriving.push(row.message_id);
+      }
+      seenIds.set(row.message_id, next);
+      present.add(row.message_id);
+      ordered.push(article);
     });
-    if (!next.childElementCount) next.append(make('p', 'story-empty', '故事还没有开始。'));
-    list.replaceWith(next);
-    list = next;
+
+    seenIds.forEach((_, id) => {
+      if (!present.has(id)) seenIds.delete(id);
+    });
+    nodes.forEach((node, id) => {
+      if (present.has(id)) return;
+      node.remove();
+      nodes.delete(id);
+    });
+
+    const typing = list.querySelector<HTMLElement>(':scope > .story-typing');
+    ordered.forEach((article, index) => {
+      const reference = list.children[index] ?? typing ?? null;
+      if (reference !== article) list.insertBefore(article, reference);
+    });
+
+    const empty = list.querySelector<HTMLElement>(':scope > .story-empty');
+    if (ordered.length) empty?.remove();
+    else if (!empty) list.append(make('p', 'story-empty', '故事还没有开始。'));
+
+    // 首屏只让最后两条落下，之后每次只让真正新到的那一两条落下
+    const picked = painted ? arriving : arriving.slice(-2);
+    picked.forEach((id, index) => {
+      const article = nodes.get(id);
+      if (!article) return;
+      article.style.setProperty('--arrive-delay', `${index * 40}ms`);
+      article.classList.add('is-arriving');
+    });
+    painted = true;
+
     if (generating) appendTyping();
     scroll.scrollTop = scroll.scrollHeight;
+  }
+
+  function resetChat() {
+    seenIds.clear();
+    nodes.clear();
+    painted = false;
+    list.querySelectorAll(':scope > .story-msg').forEach(node => node.remove());
+    render();
   }
 
   function typing() {
@@ -475,7 +548,7 @@ export function mountChat(host: HTMLElement): ChatHandle {
     add(eventOn(tavern_events.MESSAGE_SWIPED, render));
     add(eventOn(tavern_events.USER_MESSAGE_RENDERED, render));
     add(eventOn(tavern_events.CHARACTER_MESSAGE_RENDERED, render));
-    add(eventOn(tavern_events.CHAT_CHANGED, render));
+    add(eventOn(tavern_events.CHAT_CHANGED, resetChat));
   } catch { /* ignore */ }
   try {
     add(eventOn(tavern_events.GENERATION_STARTED, typing));

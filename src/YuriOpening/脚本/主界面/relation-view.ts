@@ -1,5 +1,5 @@
 import { CHARACTERS, type CharacterDef } from '../../characters';
-import { hostDocument } from './host';
+import { hostDocument, hostWindow } from './host';
 import {
   RELATION_AXES, arenaLabel, arenaLevel, relationAxisLabel, relationAxisTone, relationConfidants, relationWoman,
   type RelationAxis, type RelationWoman,
@@ -24,6 +24,40 @@ function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string,
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;
+}
+
+/* 视图每次重建 DOM，旧值只能记在模块级：有旧值才谈得上「从旧值涨到新值」 */
+const meterValues = new Map<string, number>();
+const sweptGates = new Set<string>();
+
+export function paintFill(fill: HTMLElement, key: string, value: number | null) {
+  const target = value === null ? 0 : Math.min(1, Math.max(0, value / 100));
+  const previous = meterValues.get(key);
+  meterValues.set(key, target);
+  fill.style.setProperty('--v', String(target));
+  // 首次出现与降级都直接落到目标值，不从旧值回抽
+  if (previous === undefined || target <= previous) return;
+  fill.style.setProperty('--v', String(previous));
+  const frame = hostWindow().requestAnimationFrame;
+  const start = () => {
+    fill.classList.add('is-updating');
+    fill.style.setProperty('--v', String(target));
+    fill.addEventListener('transitionend', () => fill.classList.remove('is-updating'), { once: true });
+    // 减少动效或过渡被跳过时不会触发 transitionend，留一条兜底
+    hostWindow().setTimeout(() => fill.classList.remove('is-updating'), 1000);
+    sweepGate(fill, key);
+  };
+  if (typeof frame === 'function') frame(() => frame(start));
+  else start();
+}
+
+/* 门槛刚满足时让那条玉色细线扫过一次，不发光，每道门槛只扫一次 */
+function sweepGate(fill: HTMLElement, key: string) {
+  const gate = fill.closest('.obs-gate');
+  if (!gate || gate.getAttribute('data-ready') !== 'true' || sweptGates.has(key)) return;
+  sweptGates.add(key);
+  fill.classList.add('is-sweeping');
+  hostWindow().setTimeout(() => fill.classList.remove('is-sweeping'), 700);
 }
 
 /** 动作只生成一句带【标记】的意图，真正的叙事交给 AI */
@@ -52,12 +86,12 @@ export function relationActionBar(options: { name: string; place?: string; onAct
   return bar;
 }
 
-function meter(axis: RelationAxis, value: number | null) {
+function meter(charId: string, axis: RelationAxis, value: number | null) {
   const row = make('div', `obs-meter obs-meter-${axis} ${relationAxisTone(axis, value)}`);
   row.append(make('span', 'obs-meter-label', axis));
   const track = make('span', 'obs-meter-track');
   const fill = make('span', 'obs-meter-fill');
-  fill.style.width = `${value ?? 0}%`;
+  paintFill(fill, `${charId}:${axis}`, value);
   track.append(fill);
   row.append(track, make('strong', 'obs-meter-value', value === null ? '—' : String(value)));
   row.append(make('small', 'obs-rel-meter-label', relationAxisLabel(axis, value)));
@@ -150,7 +184,7 @@ function column(data: HudData | null, char: CharacterDef, onAction: (line: strin
   head.append(make('span', `obs-rel-arena is-level-${arenaLevel(arena)}`, arenaLabel(arena)));
 
   const meters = make('div', 'obs-rel-meters');
-  RELATION_AXES.forEach(axis => meters.append(meter(axis, woman ? woman[axis] : null)));
+  RELATION_AXES.forEach(axis => meters.append(meter(char.id, axis, woman ? woman[axis] : null)));
 
   const body = make('div', 'obs-rel-col-body');
   body.append(knownCircle(woman), traceList(woman));

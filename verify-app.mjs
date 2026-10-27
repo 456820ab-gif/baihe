@@ -189,8 +189,11 @@ async function run() {
   check('角色详情仍在一张观景窗内', Boolean(doc.querySelector('.obs-window .obs-character')));
   doc.querySelector('.obs-close')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('收起观景窗后按钮悬浮', handle?.classList.contains('is-floating'));
+  check('收起时先进 closing 退场', doc.querySelector('.obs-layer')?.dataset.state === 'closing');
   await new Promise(resolve => setTimeout(resolve, 3100));
   check('3 秒后箭头回到顶部边界', handle?.classList.contains('is-docked'));
+  check('退场结束后观景窗隐藏', doc.querySelector('.obs-layer')?.hidden === true
+    && doc.querySelector('.obs-layer')?.dataset.state === 'closed');
 
   handle?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   doc.querySelector('.obs-tab[data-tab="map"]')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
@@ -253,7 +256,9 @@ async function run() {
   check('手机按钮打开内嵌面板', phoneLayer?.hidden === false && Boolean(doc.querySelector('.phone-mount .phone-shell.is-open')));
   phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   await wait(30);
-  check('再点手机按钮收起面板', phoneLayer?.hidden === true && !doc.querySelector('.phone-shell.is-open'));
+  check('再点手机按钮收起面板（closing 退场中）', phoneLayer?.dataset.state === 'closing' && !doc.querySelector('.phone-shell.is-open'));
+  await wait(340);
+  check('退场后手机面板隐藏', phoneLayer?.hidden === true && phoneLayer?.dataset.state === 'closed');
 
   pushNotice('n1', '今晚有空吗？');
   await wait(10);
@@ -272,8 +277,8 @@ async function run() {
   pushNotice('n3', '第三条');
   pushNotice('n4', '第四条');
   await wait(10);
-  check('横幅最多同时 3 条', doc.querySelectorAll('.phone-banner').length === 3,
-    String(doc.querySelectorAll('.phone-banner').length));
+  check('横幅最多同时 3 条', doc.querySelectorAll('.phone-banner:not(.is-leaving)').length === 3,
+    String(doc.querySelectorAll('.phone-banner:not(.is-leaving)').length));
 
   const hovered = doc.querySelector('.phone-banner');
   hovered?.dispatchEvent(new window.MouseEvent('pointerenter'));
@@ -287,6 +292,8 @@ async function run() {
 
   doc.querySelector('.front-action-quiet')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('原生视图隐藏画布', root?.style.display === 'none');
+  check('原生视图收起手机面板时先进 closing', phoneLayer?.dataset.state === 'closing');
+  await wait(340);
   check('原生视图收起手机面板', phoneLayer?.hidden === true);
   const launcher = doc.querySelector('.front-launcher');
   check('原生视图保留启动按钮', Boolean(launcher) && launcher.hidden === false);

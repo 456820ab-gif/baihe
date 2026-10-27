@@ -265,6 +265,12 @@ async function scenarioLedger() {
   check('林清四根轴齐全', linqing?.querySelectorAll('.obs-meter').length === 4, String(linqing?.querySelectorAll('.obs-meter').length));
   const axisText = linqing?.querySelector('.obs-rel-meters')?.textContent ?? '';
   check('轴值按契约读入', ['私密', '72', '克制', '31', '失控', '66', '风险', '44'].every(part => axisText.includes(part)), axisText);
+
+  const fills = [...(linqing?.querySelectorAll('.obs-meter-fill') ?? [])];
+  check('墨涨：四条轴都用 --v 表达多少', fills.length === 4 && fills.every(fill => fill.style.getPropertyValue('--v') !== ''), fills.map(fill => fill.getAttribute('style')).join(' | '));
+  check('墨涨：首见直接落到目标值', fills[0]?.style.getPropertyValue('--v') === '0.72', fills[0]?.getAttribute('style') ?? '无');
+  check('墨涨：首见不挂 is-updating', fills.every(fill => !fill.classList.contains('is-updating')));
+  check('墨涨：不再写死内联宽度', fills.every(fill => fill.style.width === ''));
   check('知情圈列出知情人', linqing?.querySelector('.obs-rel-known-chip')?.textContent === '周姐');
   check('知情圈过滤「不知情」', !(linqing?.querySelector('.obs-rel-known')?.textContent ?? '').includes('苏玥'));
   check('痕迹按条目渲染', linqing?.querySelectorAll('.obs-rel-trace').length === 2, String(linqing?.querySelectorAll('.obs-rel-trace').length));
@@ -318,6 +324,40 @@ async function scenarioActions() {
   view.close();
 }
 
+async function scenarioMeterSwell() {
+  const state = baseState();
+  state.关系 = relationFixture();
+  const view = await boot(state);
+  const { window, doc } = view;
+
+  const privateFill = () => doc.querySelector('.obs-rel-col[data-character="linqing"] .obs-meter-私密 .obs-meter-fill');
+  click(window, doc.querySelector('.obs-tab[data-tab="relation"]'));
+  check('墨涨：账本刚开时停在契约值', privateFill()?.style.getPropertyValue('--v') === '0.72', privateFill()?.getAttribute('style') ?? '无');
+
+  // 值变大：先停在旧值，下一帧才涨到新值
+  state.关系.林清.私密 = 80;
+  click(window, doc.querySelector('.obs-tab[data-tab="character"]'));
+  click(window, doc.querySelector('.obs-tab[data-tab="relation"]'));
+  const grown = privateFill();
+  check('墨涨：涨之前先停在旧值', grown?.style.getPropertyValue('--v') === '0.72', grown?.getAttribute('style') ?? '无');
+  await wait(80);
+  check('墨涨：随后涨到新值', grown?.style.getPropertyValue('--v') === '0.8', grown?.getAttribute('style') ?? '无');
+  check('墨涨：涨的时候挂着 is-updating', grown?.classList.contains('is-updating') === true);
+
+  // 值变小：直接落到目标值，不回抽
+  const still = privateFill();
+  state.关系.林清.私密 = 40;
+  click(window, doc.querySelector('.obs-tab[data-tab="character"]'));
+  click(window, doc.querySelector('.obs-tab[data-tab="relation"]'));
+  const shrunk = privateFill();
+  check('墨涨：降级直接到目标值', shrunk?.style.getPropertyValue('--v') === '0.4', shrunk?.getAttribute('style') ?? '无');
+  await wait(80);
+  check('墨涨：降级不挂 is-updating', shrunk?.classList.contains('is-updating') === false);
+  check('墨涨：降级后仍是目标值', shrunk?.style.getPropertyValue('--v') === '0.4', shrunk?.getAttribute('style') ?? '无');
+  check('墨涨：没有运行时异常', view.errors.length === 0, view.errors.join(' / '));
+  view.close();
+}
+
 async function scenarioHundred() {
   const state = baseState();
   state.关系 = relationFixture();
@@ -339,6 +379,7 @@ async function scenarioHundred() {
 console.log('关系账本验证\n');
 await scenarioWithoutRelation();
 await scenarioLedger();
+await scenarioMeterSwell();
 await scenarioActions();
 await scenarioHundred();
 notes.forEach(line => console.log(line));

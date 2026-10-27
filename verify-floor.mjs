@@ -85,7 +85,9 @@ await new Promise(resolve => setTimeout(resolve, 30));
 check('手机按钮打开内嵌面板', phoneLayer?.hidden === false && Boolean(doc.querySelector('.phone-mount .phone-shell.is-open')));
 phoneButton?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 await new Promise(resolve => setTimeout(resolve, 30));
-check('再点手机按钮收起面板', phoneLayer?.hidden === true && !doc.querySelector('.phone-shell.is-open'));
+check('再点手机按钮收起面板（closing 退场中）', phoneLayer?.dataset.state === 'closing' && !doc.querySelector('.phone-shell.is-open'));
+await new Promise(resolve => setTimeout(resolve, 340));
+check('退场后手机面板隐藏', phoneLayer?.hidden === true && phoneLayer?.dataset.state === 'closed');
 
 window.dispatchEvent(new window.Event('pagehide'));
 dom.window.close();

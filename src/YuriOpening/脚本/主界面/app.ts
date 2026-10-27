@@ -5,6 +5,7 @@ import { hostDocument, hostWindow, teleportStyles } from './host';
 import { Observatory, type ObsTab } from './observatory';
 import { CharacterView } from './character-view';
 import { MapView } from './map-view';
+import { mountMotion } from './motion';
 import { mountOpening } from './opening-view';
 import { mountBanner } from './phone-banner';
 import { phoneHost } from './phone-host';
@@ -36,7 +37,6 @@ function button(label: string, className: string) {
 
 function row(label: string, value: string, index: number) {
   const el = make('div', 'front-row');
-  el.style.setProperty('--i', String(index));
   el.append(make('span', 'front-row-index', String(index + 1).padStart(2, '0')));
   el.append(make('span', 'front-row-label', label));
   el.append(make('span', 'front-row-value', value));
@@ -57,20 +57,24 @@ export function mountApp(options: { floor?: boolean } = {}) {
   root.dataset.theme = settings.theme;
   root.style.display = 'none';
 
+  const motion = mountMotion(root, { animate: settings.animate });
+
   const atmosphere = make('div', 'front-atmosphere');
   atmosphere.setAttribute('aria-hidden', 'true');
   atmosphere.innerHTML = `
-    <span class="front-beam"></span>
+    <span class="front-paper"></span>
+    <span class="front-lamp"></span>
     <span class="front-wash"></span>
     <span class="front-nocturne"></span>
     <span class="front-vignette"></span>
-    <span class="front-motes">${Array.from({ length: 12 }, (_, index) => {
+    <span class="front-motes">${Array.from({ length: 6 }, (_, index) => {
       const x = 8 + ((index * 17) % 84);
       const y = 12 + ((index * 29) % 70);
       const size = 1.5 + (index % 3) * 0.7;
       return `<i style="--x:${x}%;--y:${y}%;--s:${size}px;--d:${12 + (index % 5) * 3}s;--delay:${-index * 1.7}s"></i>`;
     }).join('')}</span>
-    <span class="front-specimen">${lilySprigSvg()}</span>`;
+    <span class="front-specimen">${lilySprigSvg()}</span>
+    <span class="front-specimen-echo">${lilySprigSvg()}</span>`;
   root.append(atmosphere);
 
   const weather = make('div', 'front-weather hud-shell');
@@ -220,6 +224,8 @@ export function mountApp(options: { floor?: boolean } = {}) {
   let nativeMode = false;
   let open = false;
   let playerOpen = true;
+  let lastTime = '';
+  let lastDate = '';
   let unmountOpening: (() => void) | null = null;
   let floorFull = false;
   let floorPromoted = false;
@@ -231,6 +237,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     root.dataset.theme = settings.theme;
     weather.dataset.animate = String(settings.animate);
     weather.dataset.scene = String(settings.scene);
+    motion.setEnabled(settings.animate);
   }
 
   function renderHeader(data: HudData | null, theme: ThemeState) {
@@ -238,8 +245,14 @@ export function mountApp(options: { floor?: boolean } = {}) {
     stamp.innerHTML = weatherMarkSvg(theme.weather);
     stamp.setAttribute('aria-label', label);
     weatherLabelEl.textContent = label;
-    dateEl.textContent = readPath(data, '环境.日期');
-    timeEl.textContent = readPath(data, '环境.时间');
+    const date = readPath(data, '环境.日期');
+    const time = readPath(data, '环境.时间');
+    if (lastDate && date !== lastDate) motion.tickTime(null, dateEl);
+    if (lastTime && time !== lastTime) motion.tickTime(timeEl, null);
+    lastDate = date;
+    lastTime = time;
+    dateEl.textContent = date;
+    timeEl.textContent = time;
     placeEl.textContent = formatPlace(data);
     note.textContent = weatherNote(theme, settings.scene);
     root.dataset.daypart = theme.daypart;
@@ -428,6 +441,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     host.body.classList.add('yuri-front-open');
     chat.refresh();
     updateGate();
+    motion.firstLight();
   }
 
   function hideOpening() {
@@ -465,6 +479,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     host.body.classList.add('yuri-front-open');
     chat.refresh();
     updateGate();
+    motion.firstLight();
     if (hostWindow().matchMedia('(orientation: landscape)').matches) void enterApp();
   }
 
@@ -518,17 +533,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
   playerToggle.addEventListener('click', () => updatePlayer(!playerOpen));
   playerHandle.addEventListener('click', () => updatePlayer(true));
 
-  let pointerFrame = 0;
-  root.addEventListener('pointermove', event => {
-    if (!settings.animate || pointerFrame) return;
-    pointerFrame = requestAnimationFrame(() => {
-      const rect = root.getBoundingClientRect();
-      root.style.setProperty('--mx', `${((event.clientX - rect.left) / Math.max(rect.width, 1)) * 100}%`);
-      root.style.setProperty('--my', `${((event.clientY - rect.top) / Math.max(rect.height, 1)) * 100}%`);
-      pointerFrame = 0;
-    });
-  });
-
   try {
     eventOn(Mvu.events.VARIABLE_INITIALIZED, renderAll);
     eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, renderAll);
@@ -567,6 +571,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
   }
   window.addEventListener('pagehide', () => {
     hideOpening();
+    motion.destroy();
     banner.destroy();
     phoneHost.destroy();
     chat.destroy();

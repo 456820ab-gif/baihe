@@ -19,7 +19,7 @@ const dist = path.join(here, 'dist/YuriOpening/界面/介绍页/index.html');
 const built = fs.readFileSync(dist, 'utf8');
 
 const scriptMatch = built.match(/<script type="module">([\s\S]*?)<\/script>/);
-const styleText = built.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
+const styleText = [...built.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n');
 const bodyHtml = built.match(/<body>([\s\S]*?)<\/body>/)?.[1] ?? '<div id="app"></div>';
 if (!scriptMatch) throw new Error('未找到内联 module 脚本');
 
@@ -136,6 +136,9 @@ const scenarios = [
     async play(scenario) {
       const calls = scenario.calls;
       check('介绍页渲染', Boolean(doc().querySelector('.intro-shell')));
+  check('动效：补上了 prefers-reduced-motion', /prefers-reduced-motion:\s*reduce/.test(styleText));
+  check('动效：危险确认不再无限 breathe', !/cleanup-button\.is-confirm[^}]*breathe/.test(styleText));
+  check('动效：按钮与链接卡按压只落 1px', /link-card[^{]*:active[^{]*\{[^}]*translateY\(1px\)/.test(styleText) && /primary-button[^{]*:active[^{]*\{[^}]*translateY\(1px\)/.test(styleText));
 
       // 开新档：上一档遗留的「user设定」应被自动清空停用
       const resetEntry = calls.worldbookUpdate

@@ -1,0 +1,78 @@
+// 动效令牌：数值只在这里改，环境层与交互层共用。
+// 曲线 y 不超过 1，避免纸面上的廉价回弹。
+
+$press: 90ms;
+$release: 180ms;
+$hover: 180ms;
+$focus: 240ms;
+$enter: 260ms;
+$exit: 160ms;
+$expand: 320ms;
+
+$ease-paper: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-ink: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-bloom: cubic-bezier(0.33, 1, 0.68, 1);
+
+// 常驻层透明度上限：灯带 / 花影 ≤ 0.16，纸息波动 ≤ 0.06
+$lamp-alpha: 0.1;
+$lamp-alpha-light: 0.16;
+$echo-alpha: 0.14;
+$paper-rest: 0.42;
+$paper-rest-light: 0.5;
+$paper-sway: 0.06;
+
+// 纸边按压覆盖的控件（落款另加开局提交按钮）
+$press-targets: '.front-action, .front-primary, .story-send, .story-action, .obs-tab, .obs-char-item, .obs-rel-action, .travel-button, .map-zoom-button, .phone-banner, .story-modal-cancel, .story-modal-save, .story-modal-confirm';
+
+@mixin fine-pointer {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+@mixin coarse-pointer {
+  @media (hover: none), (pointer: coarse) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// 停掉循环与常驻动效：动效开关关闭，或系统要求减少动态效果。
+@mixin still($selectors) {
+  #yuri-front[data-animate='false'] #{$selectors} {
+    @content;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #yuri-front[data-animate='true'] #{$selectors} {
+      @content;
+    }
+  }
+}
+
+// 按压、悬停、聚焦共用一套节奏；释放走 $release，按下走 $press。
+@mixin pressable {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color $hover $ease-ink,
+    border-color $hover $ease-ink,
+    background-color $hover $ease-ink,
+    box-shadow $hover $ease-ink,
+    transform $release $ease-paper;
+
+  &:active:not(:disabled) {
+    transition-duration: $press;
+  }
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid rgba(var(--rose), 0.66);
+    outline-offset: 2px;
+  }
+}

@@ -1,0 +1,277 @@
+@use '../../界面/共用/motion.scss' as m;
+
+/* ── 纸息：整张纸的一层呼吸 ─────────────────────────────── */
+
+#yuri-front .front-paper {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: radial-gradient(84% 66% at 48% 38%, rgba(var(--rose), 0.05), transparent 72%);
+  --paper-rest: #{m.$paper-rest};
+  opacity: var(--paper-rest);
+  pointer-events: none;
+}
+
+#yuri-front[data-theme='light'] .front-paper {
+  background: radial-gradient(84% 66% at 48% 38%, rgba(255, 255, 255, 0.5), transparent 72%);
+  --paper-rest: #{m.$paper-rest-light};
+}
+
+#yuri-front[data-animate='true'] .front-paper {
+  animation: front-paper-rest 24s m.$ease-ink infinite;
+}
+
+@keyframes front-paper-rest {
+  0%,
+  100% {
+    opacity: var(--paper-rest);
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: calc(var(--paper-rest) + #{m.$paper-sway});
+    transform: scale(1.004);
+  }
+}
+
+/* 触摸端只留透明度，不做缩放 */
+@include m.coarse-pointer {
+  #yuri-front[data-animate='true'] .front-paper {
+    animation-name: front-paper-rest-flat;
+  }
+}
+
+@keyframes front-paper-rest-flat {
+  0%,
+  100% {
+    opacity: var(--paper-rest);
+  }
+
+  50% {
+    opacity: calc(var(--paper-rest) + #{m.$paper-sway});
+  }
+}
+
+@include m.still('.front-paper') {
+  animation: none;
+}
+
+/* ── 灯行 + 初光：一条线性渐变的灯带，不用 blur ───────────── */
+
+#yuri-front .front-lamp {
+  position: absolute;
+  inset: -12% -30%;
+  display: block;
+  background-image: linear-gradient(
+    104deg,
+    transparent 30%,
+    rgba(var(--rose), 0.55) 46%,
+    rgba(var(--tone), 0.7) 50%,
+    rgba(var(--rose), 0.4) 55%,
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-size: 240% 100%;
+  background-position: -60% 0;
+  mix-blend-mode: screen;
+  opacity: m.$lamp-alpha;
+  pointer-events: none;
+}
+
+#yuri-front[data-theme='light'] .front-lamp {
+  background-image: linear-gradient(
+    104deg,
+    transparent 32%,
+    rgba(179, 85, 111, 0.3) 46%,
+    rgba(120, 86, 72, 0.26) 50%,
+    rgba(179, 85, 111, 0.22) 55%,
+    transparent 70%
+  );
+  mix-blend-mode: multiply;
+  opacity: m.$lamp-alpha-light;
+}
+
+@include m.coarse-pointer {
+  #yuri-front .front-lamp,
+  #yuri-front[data-theme='light'] .front-lamp {
+    mix-blend-mode: normal;
+  }
+}
+
+#yuri-front[data-animate='true'] .front-lamp {
+  animation: front-lamp-line 48s linear infinite;
+}
+
+@keyframes front-lamp-line {
+  from {
+    background-position: -60% 0;
+  }
+
+  to {
+    background-position: 160% 0;
+  }
+}
+
+/* 初光：首开扫过一次的亮灯带，只靠 CSS 一次性动画，不加定时器 */
+#yuri-front .front-lamp::after {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(var(--rose), 0.5) 48%,
+    rgba(var(--tone), 0.6) 51%,
+    transparent 62%
+  );
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  background-position: -80% 0;
+  opacity: 0;
+  content: '';
+}
+
+#yuri-front[data-theme='light'] .front-lamp::after {
+  background-image: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(179, 85, 111, 0.3) 48%,
+    rgba(120, 86, 72, 0.26) 51%,
+    transparent 62%
+  );
+}
+
+#yuri-front[data-dawn='true'][data-animate='true'] .front-lamp::after {
+  animation: front-lamp-dawn 1.6s m.$ease-paper 0.24s 1 both;
+}
+
+@keyframes front-lamp-dawn {
+  0% {
+    opacity: 0;
+    background-position: -70% 0;
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    background-position: 170% 0;
+  }
+}
+
+@include m.still('.front-lamp') {
+  animation: none;
+}
+
+/* 减少动效与关闭动效时，初光不扫 */
+#yuri-front[data-dawn='true'][data-animate='false'] .front-lamp::after {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #yuri-front[data-dawn='true'][data-animate='true'] .front-lamp::after {
+    animation: none;
+  }
+}
+
+/* ── 花影随光：一枝淡花随细指针平移，最多 ±4px ─────────────── */
+
+#yuri-front .front-specimen-echo {
+  position: absolute;
+  right: 26px;
+  bottom: 6px;
+  width: 246px;
+  height: 318px;
+  --hud-jade: rgba(var(--tone), 0.2);
+  --hud-accent: rgba(var(--rose), 0.26);
+  --hud-accent-soft: rgba(var(--rose), 0.06);
+  --hud-paper: rgba(var(--rose), 0.04);
+  opacity: m.$echo-alpha;
+  filter: blur(1.5px);
+  transform: translate3d(var(--shift-x, 0px), var(--shift-y, 0px), 0) rotate(-7deg);
+  pointer-events: none;
+}
+
+#yuri-front .front-specimen-echo svg {
+  width: 100%;
+  height: 100%;
+}
+
+#yuri-front[data-animate='true'] .front-specimen-echo svg {
+  animation: front-echo-sway 32s m.$ease-bloom infinite;
+}
+
+@keyframes front-echo-sway {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(-1px, 1px) scale(1.004);
+  }
+}
+
+/* 触摸与减少动效：花影只做静态底影 */
+@include m.still('.front-specimen-echo') {
+  transform: rotate(-7deg);
+}
+
+@include m.still('.front-specimen-echo svg') {
+  animation: none;
+}
+
+@media (max-height: 560px) {
+  #yuri-front .front-specimen-echo {
+    top: 52px;
+    right: -2px;
+    bottom: auto;
+    width: 126px;
+    height: 164px;
+  }
+}
+
+/* ── 时漏：时间/日期变化时画出 1px 玫瑰墨线并淡出 ───────────── */
+
+#yuri-front .front-time,
+#yuri-front .front-date {
+  position: relative;
+}
+
+#yuri-front .front-time::after,
+#yuri-front .front-date::after {
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(var(--rose), 0.55), transparent);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  content: '';
+  pointer-events: none;
+}
+
+#yuri-front .front-time.is-ticking::after,
+#yuri-front .front-date.is-ticking::after {
+  animation: front-ink-tick 640ms m.$ease-ink both;
+}
+
+@keyframes front-ink-tick {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  30% {
+    opacity: 0.9;
+    transform: scaleX(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}

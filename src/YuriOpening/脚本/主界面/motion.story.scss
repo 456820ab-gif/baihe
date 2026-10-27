@@ -1,0 +1,104 @@
+/*
+ * 故事流与墨涨的动效层。
+ * 消息只在新到达时落定（.is-arriving），列表重建不再重放整表入场；
+ * 计量条幅面交给 transform: scaleX()，不再动宽度。
+ */
+
+.story-list > .story-msg {
+  animation: none;
+}
+
+.story-msg.is-arriving {
+  animation: story-arrive 280ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: var(--arrive-delay, 0ms);
+}
+
+@keyframes story-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.story-list > .story-typing::before {
+  animation: story-typing-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes story-typing-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(1px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+
+/* 墨涨：满宽铺底，只让 scaleX 变（transform-origin 在左端，从左侧涨开） */
+
+.obs-meter-track > .obs-meter-fill,
+.obs-gate-track > .obs-gate-fill {
+  width: 100%;
+  transform: scaleX(var(--v, 0));
+  transform-origin: left center;
+  transition: none;
+}
+
+.obs-meter-track > .obs-meter-fill.is-updating,
+.obs-gate-track > .obs-gate-fill.is-updating {
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 门槛满足：一条玉色细线扫过一次，不发光 */
+
+.obs-gate-fill {
+  position: relative;
+}
+
+.obs-gate-fill.is-sweeping::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(143, 195, 173, 0.85), transparent);
+  content: '';
+  transform: translateX(-100%);
+  animation: gate-sweep 700ms ease-out 1 both;
+}
+
+@keyframes gate-sweep {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-list > .story-msg,
+  .story-msg.is-arriving,
+  .story-list > .story-typing::before,
+  .obs-gate-fill.is-sweeping::after {
+    animation: none;
+    animation-delay: 0s;
+  }
+
+  .obs-meter-track > .obs-meter-fill,
+  .obs-gate-track > .obs-gate-fill {
+    transition: none;
+  }
+}

@@ -20,7 +20,7 @@ const dist = path.join(here, 'dist/YuriOpening/界面/开局表单/index.html');
 const built = fs.readFileSync(dist, 'utf8');
 
 const scriptMatch = built.match(/<script type="module">([\s\S]*?)<\/script>/);
-const styleText = built.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
+const styleText = [...built.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n');
 const bodyHtml = built.match(/<body>([\s\S]*?)<\/body>/)?.[1] ?? '<div id="app"></div>';
 if (!scriptMatch) throw new Error('未找到内联 module 脚本');
 
@@ -394,7 +394,21 @@ async function runScenario(scenario) {
   previous = scenario;
 }
 
+// 开卷动效：进场 260ms / 离场 140ms，字段 24ms 错开（最多四个），减少动效清掉 delay
+const motionFailures = failures.length;
+check('开卷：进场 260ms', /page-enter-active[^{]*\{[^}]*260ms/.test(styleText), styleText.slice(0, 80));
+check('开卷：离场 140ms', /page-leave-active[^{]*\{[^}]*140ms/.test(styleText));
+check('开卷：进场用 clip-path', /page-enter-from[^{]*\{[^}]*clip-path/.test(styleText));
+check('开卷：字段 24ms 错开（最多四个）', /page-enter-active[^{]*\*[^{]*\{[^}]*field-rise/.test(styleText) && styleText.includes('24ms') && styleText.includes('48ms') && styleText.includes('72ms'));
+check('开卷：减少动效清掉 delay', /prefers-reduced-motion:\s*reduce[\s\S]{0,400}?animation-delay:\s*0s/.test(styleText));
+
 console.log('开局表单产物无头验证\n');
+console.log('【开卷动效（产物 CSS）】');
+notes.forEach(line => console.log(line));
+notes.length = 0;
+if (failures.length === motionFailures) console.log('  全部通过');
+console.log();
+
 for (const scenario of scenarios) {
   console.log(`【${scenario.name}】`);
   const before = failures.length;

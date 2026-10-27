@@ -1,0 +1,160 @@
+@use '../../界面/共用/motion.scss' as m;
+
+$targets: m.$press-targets;
+
+/* ── 纸边按压：所有可点纸片共用一套节奏 ─────────────────── */
+
+#yuri-front :is(#{$targets}) {
+  position: relative;
+  @include m.pressable;
+  @include m.focus-ring;
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: inset 0 -1px 0 rgba(var(--rose), 0.32);
+  }
+
+  &:disabled {
+    transform: none;
+  }
+}
+
+/* 触摸端不保留悬停抬升 */
+@include m.coarse-pointer {
+  #yuri-front :is(#{$targets}):hover {
+    transform: none;
+  }
+}
+
+/* ── 墨点落款：按下落一点玫瑰墨，成功盖一枚小印 ─────────────── */
+
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background: var(--seal-dot, rgba(60, 24, 40, 0.5));
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity m.$press m.$ease-ink,
+    transform m.$press m.$ease-paper;
+  content: '';
+  pointer-events: none;
+}
+
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled)::before {
+  opacity: 0.6;
+  transform: scale(1);
+}
+
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--seal-line, rgba(var(--rose), 0.85));
+  border-radius: 2px;
+  opacity: 0;
+  transform: rotate(-8deg) scale(1.5);
+  content: '';
+  pointer-events: none;
+}
+
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button).is-sealed::after {
+  animation: front-seal m.$expand m.$ease-bloom both;
+}
+
+@keyframes front-seal {
+  0% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.5);
+  }
+
+  40% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
+/* 开局提交是深玫瑰底，回用浅纸色做印泥 */
+#yuri-front .opening-shell .primary-button {
+  position: relative;
+  --seal-dot: rgba(255, 250, 248, 0.62);
+  --seal-line: rgba(255, 250, 248, 0.8);
+}
+
+/* 减少动效时不做印章，只把按下换成背景加深 */
+@include m.reduced-motion {
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled) {
+    transform: none;
+    box-shadow: inset 0 0 0 999px rgba(38, 16, 26, 0.14);
+  }
+
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
+    display: none;
+  }
+
+  /* 全局 reduced 兜底会把所有过渡压成 0.01ms，这里把纸边按压的 90–180ms 要回来 */
+  #yuri-front :is(#{$targets}) {
+    transition-duration: m.$hover !important;
+  }
+
+  #yuri-front :is(#{$targets}):active:not(:disabled) {
+    transition-duration: m.$press !important;
+  }
+}
+
+/* ── 落墨输入：边框 + 下划线，不用光晕 ───────────────────── */
+
+#yuri-front .story-input {
+  background-image: linear-gradient(90deg, rgba(var(--rose), 0.55), rgba(var(--rose), 0.12));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  caret-color: var(--accent);
+  transition: background-size m.$focus m.$ease-paper;
+}
+
+#yuri-front .story-composer:focus-within .story-input {
+  background-size: 100% 1px;
+}
+
+#yuri-front .story-modal-input {
+  caret-color: var(--accent);
+}
+
+/* ── 观景窗页签：一条会滑动的下划线 ─────────────────────── */
+
+#yuri-front .obs-tabs {
+  position: relative;
+}
+
+#yuri-front .obs-tabs::after {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: var(--obs-tab-w, 0px);
+  height: 1px;
+  background: rgba(var(--rose), 0.6);
+  opacity: var(--obs-tab-o, 0);
+  transform: translateX(var(--obs-tab-x, 0px));
+  transition:
+    transform m.$expand m.$ease-bloom,
+    width m.$expand m.$ease-bloom,
+    opacity m.$focus m.$ease-ink;
+  content: '';
+  pointer-events: none;
+}
+
+@include m.still('.obs-tabs::after') {
+  transition: none;
+}

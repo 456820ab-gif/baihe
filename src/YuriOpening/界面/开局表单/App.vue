@@ -387,7 +387,7 @@
           <div class="form-actions">
             <button v-if="step > 0" type="button" class="text-button" @click="previousStep"><span aria-hidden="true">←</span> 返回修改</button>
             <span v-else class="action-spacer"></span>
-            <button type="submit" class="primary-button" :disabled="submitting">
+            <button ref="primaryRef" type="submit" class="primary-button" :disabled="submitting">
               <span v-if="submitting" class="button-loader" aria-hidden="true"></span>
               <template v-else><span>{{ step === 4 ? '开始这一幕' : '继续' }}</span><span class="button-arrow" aria-hidden="true">{{ step === 4 ? '✦' : '→' }}</span></template>
             </button>
@@ -407,6 +407,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { CHARACTERS } from '../../characters';
+import { stampSeal, tapHaptic } from '../../脚本/主界面/motion';
 import { Schema, type OpeningState } from '../../schema';
 import { buildUserProfile, writeUserProfileToWorldbook } from './user-profile';
 
@@ -417,6 +418,7 @@ const props = defineProps<{
 }>();
 
 const shellRef = ref<HTMLElement | null>(null);
+const primaryRef = ref<HTMLButtonElement | null>(null);
 
 /** 楼层消息 iframe 里取当前楼层；嵌在全屏脚本里时退回最新楼层 */
 function messageOption(): VariableOption {
@@ -709,6 +711,9 @@ async function submitOpening() {
     return;
   }
   props.onSubmitStart?.();
+  tapHaptic();
+  // 档案一保存面板就整块卸下，落款只能盖在按下这一刻才看得见
+  stampSeal(primaryRef.value);
   submitting.value = true;
   errorText.value = '';
   let messageCreated = false;

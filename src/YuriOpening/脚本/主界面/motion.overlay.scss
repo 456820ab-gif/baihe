@@ -1,0 +1,250 @@
+/*
+ * motion.overlay.scss — 浮层转场（观景窗 / 手机面板 / 通知横幅）
+ *
+ * 由 observatory.ts 以 ?raw 注入宿主 <head>，排在 styles.scss 之后，
+ * 只负责转场与遮罩强度，不改布局、文案与配色。
+ *
+ * 状态契约：
+ *   .obs-layer[data-state]    closed / opening / open / closing
+ *   .phone-layer[data-state]  closed / opening / open / closing
+ *   .phone-banner.is-leaving  离场中（140ms 后由 phone-banner.ts 摘掉）
+ */
+
+$motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+$motion-open: 320ms;
+$motion-close: 180ms;
+$panel-open: 300ms;
+$banner-in: 220ms;
+$banner-out: 140ms;
+
+/* ── 观景窗 ──────────────────────────────────────────────── */
+
+/* 遮罩：只做透明度；blur 从 8px 收到 2px 且不参与动画 */
+#yuri-front .obs-layer {
+  opacity: 0;
+  transition: opacity $motion-open $motion-ease;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#yuri-front .obs-layer[data-state='open'] {
+  opacity: 1;
+}
+
+#yuri-front .obs-layer[data-state='closing'] {
+  transition-duration: $motion-close;
+}
+
+#yuri-front .obs-layer[data-state='opening'],
+#yuri-front .obs-layer[data-state='closing'] {
+  pointer-events: none;
+}
+
+/* 窗口：clip-path 收放 + 透明度；blur 28px → 10px，静止不参与动画 */
+#yuri-front .obs-window {
+  clip-path: inset(12% 16% 12% 16%);
+  opacity: 0;
+  transition:
+    clip-path $motion-open $motion-ease,
+    opacity $motion-open $motion-ease,
+    width 0.28s ease;
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+}
+
+#yuri-front .obs-layer[data-state='closing'] .obs-window {
+  transition:
+    clip-path $motion-close $motion-ease,
+    opacity $motion-close $motion-ease,
+    width 0.28s ease;
+}
+
+#yuri-front .obs-layer[data-state='open'] .obs-window {
+  clip-path: inset(0);
+  opacity: 1;
+}
+
+/* 入场交给上面的 clip/opacity 过渡，停掉 styles.scss 里的旧缩放关键帧 */
+#yuri-front[data-animate='true'] .obs-layer:not([hidden]) .obs-window {
+  animation: none;
+}
+
+/* 页签内容：140ms 淡入上移 4px */
+#yuri-front .obs-layer[data-state='open'] .obs-body > * {
+  animation: obs-tab-in 140ms $motion-ease both;
+}
+
+@keyframes obs-tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 触屏设备回退：不做 clip-path 逐帧重绘，只淡入 + 上移 8px */
+@media (pointer: coarse) {
+  #yuri-front .obs-window {
+    clip-path: none;
+    transform: translateY(8px);
+    transition:
+      opacity $motion-open $motion-ease,
+      transform $motion-open $motion-ease,
+      width 0.28s ease;
+  }
+
+  #yuri-front .obs-layer[data-state='closing'] .obs-window {
+    transition:
+      opacity $motion-close $motion-ease,
+      transform $motion-close $motion-ease,
+      width 0.28s ease;
+  }
+
+  #yuri-front .obs-layer[data-state='open'] .obs-window {
+    transform: none;
+  }
+}
+
+/* ── 手机面板层 ──────────────────────────────────────────── */
+
+#yuri-front .phone-layer-scrim {
+  opacity: 0;
+  transition: opacity $panel-open $motion-ease;
+}
+
+#yuri-front .phone-layer[data-state='open'] .phone-layer-scrim {
+  opacity: 1;
+}
+
+/* 设备框：从下方 10px 浮起 */
+#yuri-front .phone-frame {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity $banner-in $motion-ease,
+    transform $panel-open $motion-ease;
+}
+
+#yuri-front .phone-layer[data-state='open'] .phone-frame {
+  opacity: 1;
+  transform: none;
+}
+
+#yuri-front .phone-layer[data-state='opening'],
+#yuri-front .phone-layer[data-state='closing'] {
+  pointer-events: none;
+}
+
+/* ── 通知横幅 ────────────────────────────────────────────── */
+
+/* 入场 220ms 落 6px（同一批的延迟由 phone-banner.ts 写 animation-delay） */
+#yuri-front .phone-banner {
+  animation: phone-banner-drop $banner-in $motion-ease both;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    opacity $banner-out ease,
+    transform $banner-out ease;
+}
+
+#yuri-front .phone-banner.is-leaving {
+  animation: none;
+  opacity: 0;
+  transform: translateX(8px);
+  pointer-events: none;
+}
+
+@keyframes phone-banner-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── 关闭动态效果：直接显隐，功能不变 ────────────────────── */
+
+#yuri-front[data-animate='false'] .obs-layer,
+#yuri-front[data-animate='false'] .obs-window,
+#yuri-front[data-animate='false'] .phone-layer-scrim,
+#yuri-front[data-animate='false'] .phone-frame,
+#yuri-front[data-animate='false'] .phone-banner {
+  transition: none;
+}
+
+#yuri-front[data-animate='false'] .obs-layer:not([hidden]) {
+  opacity: 1;
+}
+
+#yuri-front[data-animate='false'] .obs-window {
+  clip-path: none;
+  opacity: 1;
+  transform: none;
+}
+
+#yuri-front[data-animate='false'] .obs-body > *,
+#yuri-front[data-animate='false'] .obs-layer[data-state='open'] .obs-body > *,
+#yuri-front[data-animate='false'] .phone-banner {
+  animation: none;
+}
+
+#yuri-front[data-animate='false'] .phone-layer:not([hidden]) .phone-layer-scrim,
+#yuri-front[data-animate='false'] .phone-layer:not([hidden]) .phone-frame {
+  opacity: 1;
+  transform: none;
+}
+
+/* 无动效时退场只等时序，不再多停 180/300ms */
+#yuri-front[data-animate='false'] .obs-layer[data-state='closing'],
+#yuri-front[data-animate='false'] .obs-layer[data-state='closing'] .obs-window,
+#yuri-front[data-animate='false'] .phone-layer[data-state='closing'] .phone-layer-scrim,
+#yuri-front[data-animate='false'] .phone-layer[data-state='closing'] .phone-frame {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #yuri-front .obs-layer,
+  #yuri-front .obs-window,
+  #yuri-front .phone-layer-scrim,
+  #yuri-front .phone-frame,
+  #yuri-front .phone-banner {
+    transition: none;
+  }
+
+  #yuri-front .obs-layer:not([hidden]) {
+    opacity: 1;
+  }
+
+  #yuri-front .obs-window {
+    clip-path: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  #yuri-front .obs-body > *,
+  #yuri-front .obs-layer[data-state='open'] .obs-body > *,
+  #yuri-front .phone-banner {
+    animation: none;
+  }
+
+  #yuri-front .phone-layer:not([hidden]) .phone-layer-scrim,
+  #yuri-front .phone-layer:not([hidden]) .phone-frame {
+    opacity: 1;
+    transform: none;
+  }
+
+  #yuri-front .obs-layer[data-state='closing'],
+  #yuri-front .obs-layer[data-state='closing'] .obs-window,
+  #yuri-front .phone-layer[data-state='closing'] .phone-layer-scrim,
+  #yuri-front .phone-layer[data-state='closing'] .phone-frame {
+    opacity: 0;
+  }
+}

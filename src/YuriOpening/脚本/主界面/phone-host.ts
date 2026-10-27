@@ -11,6 +11,7 @@
 
 import './phone-flag';
 import { mountPhone, type PhoneHandle, type PhoneNotice } from '../../界面/手机';
+import { ensureOverlayMotionStyle } from './observatory';
 import type { CharacterId } from '../../characters';
 
 type PhoneHostOptions = {
@@ -25,20 +26,62 @@ let layer: HTMLElement | null = null;
 let shellWatch: MutationObserver | null = null;
 let reportUnread: ((count: number) => void) | null = null;
 let panelOpen = false;
+let stateTimer: number | null = null;
+let raf: number | null = null;
+
+const CLOSE_MS = 300;
 
 /** 手机只在收到新消息时回调未读；进聊天已读、开关面板后由这里补一次读数 */
 function refreshUnread() {
   reportUnread?.(handle?.getUnread() ?? 0);
 }
 
+function clearTimers(win: Window) {
+  if (stateTimer !== null) {
+    win.clearTimeout(stateTimer);
+    stateTimer = null;
+  }
+  if (raf !== null) {
+    win.cancelAnimationFrame(raf);
+    raf = null;
+  }
+}
+
+/* 幕布与设备框的入场交给 data-state=open 之后的那一帧，关场留 300ms 给退场 */
 function showLayer() {
   panelOpen = true;
-  if (layer) layer.hidden = false;
+  if (!layer) return;
+  const state = layer.dataset.state;
+  if (state === 'opening' || state === 'open') return;
+  const win = layer.ownerDocument.defaultView ?? window;
+  clearTimers(win);
+  layer.hidden = false;
+  layer.dataset.state = 'opening';
+  raf = win.requestAnimationFrame(() => {
+    raf = win.requestAnimationFrame(() => {
+      raf = null;
+      if (panelOpen && layer) layer.dataset.state = 'open';
+    });
+  });
 }
 
 function hideLayer() {
   panelOpen = false;
-  if (layer) layer.hidden = true;
+  if (!layer) return;
+  const win = layer.ownerDocument.defaultView ?? window;
+  if (layer.dataset.state === 'closing') return;
+  clearTimers(win);
+  if (layer.hidden) {
+    layer.dataset.state = 'closed';
+    return;
+  }
+  layer.dataset.state = 'closing';
+  stateTimer = win.setTimeout(() => {
+    stateTimer = null;
+    if (!layer) return;
+    layer.hidden = true;
+    layer.dataset.state = 'closed';
+  }, CLOSE_MS);
 }
 
 function syncFromShell(shell: HTMLElement) {
@@ -54,7 +97,9 @@ function mount(options: PhoneHostOptions) {
 
   const nextLayer = doc.createElement('div');
   nextLayer.className = 'phone-layer';
+  nextLayer.dataset.state = 'closed';
   nextLayer.hidden = true;
+  ensureOverlayMotionStyle(doc);
 
   const scrim = doc.createElement('div');
   scrim.className = 'phone-layer-scrim';
@@ -130,6 +175,7 @@ function getUnread(): number {
 function destroy() {
   shellWatch?.disconnect();
   shellWatch = null;
+  if (layer) clearTimers(layer.ownerDocument.defaultView ?? window);
   handle?.destroy();
   handle = null;
   layer?.remove();

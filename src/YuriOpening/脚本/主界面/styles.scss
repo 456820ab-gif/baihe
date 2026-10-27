@@ -2,6 +2,14 @@
 
 @use '../../界面/状态栏/style.scss';
 
+@use './motion.ambient.scss' as ambient;
+
+@use './motion.interaction.scss' as interaction;
+
+@use './motion.overlay.scss' as overlay;
+
+@use './motion.story.scss' as story;
+
 /* ── 令牌：夜雨巷 · 墨玻璃 ─────────────────────────────── */
 
 #yuri-front {
@@ -134,11 +142,6 @@
   background: radial-gradient(118% 96% at 50% 46%, transparent 58%, rgba(120, 92, 104, 0.14) 100%);
 }
 
-#yuri-front[data-theme='light'] .front-beam {
-  --light-tone: rgba(255, 236, 214, 0.5);
-  opacity: 0.75;
-}
-
 #yuri-front[data-theme='light'] .front-specimen {
   --hud-jade: rgba(79, 127, 109, 0.28);
   --hud-accent: rgba(179, 85, 111, 0.32);
@@ -215,28 +218,12 @@
   pointer-events: none;
 }
 
-.front-beam,
 .front-wash,
 .front-nocturne,
 .front-vignette {
   position: absolute;
   inset: 0;
   display: block;
-}
-
-.front-beam {
-  background: radial-gradient(
-    42% 52% at var(--light-x, 18%) var(--light-y, 8%),
-    var(--light-tone, rgba(var(--rose), 0.22)),
-    transparent 72%
-  );
-  filter: blur(6px);
-  opacity: 0.9;
-  transition: background 1.2s ease;
-}
-
-#yuri-front[data-animate='true'] .front-beam {
-  animation: front-beam-breathe 14s ease-in-out infinite;
 }
 
 .front-wash {
@@ -273,12 +260,18 @@
   height: var(--s);
   border-radius: 50%;
   background: rgba(var(--tone), 0.6);
-  box-shadow: 0 0 6px rgba(var(--tone), 0.35);
   opacity: 0;
 }
 
 #yuri-front[data-animate='true'] .front-motes i {
   animation: front-mote var(--d) linear var(--delay) infinite;
+}
+
+/* 触摸端减层：不留常驻粒子 */
+@media (hover: none), (pointer: coarse) {
+  .front-motes i {
+    display: none;
+  }
 }
 
 .front-specimen {
@@ -355,7 +348,10 @@
   opacity: 0.1;
 }
 
-#yuri-front[data-scene='false'] .front-beam,
+#yuri-front[data-scene='false'] .front-lamp {
+  opacity: 0.05;
+}
+
 #yuri-front[data-scene='false'] .front-nocturne {
   opacity: 0.18;
 }
@@ -552,7 +548,7 @@
 #yuri-front .opening-shell .field textarea:focus {
   border-color: rgba(var(--rose), 0.62);
   background: rgba(var(--tone), 0.08);
-  box-shadow: 0 0 0 3px rgba(var(--rose), 0.12);
+  box-shadow: inset 0 -1px 0 rgba(var(--rose), 0.45);
 }
 
 #yuri-front .opening-shell .choice-pill,
@@ -964,11 +960,6 @@
   background: rgba(var(--tone), 0.07);
 }
 
-#yuri-front[data-animate='true'] .front-row {
-  animation: front-row-in 0.4s ease-out backwards;
-  animation-delay: calc(var(--i, 0) * 45ms);
-}
-
 .front-row-index {
   display: none;
 }
@@ -1104,7 +1095,6 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  animation: story-rise 0.34s ease-out backwards;
 }
 
 .story-head {
@@ -1240,10 +1230,11 @@
   resize: vertical;
 }
 
-.story-modal-input:focus {
+.story-modal-input:focus-visible {
   border-color: rgba(var(--rose), 0.55);
-  box-shadow: 0 0 0 3px rgba(var(--rose), 0.12);
-  outline: none;
+  box-shadow: inset 0 -1px 0 rgba(var(--rose), 0.5);
+  outline: 2px solid rgba(var(--rose), 0.55);
+  outline-offset: 1px;
 }
 
 .story-modal-actions {
@@ -1400,9 +1391,7 @@
 
 .story-composer:focus-within {
   border-color: rgba(var(--rose), 0.5);
-  box-shadow:
-    0 0 0 3px rgba(var(--rose), 0.12),
-    0 16px 38px rgba(0, 0, 0, 0.46);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.46);
 }
 
 .story-input {
@@ -3012,7 +3001,8 @@
 }
 
 .obs-setting input:focus-visible + .obs-switch {
-  box-shadow: 0 0 0 3px rgba(var(--rose), 0.18);
+  outline: 2px solid rgba(var(--rose), 0.55);
+  outline-offset: 2px;
 }
 
 .obs-reset {
@@ -3108,8 +3098,8 @@
 .settings-r18 input:focus-visible,
 .settings-r18 textarea:focus-visible {
   border-color: rgba(var(--rose), 0.5);
-  box-shadow: 0 0 0 3px rgba(var(--rose), 0.14);
-  outline: none;
+  outline: 2px solid rgba(var(--rose), 0.55);
+  outline-offset: 1px;
 }
 
 .settings-r18-chip {
@@ -3486,18 +3476,6 @@
 
 /* ── 动效 ─────────────────────────────────────────────── */
 
-@keyframes front-beam-breathe {
-  0%,
-  100% {
-    opacity: 0.72;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.04);
-  }
-}
-
 @keyframes front-mote {
   0% {
     opacity: 0;
@@ -3512,28 +3490,6 @@
   100% {
     opacity: 0;
     transform: translate3d(10px, -46px, 0);
-  }
-}
-
-@keyframes front-row-in {
-  from {
-    opacity: 0;
-    transform: translateX(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes story-rise {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 
@@ -3870,15 +3826,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #yuri-front[data-animate='true'] .front-beam,
   #yuri-front[data-animate='true'] .front-motes i,
-  #yuri-front[data-animate='true'] .front-row,
   #yuri-front[data-animate='true'] .obs-layer:not([hidden]) .obs-window,
   #yuri-front[data-animate='true'] .obs-pulse .heartbeat-scroll {
-    animation: none;
-  }
-
-  .story-msg {
     animation: none;
   }
 }

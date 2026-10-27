@@ -222,14 +222,13 @@
   overflow: hidden;
   z-index: 9200;
   opacity: 0;
-  transform: translateY(18px) scale(0.985);
-  transition: opacity 0.26s ease, transform 0.32s var(--ph-ease);
+  // 外壳只做淡入：浮起交给主应用面板层（.phone-frame）
+  transition: opacity 0.26s ease;
   // 内描边让整机与页面内容分离开
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
 
   &.is-open {
     opacity: 1;
-    transform: none;
     pointer-events: auto;
   }
 
@@ -1739,4 +1738,9 @@
   z-index: 1;
   width: 100%;
   height: 100%;
+}
+
+// 关闭动态效果时外壳直接显隐，显隐时序交给面板层的 data-state
+#yuri-front[data-animate='false'] #phone-root-host .phone-shell {
+  transition: none;
 }

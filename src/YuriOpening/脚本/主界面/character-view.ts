@@ -7,7 +7,7 @@ import {
   arenaLabel, arenaLevel, relationAxisTone, relationEnabled, relationRecentTrace, relationWoman,
   type RelationAxis, type RelationWoman,
 } from './relation';
-import { relationActionBar } from './relation-view';
+import { paintFill, relationActionBar } from './relation-view';
 import {
   characterNode, characterPoint, characterTrail, characterValue,
   isUnset, relationZone, type HudData, type ThemeState,
@@ -30,12 +30,12 @@ function chip(text: string, tone = '') {
   return make('span', `obs-chip${tone ? ` ${tone}` : ''}`, text);
 }
 
-function meter(label: string, value: number | null, tone = '') {
+function meter(label: string, value: number | null, tone = '', owner = '') {
   const row = make('div', `obs-meter${tone ? ` ${tone}` : ''}`);
   row.append(make('span', 'obs-meter-label', label));
   const track = make('span', 'obs-meter-track');
   const fill = make('span', 'obs-meter-fill');
-  fill.style.width = `${value ?? 0}%`;
+  paintFill(fill, `${owner}:${label}`, value);
   track.append(fill);
   row.append(track, make('strong', 'obs-meter-value', value === null ? '—' : String(value)));
   return row;
@@ -148,8 +148,8 @@ export class CharacterView {
       item.append(mark, id);
       const stats = make('div', 'obs-char-compact');
       stats.append(
-        meter('亲近', point?.close ?? null),
-        meter('心动', point?.heart ?? null),
+        meter('亲近', point?.close ?? null, '', char.id),
+        meter('心动', point?.heart ?? null, '', char.id),
       );
       item.append(stats, make('span', 'obs-char-chevron', '›'));
       item.addEventListener('click', () => {
@@ -279,8 +279,8 @@ export class CharacterView {
 
     const stats = make('div', 'obs-stat-grid');
     stats.append(
-      meter('亲近', point?.close ?? null),
-      meter('心动', point?.heart ?? null),
+      meter('亲近', point?.close ?? null, '', char.id),
+      meter('心动', point?.heart ?? null, '', char.id),
     );
     const details = make('div', 'obs-detail-rows');
     const detailRows: Array<[string, string]> = relationEnabled(data)
@@ -322,7 +322,7 @@ export class CharacterView {
 
     const meters = make('div', 'obs-private-meters');
     const privateMeter = (label: RelationAxis, value: number | null) =>
-      meter(label, value, `obs-private-meter ${relationAxisTone(label, value)}`);
+      meter(label, value, `obs-private-meter ${relationAxisTone(label, value)}`, char.id);
     meters.append(privateMeter('私密', woman?.私密 ?? null), privateMeter('风险', woman?.风险 ?? null));
 
     const rows = make('div', 'obs-private-rows');

@@ -110,6 +110,8 @@
 </template>
 
 <script setup lang="ts">
+import { tapHaptic } from '../../脚本/主界面/motion';
+
 const env = reactive({ helper: false, template: false });
 const cleanupState = ref<'idle' | 'confirm' | 'working' | 'done'>('idle');
 const cleanupText = ref('');
@@ -325,6 +327,7 @@ const cleanupLabel = computed(() => {
 async function enterForm() {
   if (entering.value) return;
   entering.value = true;
+  tapHaptic();
   try {
     if (typeof triggerSlash === 'function') {
       await triggerSlash('/swipe');
@@ -577,15 +580,25 @@ h1 {
   transition:
     color 0.2s ease,
     border-color 0.2s ease,
-    background-color 0.2s ease;
+    background-color 0.2s ease,
+    transform 0.12s ease;
 }
 
-.mini-button:hover,
-.mini-button:focus-visible {
+.mini-button:hover {
   border-color: var(--pink);
   color: var(--pink-deep);
   background: var(--pink-soft);
-  outline: none;
+}
+
+.mini-button:focus-visible {
+  border-color: var(--pink-deep);
+  color: var(--pink-deep);
+  outline: 2px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+.mini-button:active {
+  transform: translateY(1px);
 }
 
 .check-list {
@@ -713,18 +726,24 @@ h1 {
   color: inherit;
   text-decoration: none;
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
+    transform 0.12s ease,
     border-color 0.22s ease;
 }
 
-.link-card:hover,
+.link-card:hover {
+  border-color: var(--pink-deep);
+  border-style: solid;
+}
+
 .link-card:focus-visible {
   border-color: var(--pink-deep);
   border-style: solid;
-  box-shadow: 0 8px 18px rgba(169, 87, 115, 0.14);
-  transform: translateY(-2px);
-  outline: none;
+  outline: 2px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+.link-card:active {
+  transform: translateY(1px);
 }
 
 .link-glyph {
@@ -829,13 +848,21 @@ h1 {
     background-color 0.2s ease,
     color 0.2s ease,
     border-color 0.2s ease,
-    transform 0.2s ease;
+    transform 0.12s ease;
 }
 
-.cleanup-button:hover:not(:disabled),
+.cleanup-button:hover:not(:disabled) {
+  background: var(--pink-soft);
+}
+
 .cleanup-button:focus-visible:not(:disabled) {
   background: var(--pink-soft);
-  outline: none;
+  outline: 2px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+.cleanup-button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .cleanup-button:disabled {
@@ -847,7 +874,7 @@ h1 {
   border-color: #d96459;
   background: #d96459;
   color: #fff;
-  animation: breathe 1.2s ease-in-out infinite;
+  animation: cleanup-alert 420ms ease-out both;
 }
 
 .cleanup-button.is-done {
@@ -877,17 +904,24 @@ h1 {
   font-size: 12px;
   box-shadow: 0 6px 14px rgba(169, 87, 115, 0.16);
   transition:
-    transform 0.2s ease,
+    transform 0.12s ease,
     background-color 0.2s ease,
     border-color 0.2s ease,
     opacity 0.2s ease;
 }
 
-.primary-button:hover:not(:disabled),
+.primary-button:hover:not(:disabled) {
+  background: #934863;
+}
+
 .primary-button:focus-visible:not(:disabled) {
   background: #934863;
-  outline: none;
-  transform: translateY(-2px);
+  outline: 2px solid #934863;
+  outline-offset: 3px;
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .primary-button:disabled {
@@ -945,6 +979,17 @@ h1 {
   }
 }
 
+@keyframes cleanup-alert {
+  from {
+    opacity: 0.82;
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (max-width: 620px) {
   .intro-shell {
     padding: 24px 14px 18px;
@@ -974,6 +1019,18 @@ h1 {
   .check-verdict {
     flex: 1 1 100%;
     padding-left: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }
 </style>

@@ -14,6 +14,9 @@ import type { PhoneNotice } from '../../界面/手机';
 
 const MAX_VISIBLE = 3;
 const DWELL_MS = 4000;
+const LEAVE_MS = 140;
+const STAGGER_MS = 40;
+const STAGGER_WINDOW_MS = 160;
 
 const KIND_LABEL: Record<PhoneNotice['kind'], string> = {
   message: '微信',
@@ -44,7 +47,11 @@ export function mountBanner(host: HTMLElement, options: BannerOptions) {
   host.append(stack);
 
   const entries: Entry[] = [];
+  const exitTimers = new Set<number>();
+  let lastPushAt = 0;
+  let batch = 0;
 
+  /* 离场先挂 .is-leaving 跑 140ms 右滑，再摘 DOM */
   function dismiss(entry: Entry) {
     if (entry.timeout !== null) {
       win.clearTimeout(entry.timeout);
@@ -52,7 +59,13 @@ export function mountBanner(host: HTMLElement, options: BannerOptions) {
     }
     const index = entries.indexOf(entry);
     if (index >= 0) entries.splice(index, 1);
-    entry.el.remove();
+    if (entry.el.classList.contains('is-leaving')) return;
+    entry.el.classList.add('is-leaving');
+    const timer = win.setTimeout(() => {
+      exitTimers.delete(timer);
+      entry.el.remove();
+    }, LEAVE_MS);
+    exitTimers.add(timer);
   }
 
   function arm(entry: Entry) {
@@ -110,6 +123,12 @@ export function mountBanner(host: HTMLElement, options: BannerOptions) {
     const el = build(notice);
     const entry: Entry = { el, timeout: null, remaining: DWELL_MS, deadline: 0 };
 
+    /* 同一批进来的横幅按 40ms 递增错开，单条就是 0 */
+    const now = Date.now();
+    batch = now - lastPushAt < STAGGER_WINDOW_MS ? batch + 1 : 0;
+    lastPushAt = now;
+    if (batch > 0) el.style.animationDelay = `${Math.min(batch, MAX_VISIBLE) * STAGGER_MS}ms`;
+
     el.addEventListener('click', () => {
       dismiss(entry);
       options.onOpen(notice);
@@ -128,10 +147,15 @@ export function mountBanner(host: HTMLElement, options: BannerOptions) {
   }
 
   function destroy() {
-    while (entries.length) {
-      const entry = entries.pop();
-      if (entry) dismiss(entry);
-    }
+    entries.forEach(entry => {
+      if (entry.timeout !== null) {
+        win.clearTimeout(entry.timeout);
+        entry.timeout = null;
+      }
+    });
+    entries.length = 0;
+    exitTimers.forEach(id => win.clearTimeout(id));
+    exitTimers.clear();
     stack.remove();
   }
 
