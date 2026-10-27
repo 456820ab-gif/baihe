@@ -175,16 +175,16 @@ export function mountApp(options: { floor?: boolean } = {}) {
     chat.setStatus(note);
   };
   const characterView = new CharacterView({
-    rerender: () => observatory.render(),
+    rerender: () => observatory.render(true),
     onLocate: label => {
       observatory.openTab('map');
       mapView.focus(label);
-      observatory.render();
+      observatory.render(true);
     },
     onAction: line => fillActionInput(line, '关系动作已填入输入框，发送由你决定。'),
   });
   const mapView = new MapView({
-    rerender: () => observatory.render(),
+    rerender: () => observatory.render(true),
     onTravel: message => {
       if (chat.hasInput()) {
         chat.setStatus('输入框已有内容，请先处理当前消息。');
@@ -197,6 +197,11 @@ export function mountApp(options: { floor?: boolean } = {}) {
   const observatory = new Observatory({
     root,
     isTabAvailable: tab => tab !== 'relation' || relationEnabled(readData()),
+    /* 只有页签与真正影响画面的数据变化才重建，消息流更新不应重绘地图 */
+    getRenderKey: tab => {
+      const data = readData();
+      return `${tab}:${JSON.stringify({ data, theme: resolveTheme(data), settings, relation: relationEnabled(data) })}`;
+    },
     renderTab: tab => {
       const data = readData();
       const theme = resolveTheme(data);
@@ -212,7 +217,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
           onChange: next => {
             Object.assign(settings, next);
             applySettings();
-            if (observatory.opened) observatory.render();
+            if (observatory.opened) observatory.render(true);
           },
         });
       }

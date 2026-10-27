@@ -26,6 +26,8 @@ interface ObservatoryOptions {
   renderTab: (tab: ObsTab) => HTMLElement;
   /** 页签是否出现（关系页只有测试卡提供数据时才有） */
   isTabAvailable?: (tab: ObsTab) => boolean;
+  /** 页签内容签名：签名不变就不重建 body，地图/角色页的动画才不会被消息流打断 */
+  getRenderKey?: (tab: ObsTab) => string;
 }
 
 const TABS: ObsTab[] = ['character', 'relation', 'map', 'settings'];
@@ -56,6 +58,7 @@ export class Observatory {
   private stateTimer: number | null = null;
   private dockTimer: number | null = null;
   private raf: number | null = null;
+  private renderKey: string | null = null;
 
   constructor(private readonly options: ObservatoryOptions) {
     ensureOverlayMotionStyle();
@@ -114,7 +117,7 @@ export class Observatory {
     this.handle.classList.add('is-open');
     this.handle.textContent = '▴';
     this.handle.setAttribute('aria-label', '收起观景窗');
-    this.render();
+    this.render(true);
   }
 
   toggle() {
@@ -147,9 +150,13 @@ export class Observatory {
     }, DOCK_MS);
   }
 
-  render() {
+  /* 页签内容签名未变时不重建 body：重建会重启动画，地图会闪 */
+  render(force = false) {
     this.syncTabs();
     if (!this.open) return;
+    const key = this.options.getRenderKey?.(this.current) ?? null;
+    if (!force && key !== null && key === this.renderKey) return;
+    this.renderKey = key;
     this.body.replaceChildren(this.options.renderTab(this.current));
   }
 

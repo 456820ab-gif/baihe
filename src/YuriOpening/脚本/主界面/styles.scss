@@ -81,12 +81,12 @@
 /* ── 浅色：日光纸面 ───────────────────────────────────── */
 
 #yuri-front[data-theme='light'] {
-  --tone: 43, 35, 42;
+  --tone: 76, 56, 66;
   --rose: 179, 85, 111;
-  --ink: #2b232a;
-  --ink-soft: #574850;
-  --muted: #7d6d75;
-  --line: rgba(var(--tone), 0.12);
+  --ink: #32262c;
+  --ink-soft: #5f4d55;
+  --muted: #7f6e76;
+  --line: rgba(var(--tone), 0.13);
   --line-strong: rgba(var(--tone), 0.24);
   --paper: #f6efe9;
   --paper-deep: #ece1d8;
@@ -100,9 +100,10 @@
   --glass-head: rgba(255, 252, 249, 0.72);
   --glass-player: rgba(255, 252, 249, 0.5);
   --glass-player-end: rgba(247, 240, 233, 0.3);
+  --glass: rgba(255, 252, 249, 0.72);
   --glass-deep: rgba(255, 252, 249, 0.9);
   --glass-strong: rgba(255, 252, 249, 0.92);
-  --glass-track: rgba(var(--tone), 0.05);
+  --glass-track: rgba(var(--tone), 0.06);
   --row-solid: rgba(255, 252, 249, 0.94);
   --veil: rgba(78, 58, 70, 0.28);
   --sheet-a: rgba(255, 252, 249, 0.97);
@@ -3019,103 +3020,6 @@
 .obs-reset:hover {
   border-color: var(--line-strong);
   color: var(--ink-soft);
-}
-
-/* R18 与安全词：只做状态与入口，文案留在上层 */
-.settings-r18 {
-  margin-top: 16px;
-  padding: 14px 16px 16px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(var(--tone), 0.035);
-}
-
-.settings-r18.is-on {
-  border-color: rgba(var(--rose), 0.34);
-  background: rgba(var(--rose), 0.06);
-}
-
-.settings-r18-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.settings-r18-title {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.settings-r18-note {
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.6;
-}
-
-.settings-r18-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.settings-r18-field {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.settings-r18-field strong {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.settings-r18-field small {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.settings-r18 select,
-.settings-r18 input[type='text'],
-.settings-r18 input[type='search'],
-.settings-r18 textarea {
-  min-height: 30px;
-  padding: 4px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--glass-track);
-  color: var(--ink);
-  font-size: 12px;
-}
-
-.settings-r18 select:focus-visible,
-.settings-r18 input:focus-visible,
-.settings-r18 textarea:focus-visible {
-  border-color: rgba(var(--rose), 0.5);
-  outline: 2px solid rgba(var(--rose), 0.55);
-  outline-offset: 1px;
-}
-
-.settings-r18-chip {
-  padding: 2px 8px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-}
-
-.settings-r18-warn {
-  margin: 8px 0 0;
-  color: #d86a7f;
-  font-size: 11px;
-  line-height: 1.6;
 }
 
 /* ── 全屏门 / 启动 / 原生 ─────────────────────────────── */

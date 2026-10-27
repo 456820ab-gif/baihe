@@ -210,6 +210,11 @@ async function run() {
   doc.querySelector('.obs-tab[data-tab="settings"]')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   check('同一观景窗切换到设置', doc.querySelector('.obs-window')?.dataset.tab === 'settings');
   check('设置不使用旧模块标题', !(doc.querySelector('.obs-settings')?.textContent ?? '').includes('状态栏设置'));
+  const settingsText = doc.querySelector('.obs-settings')?.textContent ?? '';
+  check('设置页不出现 R18/成人向/色气/安全词',
+    !/R18|成人向|色气|安全词/.test(settingsText));
+  check('设置页只有开关，没有文本框与下拉',
+    doc.querySelectorAll('.obs-settings select, .obs-settings input:not([type="checkbox"])').length === 0);
   const settingRows = [...doc.querySelectorAll('.obs-setting')];
   const toggleFor = label => settingRows.find(row => row.textContent?.includes(label))?.querySelector('input');
   const themeToggle = toggleFor('浅色模式');
@@ -224,6 +229,16 @@ async function run() {
     animateToggle.dispatchEvent(new window.Event('change', { bubbles: true }));
   }
   check('设置写回画布动画属性', root?.dataset.animate === 'false', root?.dataset.animate ?? '无');
+  const sceneToggle = toggleFor('场景跟随');
+  if (sceneToggle) {
+    sceneToggle.checked = false;
+    sceneToggle.dispatchEvent(new window.Event('change', { bubbles: true }));
+  }
+  check('场景跟随写回画布场景属性', root?.dataset.scene === 'false', root?.dataset.scene ?? '无');
+  doc.querySelector('.obs-reset')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  check('恢复默认同时复位主题/动画/场景',
+    root?.dataset.theme === 'dark' && root?.dataset.animate === 'true' && root?.dataset.scene === 'true',
+    `${root?.dataset.theme}/${root?.dataset.animate}/${root?.dataset.scene}`);
   doc.querySelector('.obs-close')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 
   const input = doc.querySelector('.story-input');

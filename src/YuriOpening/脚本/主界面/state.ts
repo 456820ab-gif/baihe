@@ -26,16 +26,10 @@ export type ThemeState = {
   override: string;
 };
 
-export const INTENSITY_LEVELS = ['含蓄', '直写', 'R18'] as const;
-export type Intensity = (typeof INTENSITY_LEVELS)[number];
-
 export type AppSettings = {
   animate: boolean;
   scene: boolean;
   theme: 'dark' | 'light';
-  r18: boolean;
-  intensity: Intensity;
-  safeWord: string;
 };
 
 const SETTINGS_KEY = 'YuriOpening:frontstage:settings:v1';
@@ -43,9 +37,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   animate: true,
   scene: true,
   theme: 'dark',
-  r18: false,
-  intensity: '含蓄',
-  safeWord: '',
 };
 
 export function getPath(value: unknown, path: string, fallback?: unknown): unknown {
@@ -145,16 +136,10 @@ export function weatherNote(theme: ThemeState, scene: boolean) {
 
 function normalizeSettings(raw: unknown): AppSettings {
   const value = raw && typeof raw === 'object' ? (raw as Partial<AppSettings>) : {};
-  const intensity = INTENSITY_LEVELS.includes(value.intensity as Intensity)
-    ? (value.intensity as Intensity)
-    : DEFAULT_SETTINGS.intensity;
   return {
     animate: typeof value.animate === 'boolean' ? value.animate : DEFAULT_SETTINGS.animate,
     scene: typeof value.scene === 'boolean' ? value.scene : DEFAULT_SETTINGS.scene,
     theme: value.theme === 'light' ? 'light' : 'dark',
-    r18: typeof value.r18 === 'boolean' ? value.r18 : DEFAULT_SETTINGS.r18,
-    intensity,
-    safeWord: typeof value.safeWord === 'string' ? value.safeWord : DEFAULT_SETTINGS.safeWord,
   };
 }
 
