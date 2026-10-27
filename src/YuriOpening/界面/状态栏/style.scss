@@ -993,6 +993,104 @@
   text-align: right;
 }
 
+/* ── 关系摘要：存档里有「关系」时才出现 ──────────────── */
+
+.status-relation {
+  margin-bottom: 18px;
+  padding: 12px 14px 10px;
+  border: 1px solid var(--hud-line);
+  border-left: 2px solid var(--hud-accent);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--hud-accent-soft), transparent 72%);
+  transition:
+    border-color 0.5s ease,
+    background 0.5s ease;
+}
+
+.status-relation .section-heading {
+  margin-bottom: 9px;
+}
+
+.status-relation .section-heading h3 {
+  font-size: 16px;
+}
+
+.status-relation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.status-relation-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 7px;
+  border-top: 1px solid var(--hud-line);
+}
+
+.status-relation-row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.status-relation-who {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.status-relation-name {
+  color: var(--char-accent, var(--hud-ink));
+  font-family: var(--hud-serif);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.status-relation-identity {
+  padding: 1px 6px;
+  border: 1px solid var(--hud-line);
+  border-radius: 7px;
+  color: var(--hud-muted);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.status-relation-identity.is-unset {
+  opacity: 0.6;
+}
+
+.status-relation-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px 8px;
+  color: var(--hud-muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.status-relation-risk.is-high {
+  color: var(--hud-accent);
+}
+
+.status-relation-risk.is-low {
+  color: var(--hud-jade);
+}
+
+.status-relation-scene {
+  color: var(--hud-ink-soft);
+}
+
+.status-relation-scene.is-high {
+  color: var(--hud-accent);
+  font-weight: 600;
+}
+
 /* ── 地图：Q 版手绘城市 ────────────────────────────────── */
 
 .map-viewport {
@@ -3385,6 +3483,11 @@
   .heroine-chart-box,
   .heroine-bloom-box {
     padding: 8px 4px 7px;
+  }
+
+  .status-relation-facts {
+    gap: 3px 6px;
+    font-size: 9.5px;
   }
 }
 

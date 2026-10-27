@@ -24,6 +24,7 @@ import {
 } from './heroine';
 import { flowerMarkPath, flowerMeta, flowerName, flowerSvg } from './flowers';
 import { CHARACTERS, characterById, type CharacterDef, type FlowerId } from '../../characters';
+import { relationAxisLabel, relationOf, relationWoman } from '../../脚本/主界面/relation';
 import { mistDefsSvg } from './mist-defs';
 import { CARTOUCHE, COMPASS, FLORA_ART, MAP_FIREFLIES, MAP_FLORA, MAP_HEIGHT, MAP_NODE_BY_ID, MAP_NODE_BY_LABEL, MAP_NODES, MAP_WIDTH, NODE_ART, REGION_COLORS, REGION_LABELS, RIVER_LABEL, RIVER_PATH, mapRoads, type MapNode } from './map';
 
@@ -359,6 +360,8 @@ function renderPanel(data: HudData | null, theme: ThemeState) {
   }
   lastRenderedTab = activeTab;
   const content = createElement('div', `hud-panel-content${entering ? ' is-entering' : ''}`);
+  const relationSummary = renderRelationSummary(data);
+  if (relationSummary) content.appendChild(relationSummary);
   if (activeTab === 'player') content.appendChild(renderPlayer(data));
   if (activeTab === 'heroine') content.appendChild(renderCharacterTab(data, entering, theme));
   if (activeTab === 'map') content.appendChild(renderMap(data, theme));
@@ -401,6 +404,59 @@ function renderPlayer(data: HudData | null) {
     );
     list.appendChild(row);
   });
+  section.appendChild(list);
+  return section;
+}
+
+function riskClass(value: number | null) {
+  if (value === null) return '';
+  if (value >= 50) return ' is-high';
+  if (value < 25) return ' is-low';
+  return '';
+}
+
+/* 关系摘要只读存档里的「关系」；档案不存在时整块不出现 */
+function renderRelationSummary(data: HudData | null) {
+  if (!relationOf(data)) return null;
+  const section = createElement('section', 'status-section status-relation');
+  section.appendChild(sectionHeading('关系', '只有你看得见'));
+  const list = createElement('div', 'status-relation-list');
+
+  CHARACTERS.forEach(char => {
+    const woman = relationWoman(data, char.name);
+    if (!woman) return;
+    const row = createElement('div', 'status-relation-row');
+    row.dataset.character = char.id;
+    row.style.setProperty('--char-accent', char.accent);
+
+    const identity = readPath(data, `${char.varRoot}.关系身份`);
+    const who = createElement('span', 'status-relation-who');
+    who.appendChild(createElement('strong', 'status-relation-name', char.name));
+    who.appendChild(
+      createElement(
+        'span',
+        `status-relation-identity${isUnset(identity) ? ' is-unset' : ''}`,
+        isUnset(identity) ? '未设定' : identity,
+      ),
+    );
+
+    const facts = createElement('span', 'status-relation-facts');
+    facts.appendChild(
+      createElement('span', 'status-relation-tier', `私密 · ${relationAxisLabel('私密', woman.私密)}`),
+    );
+    facts.appendChild(
+      createElement('span', `status-relation-risk${riskClass(woman.风险)}`, `风险 · ${relationAxisLabel('风险', woman.风险)}`),
+    );
+    if (woman.修罗场 !== '无') {
+      const tense = woman.修罗场 === '撞见' || woman.修罗场 === '摊牌';
+      facts.appendChild(createElement('span', `status-relation-scene${tense ? ' is-high' : ''}`, `修罗场 · ${woman.修罗场}`));
+    }
+
+    row.append(who, facts);
+    list.appendChild(row);
+  });
+
+  if (!list.childElementCount) return null;
   section.appendChild(list);
   return section;
 }

@@ -1,16 +1,21 @@
 import { lilySprigSvg } from '../../界面/状态栏/icons';
 import { hostDocument } from './host';
 
-export type ObsTab = 'character' | 'map' | 'settings';
+export type ObsTab = 'character' | 'relation' | 'map' | 'settings';
 
 
 interface ObservatoryOptions {
   root: HTMLElement;
   renderTab: (tab: ObsTab) => HTMLElement;
+  /** 页签是否出现（关系页只有测试卡提供数据时才有） */
+  isTabAvailable?: (tab: ObsTab) => boolean;
 }
+
+const TABS: ObsTab[] = ['character', 'relation', 'map', 'settings'];
 
 const LABELS: Record<ObsTab, string> = {
   character: '角色',
+  relation: '关系',
   map: '地图',
   settings: '设置',
 };
@@ -26,6 +31,7 @@ export class Observatory {
   private readonly section: HTMLElement;
   private readonly windowEl: HTMLElement;
   private readonly body: HTMLElement;
+  private readonly nav: HTMLElement;
   private readonly handle: HTMLButtonElement;
   private readonly tabs = new Map<ObsTab, HTMLButtonElement>();
   private current: ObsTab = 'character';
@@ -41,14 +47,7 @@ export class Observatory {
     const head = make('header', 'obs-head');
     const brand = make('div', 'obs-brand');    brand.append(make('span', 'obs-kicker', '百合花期'), make('strong', '', '观景窗'));
     const nav = make('nav', 'obs-tabs');
-    (Object.keys(LABELS) as ObsTab[]).forEach(tab => {
-      const button = make('button', `obs-tab${tab === this.current ? ' is-active' : ''}`, LABELS[tab]);
-      button.type = 'button';
-      button.dataset.tab = tab;
-      button.addEventListener('click', () => this.openTab(tab));
-      this.tabs.set(tab, button);
-      nav.append(button);
-    });
+    this.nav = nav;
     const close = make('button', 'obs-close', '×');
     close.type = 'button';
     close.setAttribute('aria-label', '关闭观景窗');
@@ -66,6 +65,7 @@ export class Observatory {
     this.handle.setAttribute('aria-label', '打开观景窗');
     this.handle.addEventListener('click', () => this.toggle());
     this.options.root.append(this.section, this.handle);
+    this.syncTabs();
   }
 
   get opened() {
@@ -79,7 +79,6 @@ export class Observatory {
   openTab(tab: ObsTab) {
     this.current = tab;
     this.windowEl.dataset.tab = tab;
-    this.tabs.forEach((button, key) => button.classList.toggle('is-active', key === tab));
     this.section.hidden = false;
     this.open = true;
     this.clearTimer();
@@ -115,6 +114,7 @@ export class Observatory {
   }
 
   render() {
+    this.syncTabs();
     if (!this.open) return;
     this.body.replaceChildren(this.options.renderTab(this.current));
   }
@@ -123,6 +123,33 @@ export class Observatory {
     this.clearTimer();
     this.section.remove();
     this.handle.remove();
+  }
+
+  /* 数据里没有「关系」时该页签不进入 DOM；当前页不可用时退回第一个可用页 */
+  private syncTabs() {
+    const available = this.options.isTabAvailable ?? (() => true);
+    const shown = TABS.filter(tab => available(tab));
+    if (!shown.includes(this.current)) {
+      this.current = shown[0] ?? 'character';
+      this.windowEl.dataset.tab = this.current;
+    }
+    const buttons = shown.map(tab => this.tabButton(tab));
+    const mounted = [...this.nav.children];
+    if (mounted.length !== buttons.length || buttons.some((button, index) => button !== mounted[index])) {
+      this.nav.replaceChildren(...buttons);
+    }
+    buttons.forEach((button, index) => button.classList.toggle('is-active', shown[index] === this.current));
+  }
+
+  private tabButton(tab: ObsTab) {
+    const existing = this.tabs.get(tab);
+    if (existing) return existing;
+    const button = make('button', 'obs-tab', LABELS[tab]);
+    button.type = 'button';
+    button.dataset.tab = tab;
+    button.addEventListener('click', () => this.openTab(tab));
+    this.tabs.set(tab, button);
+    return button;
   }
 
   private clearTimer() {

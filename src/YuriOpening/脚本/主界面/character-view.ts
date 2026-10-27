@@ -1,8 +1,13 @@
 import { CHARACTERS, characterById, type CharacterDef, type FlowerId } from '../../characters';
 import { flowerMarkPath, flowerMeta, flowerName, flowerSvg } from '../../界面/状态栏/flowers';
-import { ZONES, heartbeatBpm, heartbeatSvg, starChartSvg } from '../../界面/状态栏/heroine';
+import { ZONES, heartbeatBpm, heartbeatSvg, stageOf, starChartSvg } from '../../界面/状态栏/heroine';
 import { mistDefsSvg } from '../../界面/状态栏/mist-defs';
 import { hostDocument } from './host';
+import {
+  arenaLabel, arenaLevel, relationAxisTone, relationEnabled, relationRecentTrace, relationWoman,
+  type RelationAxis, type RelationWoman,
+} from './relation';
+import { relationActionBar } from './relation-view';
 import {
   characterNode, characterPoint, characterTrail, characterValue,
   isUnset, relationZone, type HudData, type ThemeState,
@@ -11,6 +16,7 @@ import {
 interface CharacterViewOptions {
   rerender: () => void;
   onLocate: (label: string) => void;
+  onAction: (line: string) => void;
 }
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) {
@@ -166,7 +172,7 @@ export class CharacterView {
     const location = characterValue(data, char, '所在地点');
     const clothing = characterValue(data, char, '当前穿着');
     const voice = characterValue(data, char, '心声');
-    const stage = point ? { leaf: Math.floor(point.close / 25), bloom: Math.floor(point.heart / 25) } : { leaf: 0, bloom: 0 };
+    const stage = point ? { leaf: stageOf(point.close), bloom: stageOf(point.heart) } : { leaf: 0, bloom: 0 };
     const heartDown = Boolean(previous && point && point.heart < previous.heart);
     const closeDown = Boolean(previous && point && point.close < previous.close);
 
@@ -277,13 +283,14 @@ export class CharacterView {
       meter('心动', point?.heart ?? null),
     );
     const details = make('div', 'obs-detail-rows');
-    details.append(
-      row('关系身份', relation),
-      row('当前行动', action),
-      row('所在地点', location),
-      row('当前穿着', clothing),
-    );
+    const detailRows: Array<[string, string]> = relationEnabled(data)
+      ? [['关系身份', relation], ['当前行动', action]]
+      : [['关系身份', relation], ['当前行动', action], ['所在地点', location], ['当前穿着', clothing]];
+    detailRows.forEach(([label, value]) => details.append(row(label, value)));
     wrap.append(stats, details);
+
+    const woman = relationWoman(data, char.varRoot);
+    if (relationEnabled(data)) wrap.append(this.privateZone(data, char, woman));
 
 
     const node = characterNode(data, char);
@@ -303,5 +310,43 @@ export class CharacterView {
     }
 
     return wrap;
+  }
+
+  /* 私密区：只有测试卡有「关系」时才出现，正式卡完全不渲染 */
+  private privateZone(data: HudData | null, char: CharacterDef, woman: RelationWoman | null) {
+    const box = make('section', 'obs-private');
+    const head = make('header', 'obs-private-head');
+    head.append(make('span', 'obs-private-kicker', '私下圈'));
+    head.append(make('strong', 'obs-private-title', '只有你们知道的部分'));
+    if (woman) head.append(make('span', `obs-rel-arena is-level-${arenaLevel(woman.修罗场)}`, arenaLabel(woman.修罗场)));
+
+    const meters = make('div', 'obs-private-meters');
+    const privateMeter = (label: RelationAxis, value: number | null) =>
+      meter(label, value, `obs-private-meter ${relationAxisTone(label, value)}`);
+    meters.append(privateMeter('私密', woman?.私密 ?? null), privateMeter('风险', woman?.风险 ?? null));
+
+    const rows = make('div', 'obs-private-rows');
+    rows.append(
+      row('她的心情', characterValue(data, char, '心情')),
+      row('穿着', characterValue(data, char, '当前穿着')),
+      row('所在地', characterValue(data, char, '所在地点')),
+    );
+
+    const recent = relationRecentTrace(woman);
+    const trace = make('p', 'obs-private-trace');
+    trace.append(make('span', 'obs-private-trace-label', '最近痕迹'));
+    trace.append(
+      make('span', 'obs-private-trace-text', recent ? [recent.内容, recent.时间].filter(Boolean).join(' · ') : '还没有留下痕迹'),
+    );
+
+    box.append(head, meters, rows, trace);
+    if (woman) {
+      box.append(relationActionBar({
+        name: char.name,
+        place: characterValue(data, char, '所在地点'),
+        onAction: this.options.onAction,
+      }));
+    }
+    return box;
   }
 }

@@ -5,10 +5,12 @@ import { Observatory, type ObsTab } from './observatory';
 import { CharacterView } from './character-view';
 import { MapView } from './map-view';
 import { mountOpening } from './opening-view';
+import { relationEnabled } from './relation';
+import { renderRelationView } from './relation-view';
 import { renderSettingsView } from './settings-view';
 import {
-  formatPlace, getPath, loadSettings, playerAge, playerJob, playerName, readData,
-  readPath, resolveTheme, safeMessageId, saveSettings, weatherNote, type HudData, type ThemeState,
+  formatPlace, getPath, getSettings, playerAge, playerJob, playerName, readData,
+  readPath, resolveTheme, safeMessageId, weatherNote, type HudData, type ThemeState,
 } from './state';
 
 const APP_ID = 'yuri-front';
@@ -41,7 +43,7 @@ function row(label: string, value: string, index: number) {
 export function mountApp(options: { floor?: boolean } = {}) {
   const host = hostDocument();
   if (host.getElementById(APP_ID)) return;
-  const settings = loadSettings();
+  const settings = getSettings();
   const root = make('div', ROOT_CLASS);
   root.id = APP_ID;
   root.dataset.open = 'false';
@@ -138,6 +140,15 @@ export function mountApp(options: { floor?: boolean } = {}) {
   host.body.append(root);
 
   const chat = mountChat(chatHost);
+  /* 关系/地图动作只落到输入框：不发送、不改 MVU，发送权留给玩家 */
+  const fillActionInput = (line: string, note: string) => {
+    if (chat.hasInput()) {
+      chat.setStatus('输入框已有内容，请先处理当前消息。');
+      return;
+    }
+    chat.setInput(line);
+    chat.setStatus(note);
+  };
   const characterView = new CharacterView({
     rerender: () => observatory.render(),
     onLocate: label => {
@@ -145,6 +156,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
       mapView.focus(label);
       observatory.render();
     },
+    onAction: line => fillActionInput(line, '关系动作已填入输入框，发送由你决定。'),
   });
   const mapView = new MapView({
     rerender: () => observatory.render(),
@@ -159,16 +171,21 @@ export function mountApp(options: { floor?: boolean } = {}) {
   });
   const observatory = new Observatory({
     root,
+    isTabAvailable: tab => tab !== 'relation' || relationEnabled(readData()),
     renderTab: tab => {
       const data = readData();
       const theme = resolveTheme(data);
+      if (tab === 'relation') {
+        return renderRelationView({
+          data,
+          onAction: line => fillActionInput(line, '关系动作已填入输入框，发送由你决定。'),
+        });
+      }
       if (tab === 'map') return mapView.render(data, theme);
       if (tab === 'settings') {
         return renderSettingsView({
-          settings,
           onChange: next => {
             Object.assign(settings, next);
-            saveSettings(settings);
             applySettings();
             if (observatory.opened) observatory.render();
           },

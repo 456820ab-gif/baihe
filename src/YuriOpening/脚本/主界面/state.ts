@@ -1,6 +1,7 @@
 import { CHARACTERS, characterById, type CharacterDef } from '../../characters';
 import { stageOf, zoneOf, type HeroinePoint } from '../../界面/状态栏/heroine';
 import { weatherLabel, weatherTone } from '../../界面/状态栏/icons';
+import type { RelationBlock } from './relation';
 
 export type HudData = {
   环境?: {
@@ -15,6 +16,7 @@ export type HudData = {
   林清?: Record<string, unknown>;
   苏玥?: Record<string, unknown>;
   地图?: { 当前地点?: string; 地点状态?: Record<string, { 状态?: string; 备注?: string }> };
+  关系?: RelationBlock;
   [key: string]: unknown;
 };
 
@@ -24,14 +26,27 @@ export type ThemeState = {
   override: string;
 };
 
+export const INTENSITY_LEVELS = ['含蓄', '直写', 'R18'] as const;
+export type Intensity = (typeof INTENSITY_LEVELS)[number];
+
 export type AppSettings = {
   animate: boolean;
   scene: boolean;
   theme: 'dark' | 'light';
+  r18: boolean;
+  intensity: Intensity;
+  safeWord: string;
 };
 
 const SETTINGS_KEY = 'YuriOpening:frontstage:settings:v1';
-const DEFAULT_SETTINGS: AppSettings = { animate: true, scene: true, theme: 'dark' };
+const DEFAULT_SETTINGS: AppSettings = {
+  animate: true,
+  scene: true,
+  theme: 'dark',
+  r18: false,
+  intensity: '含蓄',
+  safeWord: '',
+};
 
 export function getPath(value: unknown, path: string, fallback?: unknown): unknown {
   const parts = String(path).replace(/\[(\d+)\]/g, '.$1').split('.').filter(Boolean);
@@ -128,18 +143,33 @@ export function weatherNote(theme: ThemeState, scene: boolean) {
   return `${theme.daypart === 'night' ? '夜间' : '白昼'} · ${weatherLabel(theme.weather)}`;
 }
 
-export function loadSettings(): AppSettings {
+function normalizeSettings(raw: unknown): AppSettings {
+  const value = raw && typeof raw === 'object' ? (raw as Partial<AppSettings>) : {};
+  const intensity = INTENSITY_LEVELS.includes(value.intensity as Intensity)
+    ? (value.intensity as Intensity)
+    : DEFAULT_SETTINGS.intensity;
+  return {
+    animate: typeof value.animate === 'boolean' ? value.animate : DEFAULT_SETTINGS.animate,
+    scene: typeof value.scene === 'boolean' ? value.scene : DEFAULT_SETTINGS.scene,
+    theme: value.theme === 'light' ? 'light' : 'dark',
+    r18: typeof value.r18 === 'boolean' ? value.r18 : DEFAULT_SETTINGS.r18,
+    intensity,
+    safeWord: typeof value.safeWord === 'string' ? value.safeWord : DEFAULT_SETTINGS.safeWord,
+  };
+}
+
+export function getSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
+    return normalizeSettings(raw ? JSON.parse(raw) : DEFAULT_SETTINGS);
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
 }
 
-export function saveSettings(settings: AppSettings) {
+export function setSettings(settings: AppSettings) {
   try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(normalizeSettings(settings)));
   } catch {
     // 预览/无持久化环境里只保留当前会话
   }

@@ -1484,6 +1484,11 @@
   height: min(80%, 820px);
 }
 
+.obs-window[data-tab='relation'] {
+  width: min(84%, 1040px);
+  height: min(80%, 780px);
+}
+
 .obs-window[data-tab='settings'] {
   width: min(460px, 92%);
   height: auto;
@@ -1598,6 +1603,7 @@
 }
 
 .obs-window[data-tab='map'] .obs-ornament,
+.obs-window[data-tab='relation'] .obs-ornament,
 .obs-window[data-tab='settings'] .obs-ornament {
   display: none;
 }
@@ -2530,6 +2536,384 @@
   background: rgba(var(--rose), 0.26);
 }
 
+/* ── 私密区：测试卡的关系账本 ─────────────────────────── */
+
+.obs-private {
+  margin-top: 14px;
+  padding: 14px 16px 16px;
+  border: 1px solid rgba(var(--rose), 0.24);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(var(--rose), 0.07), rgba(var(--tone), 0.02));
+}
+
+.obs-private-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.obs-private-kicker {
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+.obs-private-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.obs-private-head .obs-rel-arena {
+  margin-left: auto;
+}
+
+.obs-private-meters {
+  display: grid;
+  margin-top: 12px;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.obs-private-meter.obs-meter {
+  padding: 10px 12px;
+  background: rgba(var(--tone), 0.05);
+}
+
+.obs-private-meter .obs-meter-fill {
+  background: linear-gradient(90deg, var(--jade), var(--char-accent, var(--accent)));
+}
+
+.obs-private-meter.is-danger .obs-meter-fill {
+  background: linear-gradient(90deg, #e3a37e, #d86a7f);
+}
+
+.obs-private-meter.is-warn .obs-meter-fill {
+  background: linear-gradient(90deg, #e3c17e, #e0a06f);
+}
+
+.obs-private-rows {
+  display: grid;
+  margin-top: 10px;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--line);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.obs-private-rows .obs-row {
+  padding: 8px 12px;
+}
+
+.obs-private-trace {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.obs-private-trace-label {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.obs-private-trace-text {
+  min-width: 0;
+}
+
+/* 关系/私密区共用的动作按钮：只填输入框，不发送 */
+.obs-rel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.obs-rel-action {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(var(--tone), 0.035);
+  color: var(--ink-soft);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.obs-rel-action:hover,
+.obs-rel-action:focus-visible {
+  border-color: rgba(var(--rose), 0.46);
+  background: var(--accent-soft);
+  color: var(--accent);
+  outline: none;
+}
+
+.obs-rel-action[data-action='公开'],
+.obs-rel-action[data-action='坦白'] {
+  border-color: rgba(var(--rose), 0.34);
+  color: var(--accent);
+}
+
+/* ── 关系页：两列账本 ─────────────────────────────────── */
+
+.obs-relation > .obs-title {
+  font-size: 28px;
+}
+
+.obs-rel-circles {
+  display: grid;
+  margin-top: 14px;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.obs-rel-circle {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(var(--tone), 0.035);
+}
+
+.obs-rel-circle.is-private {
+  border-color: rgba(var(--rose), 0.26);
+  background: rgba(var(--rose), 0.05);
+}
+
+.obs-rel-circle-label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+.obs-rel-circle.is-private .obs-rel-circle-label {
+  color: var(--accent);
+}
+
+.obs-rel-circle-text {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.obs-rel-cols {
+  display: grid;
+  margin-top: 16px;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.obs-rel-col {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(var(--tone), 0.05), rgba(var(--tone), 0.015));
+}
+
+.obs-rel-col-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.obs-rel-col-name {
+  color: color-mix(in srgb, var(--char-accent, var(--accent)) 72%, var(--ink));
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.obs-rel-arena {
+  margin-left: auto;
+  padding: 2px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.obs-rel-arena.is-level-1 {
+  border-color: rgba(143, 195, 173, 0.4);
+  color: var(--jade);
+}
+
+.obs-rel-arena.is-level-2 {
+  border-color: rgba(var(--rose), 0.4);
+  color: var(--accent);
+}
+
+.obs-rel-arena.is-level-3,
+.obs-rel-arena.is-level-4 {
+  border-color: rgba(216, 106, 127, 0.6);
+  background: rgba(216, 106, 127, 0.14);
+  color: #d86a7f;
+}
+
+.obs-rel-meters {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.obs-rel-meters .obs-meter {
+  gap: 4px 6px;
+  padding: 8px 10px;
+}
+
+.obs-rel-meters .obs-meter-label {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.obs-rel-meters .obs-meter-value {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 14px;
+  text-align: right;
+}
+
+.obs-rel-meters .obs-meter-track {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.obs-rel-meter-label {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  grid-column: 1 / -1;
+  grid-row: 3;
+}
+
+.obs-rel-meters .obs-meter.is-deep .obs-meter-fill {
+  background: linear-gradient(90deg, var(--jade), var(--char-accent, var(--accent)));
+}
+
+.obs-rel-meters .obs-meter.is-soft .obs-meter-fill {
+  background: linear-gradient(90deg, rgba(143, 195, 173, 0.6), rgba(var(--rose), 0.6));
+}
+
+.obs-rel-meters .obs-meter.is-warn .obs-meter-fill {
+  background: linear-gradient(90deg, #e3c17e, #e0a06f);
+}
+
+.obs-rel-meters .obs-meter.is-danger .obs-meter-fill {
+  background: linear-gradient(90deg, #e3a37e, #d86a7f);
+}
+
+.obs-rel-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.obs-rel-section-label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+.obs-rel-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.obs-rel-known-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.obs-rel-known-chip {
+  padding: 2px 9px;
+  border: 1px solid rgba(143, 195, 173, 0.34);
+  border-radius: 999px;
+  color: var(--jade);
+  font-size: 11px;
+}
+
+.obs-rel-traces {
+  display: grid;
+  margin: 6px 0 0;
+  padding: 0;
+  gap: 6px;
+  list-style: none;
+}
+
+.obs-rel-trace {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(var(--tone), 0.03);
+}
+
+.obs-rel-trace-kind {
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.obs-rel-trace-text {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.obs-rel-trace-meta {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.obs-rel-trace-more {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+/* 地图页的风险标注（地图页与关系页共用一套语义色） */
+.map-risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(var(--tone), 0.04);
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.map-risk.is-low {
+  border-color: rgba(143, 195, 173, 0.38);
+  background: rgba(143, 195, 173, 0.1);
+  color: var(--jade);
+}
+
+.map-risk.is-high {
+  border-color: rgba(216, 106, 127, 0.55);
+  background: rgba(216, 106, 127, 0.14);
+  color: #d86a7f;
+}
+
 /* ── 设置页 ───────────────────────────────────────────── */
 
 .obs-settings .obs-title {
@@ -2625,6 +3009,103 @@
 .obs-reset:hover {
   border-color: var(--line-strong);
   color: var(--ink-soft);
+}
+
+/* R18 与安全词：只做状态与入口，文案留在上层 */
+.settings-r18 {
+  margin-top: 16px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(var(--tone), 0.035);
+}
+
+.settings-r18.is-on {
+  border-color: rgba(var(--rose), 0.34);
+  background: rgba(var(--rose), 0.06);
+}
+
+.settings-r18-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-r18-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.settings-r18-note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.settings-r18-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.settings-r18-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-r18-field strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-r18-field small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.settings-r18 select,
+.settings-r18 input[type='text'],
+.settings-r18 input[type='search'],
+.settings-r18 textarea {
+  min-height: 30px;
+  padding: 4px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--glass-track);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.settings-r18 select:focus-visible,
+.settings-r18 input:focus-visible,
+.settings-r18 textarea:focus-visible {
+  border-color: rgba(var(--rose), 0.5);
+  box-shadow: 0 0 0 3px rgba(var(--rose), 0.14);
+  outline: none;
+}
+
+.settings-r18-chip {
+  padding: 2px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.settings-r18-warn {
+  margin: 8px 0 0;
+  color: #d86a7f;
+  font-size: 11px;
+  line-height: 1.6;
 }
 
 /* ── 全屏门 / 启动 / 原生 ─────────────────────────────── */
@@ -3212,6 +3693,23 @@
     height: 92%;
   }
 
+  .obs-window[data-tab='relation'] {
+    width: 96%;
+    height: 92%;
+  }
+
+  .obs-rel-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .obs-rel-col-head .obs-rel-arena {
+    margin-left: 0;
+  }
+
+  .obs-private {
+    padding: 12px 14px 14px;
+  }
+
   .obs-window[data-tab='settings'] {
     width: min(440px, 92%);
     max-height: 100%;
@@ -3328,6 +3826,13 @@
   .obs-stat-grid,
   .obs-detail-rows {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .obs-rel-circles,
+  .obs-rel-cols,
+  .obs-rel-meters,
+  .obs-private-meters {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

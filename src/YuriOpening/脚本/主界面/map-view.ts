@@ -8,8 +8,9 @@ import {
   MAP_NODE_BY_LABEL, MAP_NODES, MAP_WIDTH, NODE_ART, REGION_COLORS, REGION_LABELS,
   RIVER_LABEL, RIVER_PATH, mapRoads, type MapNode,
 } from '../../界面/状态栏/map';
+import { relationEnabled, relationWoman } from './relation';
 import {
-  characterNode, characterValue, getPath, readPath, type HudData, type ThemeState,
+  characterNode, characterValue, getPath, playerJob, readPath, type HudData, type ThemeState,
 } from './state';
 
 interface MapViewOptions {
@@ -36,6 +37,21 @@ function svg<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string,
 function heroineNode(data: HudData | null, char: CharacterDef) {
   const label = characterNode(data, char);
   return label ? MAP_NODE_BY_LABEL.get(label) : null;
+}
+
+/* 知情 里这些值表示「没看见」，其余都算会传出去 */
+const BLIND_KNOWLEDGE = ['不知情', '未察觉', '未知', '待设定', '无'];
+
+function playerTraits(data: HudData | null) {
+  const trait = String(getPath(data, '玩家._主特长', '') ?? '').trim();
+  const raw = getPath(data, '玩家._兴趣', []);
+  const interests = (Array.isArray(raw) ? raw : [raw])
+    .map(item => String(item ?? '').trim())
+    .filter(Boolean);
+  return [
+    trait ? `主特长「${trait}」` : '',
+    interests.length ? `兴趣「${interests.join('、')}」` : '',
+  ].filter(Boolean).join('、');
 }
 
 export class MapView {
@@ -342,6 +358,35 @@ export class MapView {
     }, true);
   }
 
+  /* 只有关系档案启用后才提示风险；只读现有变量，不写回 MVU */
+  private risk(data: HudData | null, node: MapNode) {
+    if (!relationEnabled(data)) return null;
+    const seen: string[] = [];
+    let score = 0;
+    CHARACTERS.forEach(char => {
+      const woman = relationWoman(data, char.name);
+      if (!woman) return;
+      const here = heroineNode(data, char)?.id === node.id;
+      score = Math.max(score, (woman.风险 ?? 0) + (here ? 15 : 0));
+      if (here) seen.push(`${char.name}此刻就在「${node.label}」`);
+      woman.知情.forEach(({ 人, 知道 }) => {
+        const text = String(知道 ?? '').trim();
+        if (!人 || !text || BLIND_KNOWLEDGE.includes(text)) return;
+        seen.push(`${人}（${text}）`);
+      });
+    });
+    score = Math.min(100, score);
+    const level = score >= 50 ? '高' : score < 25 ? '低' : '中';
+    const box = make('div', `map-risk${level === '高' ? ' is-high' : level === '低' ? ' is-low' : ''}`);
+    box.append(make('p', 'map-risk-line', `可能被谁看见 · ${seen.length ? seen.join('；') : '此刻没人在意这里'}`));
+    const traits = playerTraits(data);
+    if (traits) {
+      box.append(make('p', 'map-risk-player', `你以「${playerJob(data)}」的身份出现，${traits}在${node.region}很容易被记住。`));
+    }
+    box.append(make('small', 'map-risk-score', `风险 ${score}/100 · ${level}`));
+    return box;
+  }
+
   private detail(data: HudData | null, node: MapNode, canTravel: boolean) {
     const detail = make('div', `node-detail${this.lastDetail !== node.id ? ' is-new' : ''}`);
     this.lastDetail = node.id;
@@ -358,6 +403,8 @@ export class MapView {
       const action = characterValue(data, char, '当前行动');
       detail.append(make('p', 'node-heroine', action === '待设定' ? `${char.name}在这里。` : `${char.name}在这里 · ${action}`));
     });
+    const risk = this.risk(data, node);
+    if (risk) detail.append(risk);
     const sprig = make('span', 'node-detail-sprig');
     sprig.innerHTML = lilySprigSvg();
     detail.append(sprig);
