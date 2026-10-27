@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YuriOpening 主界面预览</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #f4ece8; }
+    body { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; }
+    #chat, #send_form { max-width: 720px; margin: 24px auto; padding: 16px; background: #fff; }
+    #chat_history p { line-height: 1.7; }
+
+  </style>
+</head>
+<body>
+  <div id="chat"><div id="chat_history"><p>原生酒馆楼层预览（进入主界面后会隐藏）。</p></div></div>
+  <form id="send_form"><textarea id="send_textarea" rows="2"></textarea><button id="send_but" type="button">发送</button></form>
+
+  <script>
+    const previewState = {
+      玩家: { _姓名: '测试玩家', _年龄: 24, _职业: { _方向: '设计', _具体: '自由职业' } },
+      玩家状态: { 心情: '放松', 精力: 71, 身体状态: '健康', 当前行动: '靠在沙发上', 关系姿态: '自然相处', 当前穿着: '浅色针织衫' },
+      环境: {
+        日期: '2026-10-21', 时间: '21:40', 天气: '小雨',
+        地点: { 城市: '百合市', 区域: '中心城区', 具体地点: '铃兰公寓·客厅' },
+      },
+      林清: {
+        亲近: 66, 心动: 58, 欲望: 48, 心情: '微醺', 关系身份: '暧昧',
+        所在地点: '铃兰公寓·客厅', 当前行动: '把外套搭在椅背上', 心声: '今晚的雨很适合留人。',
+      },
+      苏玥: {
+        亲近: 42, 心动: 30, 欲望: 22, 心情: '愉快', 关系身份: '朋友',
+        所在地点: '绣球路步行街', 当前行动: '在花店收最后一束花',
+      },
+    };
+    const previewMessages = [
+      { message_id: 0, role: 'user', message: '先看看窗外的雨。', is_hidden: false },
+      { message_id: 1, role: 'assistant', message: '她把杯子推到你面前，杯壁还留着温度。\n\n「今晚的雨，好像不打算停。」', is_hidden: false },
+      { message_id: 2, role: 'assistant', message: '林清在沙发另一头坐下，外套没有收走，只是搭在椅背上。她侧过脸看你，像是在等一个不必急着回答的问题。', is_hidden: false },
+    ];
+    window.getLastMessageId = () => 2;
+    window.getCurrentMessageId = () => 2;
+    window.getChatMessages = () => previewMessages;
+    window.getVariables = () => ({ stat_data: previewState });
+    window.SillyTavern = { characterId: 'preview' };
+    window._ = {
+      get(object, path, fallback) {
+        const parts = Array.isArray(path) ? path : String(path).replace(/\[(\d+)\]/g, '.$1').split('.');
+        let current = object;
+        for (const part of parts) {
+          if (current === null || current === undefined) return fallback;
+          current = current[part];
+        }
+        return current === undefined ? fallback : current;
+      },
+      clamp(value, lower, upper) { return Math.min(Math.max(value, lower), upper); },
+    };
+    window.waitGlobalInitialized = () => Promise.resolve();
+    window.eventOn = () => ({ stop() {} });
+    window.errorCatched = fn => () => {
+      try {
+        const result = fn();
+        if (result && typeof result.catch === 'function') result.catch(error => console.error(error));
+        return result;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    window.triggerSlash = () => Promise.resolve('');
+    window.Mvu = {
+      events: { VARIABLE_INITIALIZED: 'mvu-init', VARIABLE_UPDATE_ENDED: 'mvu-ended' },
+      getMvuData: () => ({ stat_data: previewState }),
+    };
+    window.tavern_events = {
+      MESSAGE_RECEIVED: 'message_received', MESSAGE_UPDATED: 'message_updated', MESSAGE_EDITED: 'message_edited',
+      MESSAGE_DELETED: 'message_deleted', MESSAGE_SWIPED: 'message_swiped', CHAT_CHANGED: 'chat_changed',
+    };
+    window.iframe_events = { GENERATION_STARTED: 'generation_started', GENERATION_ENDED: 'generation_ended' };
+    window.$ = arg => {
+      if (typeof arg === 'function') { arg(); return window.$; }
+      return { one() { return this; }, on() { return this; }, off() { return this; } };
+    };
+  </script>
+  <script src="/cards/YuriOpening/脚本/花期图集.js"></script>
+  <script src="./dist/YuriOpening/脚本/主界面/index.js"></script>
+  <script>
+    const auto = new URLSearchParams(location.search).get('auto') === '1';
+    if (auto) {
+      const timer = setInterval(() => {
+        const enter = document.querySelector('[data-action="enter"]');
+        if (enter && !enter.disabled) {
+          clearInterval(timer);
+          enter.click();
+        }
+      }, 50);
+    }
+  </script>
+</body>
+</html>
