@@ -64,6 +64,11 @@ const scenarios = {
       { role: 'assistant', content: '下班了？', date: '2025-05-16', time: '19:40' },
       { role: 'user', content: '刚出电梯，今天会开到七点半', date: '2025-05-16', time: '19:42' },
       { role: 'assistant', content: '谁让你不早退。我六点就跑了', date: '2025-05-16', time: '19:42' },
+      {
+        role: 'assistant', content: '刚才那段时间，我还想再留一点。汀兰公寓·卧室的事，先只给你看。',
+        date: '2025-05-16', time: '19:46', kind: 'photo',
+        photoId: 'linqing', photoEventId: 'verify-linqing-photo', photoScene: '汀兰公寓·卧室', photoVariant: 'bedroom',
+      },
     ],
   },
   正文已加微信: {
@@ -302,6 +307,10 @@ for (const name of Object.keys(scenarios)) {
       const userCount = scenarios[name].history.filter(m => m.role === 'user').length;
       check('我方气泡数正确', outCount === userCount, `${outCount} vs ${userCount}`);
       check('对方气泡带头像', inCount > 0 && qa(window, '.wc-bubble-avatar').length === inCount);
+      const photoCount = scenarios[name].history.filter(m => m.kind === 'photo').length;
+      if (photoCount > 0) {
+        const photoImages = qa(window, '.wc-photo-image');
+      }
     } else {
       // 空会话下产物会自动发起一次打招呼流式请求；没有 AI 接口时请求失败，
       // 但气泡与头像已在失败前挂上，所以只断言结构存在。

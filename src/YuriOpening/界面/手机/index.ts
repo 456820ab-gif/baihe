@@ -162,6 +162,16 @@ function readMvu(): MvuRaw {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
 /** 酒馆用户设定名（等价于 {{user}} 展开的内容），取不到返回空串 */
 function readStPersonaName(): string {
   const pick = (value: unknown): string => (typeof value === 'string' && value.trim() ? value.trim() : '');
@@ -527,11 +537,12 @@ function renderTabContent() {
       localRejectedFlags.set(char.id, false);
       writeLocalFlag(char.id, 'hasAdded:v1', true);
       writeLocalFlag(char.id, 'addRejected:v1', false);
-      updateMvu(wx => {
+      void updateMvu(wx => {
         wx[char.phone.fields.added] = true;
+      }).then(() => {
+        // MVU 写回完成后再重渲，避免先渲后交叠
+        renderTabContent();
       });
-      // 立即重渲，无需等 MVU 写回
-      renderTabContent();
     },
     onAddRejected: (char) => {
       if (getStorageGeneration() !== storageGen) return;
@@ -973,12 +984,42 @@ async function init() {
     if (phoneOpen && !inChatPage) renderTabContent();
   };
 
+  const onMvuInitialized = () => {
+    if (!active) return;
+    onUpdate();
+  };
+
+  const onMvuUpdate = () => {
+    if (!active) return;
+    onUpdate();
+  };
+
+  const onMessageReceived = () => {
+    if (!active) return;
+    hostWin.setTimeout(() => {
+      if (!active) return;
+      onUpdate();
+    }, 0);
+  };
+
+  const onMessageChanged = () => {
+    if (!active) return;
+    hostWin.setTimeout(() => {
+      if (!active) return;
+      onUpdate();
+    }, 0);
+  };
+
   // 换档：手机本地状态切换到新存档，丢弃旧存档的异步写入
   let lastChatId = getCurrentChatId();
   const onChatChanged = (chatId: string) => {
     if (!active) return;
     const id = chatId || getCurrentChatId();
-    if (!id || id === lastChatId) return; // 同档的消息重载（如正则刷新）不处理
+    if (!id) return;
+    if (id === lastChatId) {
+      // 同档消息重载：只刷新
+      return;
+    }
     lastChatId = id;
     invalidateChatKey();
     chatHandle?.abort();
@@ -993,9 +1034,14 @@ async function init() {
   loadAllLocalFlags();
   onUpdate();
   syncWechatLog();
-  addDisposer(eventOn(Mvu.events.VARIABLE_INITIALIZED, onUpdate));
-  addDisposer(eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, onUpdate));
+  addDisposer(eventOn(Mvu.events.VARIABLE_INITIALIZED, onMvuInitialized));
+  addDisposer(eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, onMvuUpdate));
   try {
+    addDisposer(eventOn(tavern_events.MESSAGE_RECEIVED, onMessageReceived));
+    addDisposer(eventOn(tavern_events.MESSAGE_UPDATED, onMessageChanged));
+    addDisposer(eventOn(tavern_events.MESSAGE_EDITED, onMessageChanged));
+    addDisposer(eventOn(tavern_events.MESSAGE_DELETED, onMessageChanged));
+    addDisposer(eventOn(tavern_events.MESSAGE_SWIPED, onMessageChanged));
     addDisposer(eventOn(tavern_events.CHAT_CHANGED, onChatChanged));
   } catch { /* 旧版本助手未导出 tavern_events 时不影响主体功能 */ }
   addDisposer(() => hostWin.removeEventListener('resize', onViewportResize));

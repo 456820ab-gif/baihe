@@ -125,10 +125,20 @@ function defByName(name: string): CharacterDef {
   return CHARACTERS.find(c => c.name === name) ?? CHARACTERS[0];
 }
 
-function saveChatHistory(key: string, msgs: ChatMessage[]) {
+function saveChatHistory(key: string, msgs: ChatMessage[]): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(msgs.slice(-60)));
-  } catch { /* 静默 */ }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function appendChatHistoryMessage(id: CharacterId, message: ChatMessage): boolean {
+  const key = chatHistoryKeyOf(id);
+  const history = loadChatHistory(key);
+  if (message.photoEventId && history.some(item => item.photoEventId === message.photoEventId)) return true;
+  return saveChatHistory(key, [...history, message]);
 }
 
 // 聊天时间分割条：「5月16日 19:40」，日期非 YYYY-MM-DD 时原样显示，待设定的部分省略
@@ -220,6 +230,7 @@ export function renderChatList(
 
 export type ChatPageHandle = {
   el: HTMLElement;
+  appendMessageForCharacter: (id: CharacterId, message: ChatMessage) => boolean;
   /** 离开聊天页：中断流式请求，并在后台生成摘要与朋友圈（幂等） */
   beforeLeave: () => void;
   /** 收起手机：保留进行中的回复，仅在后台生成摘要与朋友圈（幂等） */
@@ -323,12 +334,22 @@ export function renderChatPage(
   }
 
   const commitHistory = () => {
-    saveChatHistory(historyKey, history);
+    const saved = saveChatHistory(historyKey, history);
     callbacks.onHistoryChange(char.def, history);
+    return saved;
   };
 
-  function appendBubble(role: 'user' | 'assistant', text: string, streaming = false) {
-    const row = el(doc, 'div', `wc-msg-row wc-msg-${role === 'user' ? 'out' : 'in'}`);
+  function appendMessageForCharacter(id: CharacterId, message: ChatMessage): boolean {
+    if (id !== char.def.id) return false;
+    if (message.photoEventId && history.some(item => item.photoEventId === message.photoEventId)) return true;
+    history.push(message);
+    appendStamp(message.date, message.time);
+    appendBubble(message.role as 'user' | 'assistant', message.content, false, message);
+    return commitHistory();
+  }
+
+  function appendBubble(role: 'user' | 'assistant', text: string, streaming = false, message?: ChatMessage) {
+    const row = el(doc, 'div', `wc-msg-row wc-msg-${role === 'user' ? 'out' : 'in'}${message?.kind === 'photo' ? ' wc-msg-photo' : ''}`);
     if (role === 'assistant') {
       const av = el(doc, 'div', 'wc-bubble-avatar');
       av.innerHTML = avatarFor(char.def);
@@ -344,7 +365,7 @@ export function renderChatPage(
 
   history.filter(m => m.role !== 'system').forEach(m => {
     appendStamp(m.date, m.time);
-    appendBubble(m.role as 'user' | 'assistant', m.content);
+    appendBubble(m.role as 'user' | 'assistant', m.content, false, m);
   });
 
   if (history.filter(m => m.role !== 'system').length === 0) {
@@ -449,7 +470,7 @@ export function renderChatPage(
   footer.appendChild(sendBtn);
   wrap.appendChild(emojiPanel.el);
   wrap.appendChild(footer);
-  return { el: wrap, beforeLeave, beforeHide, abort: abortStream };
+  return { el: wrap, appendMessageForCharacter, beforeLeave, beforeHide, abort: abortStream };
 }
 
 // ────────────────────────────────────────────────────────────────────────────
