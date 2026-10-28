@@ -931,13 +931,13 @@ function buildNode(node: MapNode, isCurrent: boolean, index: number) {
   });
   group.style.setProperty('--i', String(index));
   if (node.nightGlow) {
-    group.appendChild(createSvg('ellipse', { cx: node.x, cy: node.y, rx: 30, ry: 21, class: 'node-lamp' }));
+    group.appendChild(createSvg('ellipse', { cx: node.x, cy: node.y, rx: 30, ry: 21, class: 'node-neon' }));
   }
   group.appendChild(createSvg('ellipse', { cx: node.x, cy: node.y, rx: 34, ry: 24, class: 'node-halo' }));
   if (isCurrent) {
     [0, 1].forEach(ring => {
       const ripple = createSvg('circle', { cx: node.x, cy: node.y, r: 18, class: 'node-ripple' });
-      ripple.style.animationDelay = `${ring * 3}s`;
+      ripple.style.animationDelay = `${ring * 1.6}s`;
       group.appendChild(ripple);
     });
   }

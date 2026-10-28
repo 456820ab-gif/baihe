@@ -395,7 +395,7 @@
   width: 52px;
   height: 52px;
   transform: rotate(-4deg);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
 .snapshot-bar:hover .weather-stamp {
@@ -659,7 +659,7 @@
 }
 
 .hud-shell[data-animate='true'] .hud-drawer:not([hidden]) {
-  animation: hud-drawer-unfold 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: hud-drawer-unfold 0.42s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
 .hud-drawer[hidden] {
@@ -760,7 +760,7 @@
   flex: 0 0 14px;
   width: 14px;
   height: 14px;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 
 .hud-tab:hover svg {
@@ -781,7 +781,7 @@
 }
 
 .hud-shell[data-animate='true'] .hud-tab.is-active svg {
-  animation: hud-tab-pop 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: hud-tab-pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
 /* 选中下划线是独立的一条，在页签之间滑动，中间点一颗菱形 */
@@ -792,7 +792,7 @@
   width: calc(100% / var(--tab-n, 3));
   height: 2px;
   transform: translateX(calc(100% * var(--tab-i, 0)));
-  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.42s cubic-bezier(0.5, 0, 0.2, 1.15);
   pointer-events: none;
 }
 
@@ -1239,9 +1239,8 @@
   transition: stroke 0.5s ease;
 }
 
-/* 一个虚线周期（dasharray 2 10）正好走完一个 12s 循环，节奏接近一条慢河 */
 .hud-shell[data-animate='true'] .map-water-flow {
-  animation: hud-water-flow 12s linear infinite;
+  animation: hud-water-flow 3.2s linear infinite;
 }
 
 .map-canvas .map-river-label {
@@ -1411,7 +1410,7 @@
 }
 
 .hud-shell[data-animate='true'] .map-canvas.is-intro .map-node {
-  animation: hud-node-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: hud-node-pop 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
   animation-delay: calc(var(--i, 0) * 35ms + 250ms);
 }
 
@@ -1468,11 +1467,9 @@
   transition: fill 0.5s ease;
 }
 
-/* 悬停时底座透出浅色底、描边加粗 */
 .map-node:hover .node-ground {
   fill: var(--hud-accent-soft);
   stroke: var(--hud-accent);
-  stroke-width: 2;
 }
 
 .map-node.is-current .node-ground {
@@ -1480,25 +1477,26 @@
   stroke-width: 1.6;
 }
 
-/* 夜生活地点的暖纸灯圈：一层低透明度暖黄填充，白天不显示 */
-.map-node .node-lamp {
-  fill: #e9bd72;
+/* 夜生活地点的霓虹圈：白天不显示 */
+.map-node .node-neon {
+  fill: none;
+  stroke: var(--hud-accent);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
   opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--hud-accent));
 }
 
-.hud-shell[data-scene='true'][data-daypart='night'] .node-lamp,
-.hud-shell[data-scene='true'][data-override='特殊夜景'] .node-lamp,
-.hud-shell[data-scene='true'][data-override='节日灯光'] .node-lamp {
-  opacity: 0.18;
+.hud-shell[data-scene='true'][data-daypart='night'] .node-neon,
+.hud-shell[data-scene='true'][data-override='特殊夜景'] .node-neon,
+.hud-shell[data-scene='true'][data-override='节日灯光'] .node-neon {
+  opacity: 0.6;
 }
 
-.hud-shell[data-animate='true'][data-scene='true'][data-daypart='night'] .node-lamp,
-.hud-shell[data-animate='true'][data-scene='true'][data-override='特殊夜景'] .node-lamp,
-.hud-shell[data-animate='true'][data-scene='true'][data-override='节日灯光'] .node-lamp {
-  animation: hud-lamp-breathe 9s ease-in-out infinite;
+.hud-shell[data-animate='true'][data-scene='true'][data-daypart='night'] .node-neon,
+.hud-shell[data-animate='true'][data-scene='true'][data-override='特殊夜景'] .node-neon,
+.hud-shell[data-animate='true'][data-scene='true'][data-override='节日灯光'] .node-neon {
+  animation: hud-neon-flicker 4.6s steps(1, end) infinite;
 }
 
 /* 当前地点向外扩散的两圈涟漪；关闭动效时不显示 */
@@ -1513,7 +1511,7 @@
 }
 
 .hud-shell[data-animate='true'] .map-node .node-ripple {
-  animation: hud-ripple 6s ease-out infinite;
+  animation: hud-ripple 3.2s ease-out infinite;
 }
 
 .map-node.is-current .node-name {
@@ -1537,48 +1535,8 @@
   opacity: 0.14;
 }
 
-/* 悬停时纸灯罩下透出一点暖光；写在 is-current 之后，当前地点悬停也暖 */
-.map-node:hover .node-halo {
-  fill: #e9bd72;
-  opacity: 0.1;
-}
-
-.map-node.is-current:hover .node-halo {
-  opacity: 0.16;
-}
-
 .hud-shell[data-animate='true'] .map-node.is-current .node-halo {
-  animation: hud-halo-pulse 7s ease-in-out infinite;
-}
-
-/* 选中的地点像盖了一枚印章：墨线圈自内向外合拢，名字下补一道短线 */
-.map-node .node-select-ring {
-  fill: none;
-  stroke: var(--hud-accent);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  opacity: 0.75;
-  transform-box: fill-box;
-  transform-origin: center;
-  pointer-events: none;
-}
-
-.map-node .node-select-line {
-  stroke: var(--hud-accent);
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.hud-shell[data-animate='true'] .map-node .node-select-ring {
-  animation: hud-seal-ring 360ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.hud-shell[data-animate='true'] .map-node .node-select-line {
-  animation: hud-seal-line 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: hud-halo-pulse 4.2s ease-in-out infinite;
 }
 
 .map-hint {
@@ -1726,7 +1684,7 @@
 }
 
 .hud-shell[data-animate='true'] .is-entering .heroine-seal {
-  animation: hud-seal-press 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s backwards;
+  animation: hud-seal-press 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) 0.1s backwards;
 }
 
 .heroine-id {
@@ -2161,12 +2119,12 @@
 }
 
 .hud-shell[data-animate='true'] .is-playing .bloom-leaf-wrap {
-  animation: hud-leaf-unfurl 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: hud-leaf-unfurl 0.55s cubic-bezier(0.3, 1.4, 0.5, 1) backwards;
   animation-delay: calc(var(--i, 0) * 80ms + 0.45s);
 }
 
 .hud-shell[data-animate='true'] .is-playing .bloom-open {
-  animation: hud-bloom-open 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: hud-bloom-open 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) backwards;
   animation-delay: var(--d, 800ms);
 }
 
@@ -2218,7 +2176,7 @@
 }
 
 .hud-shell[data-animate='true'] .heroine-delta.is-new .delta-chip {
-  animation: hud-delta-float 0.7s cubic-bezier(0.22, 1, 0.36, 1) 1.2s backwards;
+  animation: hud-delta-float 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 1.2s backwards;
 }
 
 /* 心跳线：速度随心动值 */
@@ -2910,7 +2868,10 @@
 
 @keyframes hud-tab-pop {
   0% {
-    transform: scale(0.86) rotate(-4deg);
+    transform: scale(0.7) rotate(-12deg);
+  }
+  60% {
+    transform: scale(1.15) rotate(4deg);
   }
   100% {
     transform: scale(1) rotate(0);
@@ -3231,7 +3192,7 @@
 
 @keyframes hud-water-flow {
   to {
-    stroke-dashoffset: -12;
+    stroke-dashoffset: -24;
   }
 }
 
@@ -3275,16 +3236,25 @@
   }
 }
 
-/* 暖纸灯圈：9s 一呼一吸，幅度小到只像灯芯在轻轻烧 */
-@keyframes hud-lamp-breathe {
+@keyframes hud-neon-flicker {
   0%,
   100% {
-    opacity: 0.15;
-    transform: scale(1);
+    opacity: 0.6;
   }
-  50% {
-    opacity: 0.22;
-    transform: scale(1.03);
+  70% {
+    opacity: 0.85;
+  }
+  72% {
+    opacity: 0.25;
+  }
+  74% {
+    opacity: 0.85;
+  }
+  76% {
+    opacity: 0.35;
+  }
+  78% {
+    opacity: 0.6;
   }
 }
 
@@ -3315,32 +3285,12 @@
 @keyframes hud-halo-pulse {
   0%,
   100% {
-    opacity: 0.14;
+    opacity: 0.12;
     transform: scale(1);
   }
   50% {
-    opacity: 0.2;
+    opacity: 0.18;
     transform: scale(1.04);
-  }
-}
-
-@keyframes hud-seal-ring {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes hud-seal-line {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 0.7;
-    transform: translateY(0);
   }
 }
 
@@ -3465,24 +3415,8 @@
   *::before,
   *::after {
     animation: none !important;
-    animation-delay: 0s !important;
-    transition-delay: 0s !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-}
-
-/* 手机横屏 / 矮视口：涟漪只留一圈，给地图让出安静的呼吸 */
-@media (max-width: 900px) and (max-height: 560px) {
-  .map-node .node-ripple + .node-ripple {
-    display: none;
-  }
-}
-
-/* 矮于 560px 时夜里不点萤火：小屏上它们只会变成噪点 */
-@media (max-height: 559px) {
-  .map-canvas .map-firefly {
-    display: none;
   }
 }
 

@@ -228,12 +228,12 @@ export class MapView {
       'aria-label': `${node.label}，${node.region}`,
     });
     group.style.setProperty('--i', String(index));
-    if (node.nightGlow) group.append(svg('ellipse', { cx: String(node.x), cy: String(node.y), rx: '30', ry: '21', class: 'node-lamp' }));
+    if (node.nightGlow) group.append(svg('ellipse', { cx: String(node.x), cy: String(node.y), rx: '30', ry: '21', class: 'node-neon' }));
     group.append(svg('ellipse', { cx: String(node.x), cy: String(node.y), rx: '34', ry: '24', class: 'node-halo' }));
     if (isCurrent) {
       [0, 1].forEach(ring => {
         const ripple = svg('circle', { cx: String(node.x), cy: String(node.y), r: '18', class: 'node-ripple' });
-        ripple.style.animationDelay = `${ring * 3}s`;
+        ripple.style.animationDelay = `${ring * 1.6}s`;
         group.append(ripple);
       });
     }
@@ -245,20 +245,9 @@ export class MapView {
       drawing.append(svg('path', { d: art.body, class: 'node-art' }));
       group.append(drawing);
     }
-    if (this.selected === node.id) {
-      group.append(svg('circle', {
-        cx: String(node.x), cy: String(node.y), r: '26', class: 'node-select-ring', pathLength: '1',
-      }));
-    }
     const name = svg('text', { x: String(node.x), y: String(node.y + 30), class: 'node-name' });
     name.textContent = node.label;
-    group.append(name);
-    if (this.selected === node.id) {
-      group.append(svg('path', {
-        d: `M${node.x - 9},${node.y + 35} H${node.x + 9}`, class: 'node-select-line',
-      }));
-    }
-    group.append(svg('circle', { cx: String(node.x), cy: String(node.y), r: '30', class: 'node-hit' }));
+    group.append(name, svg('circle', { cx: String(node.x), cy: String(node.y), r: '30', class: 'node-hit' }));
     const activate = () => {
       this.selected = node.id;
       this.options.rerender();
