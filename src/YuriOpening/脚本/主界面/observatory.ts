@@ -69,14 +69,15 @@ export class Observatory {
     this.windowEl = make('div', 'obs-window');
     this.windowEl.dataset.tab = this.current;
     const head = make('header', 'obs-head');
-    const brand = make('div', 'obs-brand');    brand.append(make('span', 'obs-kicker', '百合花期'), make('strong', '', '观景窗'));
+    const brand = make('div', 'obs-brand');    brand.append(make('span', 'obs-kicker', 'LILY CITY · NIGHT EDITION'), make('strong', '', '观景窗'));
     const nav = make('nav', 'obs-tabs');
     this.nav = nav;
+    const issue = make('span', 'obs-issue', 'NO.03');
     const close = make('button', 'obs-close', '×');
     close.type = 'button';
     close.setAttribute('aria-label', '关闭观景窗');
     close.addEventListener('click', () => this.close());
-    head.append(brand, nav, close);
+    head.append(brand, nav, issue, close);
     this.body = make('div', 'obs-body');
     const ornament = make('span', 'obs-ornament');
     ornament.setAttribute('aria-hidden', 'true');

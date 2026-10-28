@@ -10,38 +10,28 @@
  *   .phone-banner.is-leaving  离场中（140ms 后由 phone-banner.ts 摘掉）
  */
 
-$motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
-$motion-open: 240ms;
-$motion-close: 180ms;
+$wipe-ease: cubic-bezier(0.16, 1, 0.3, 1);
+$wipe-open: 320ms;
+$wipe-close: 180ms;
+$content-in: 160ms;
 $panel-open: 260ms;
 $banner-in: 220ms;
 $banner-out: 140ms;
 
 /* ── 观景窗 ──────────────────────────────────────────────── */
 
-/* 遮罩：只做透明度；blur 从 8px 收到 2px 且不参与动画 */
+/* 遮罩：只做透明度，没有模糊也没有光晕 */
 #yuri-front .obs-layer {
   opacity: 0;
-  transition: opacity $motion-open $motion-ease;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  transition: opacity 200ms ease-out;
 }
 
 #yuri-front .obs-layer[data-state='open'] {
   opacity: 1;
 }
 
-/* 设置是小窗：遮罩压深一档，背景不再抢读（只改颜色，不动 blur） */
-#yuri-front .obs-layer:has(.obs-window[data-tab='settings']) {
-  background: rgba(9, 6, 12, 0.7);
-}
-
-#yuri-front[data-theme='light'] .obs-layer:has(.obs-window[data-tab='settings']) {
-  background: rgba(60, 44, 52, 0.42);
-}
-
 #yuri-front .obs-layer[data-state='closing'] {
-  transition-duration: $motion-close;
+  transition-duration: 140ms;
 }
 
 #yuri-front .obs-layer[data-state='opening'],
@@ -49,82 +39,68 @@ $banner-out: 140ms;
   pointer-events: none;
 }
 
-/* 窗口：纸页自上而下展开（clip-path 底边下放 + 轻微下落），关闭沿原路快速收回；blur 静止不参与动画 */
+/* 窗口：横向擦除。切开的是版面本身，不是缩放或浮起 */
 #yuri-front .obs-window {
-  clip-path: inset(0 0 78% 0 round var(--radius));
-  opacity: 0;
-  transform: translateY(-6px);
-  transform-origin: top center;
+  clip-path: inset(0 100% 0 0);
+  opacity: 0.001;
   transition:
-    clip-path $motion-open $motion-ease,
-    opacity 160ms ease-out,
-    transform $motion-open $motion-ease;
-  backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
-}
-
-#yuri-front .obs-layer[data-state='closing'] .obs-window {
-  transition:
-    clip-path $motion-close ease-in,
-    opacity $motion-close ease-in,
-    transform $motion-close ease-in;
+    clip-path $wipe-open $wipe-ease,
+    opacity 90ms linear;
 }
 
 #yuri-front .obs-layer[data-state='open'] .obs-window {
-  clip-path: inset(0 0 0 0 round var(--radius));
+  clip-path: inset(0);
   opacity: 1;
-  transform: none;
 }
 
-/* 入场交给上面的 clip/opacity 过渡，停掉 styles.scss 里的旧缩放关键帧 */
+/* 收起：从右缘向左擦掉 */
+#yuri-front .obs-layer[data-state='closing'] .obs-window {
+  clip-path: inset(0 0 0 100%);
+  opacity: 0.001;
+  transition:
+    clip-path $wipe-close cubic-bezier(0.5, 0, 0.85, 0.4),
+    opacity 60ms linear $wipe-close;
+}
+
+/* 入场交给 clip-path，styles.scss 里不再挂关键帧 */
 #yuri-front[data-animate='true'] .obs-layer:not([hidden]) .obs-window {
   animation: none;
 }
 
-/* 页签内容：容器级一次 160ms 淡入上移 3px（render(true) 会重建 body，不对内部元素做 stagger） */
+/* 页签内容：160ms 淡入（render(true) 会整块重建 body，只做容器级一次淡入） */
 #yuri-front .obs-layer[data-state='open'] .obs-body > * {
-  animation: obs-tab-in 160ms $motion-ease both;
+  animation: obs-content-in $content-in linear both;
 }
 
-@keyframes obs-tab-in {
+@keyframes obs-content-in {
   from {
     opacity: 0;
-    transform: translateY(3px);
   }
 
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
-/* 触屏设备回退：不做 clip-path 逐帧重绘，只淡入 + 自上落下 8px */
-@media (pointer: coarse) {
-  #yuri-front .obs-window {
-    clip-path: none;
-    transform: translateY(-8px);
-    transition:
-      opacity $motion-open $motion-ease,
-      transform $motion-open $motion-ease;
-  }
-
-  #yuri-front .obs-layer[data-state='closing'] .obs-window {
-    transition:
-      opacity $motion-close ease-in,
-      transform $motion-close ease-in;
-  }
-
-  #yuri-front .obs-layer[data-state='open'] .obs-window {
-    clip-path: none;
-    transform: none;
-  }
+/* 按压：整体下沉 1px，按钮上不出现任何投影 */
+#yuri-front .obs-tab:active,
+#yuri-front .obs-close:active,
+#yuri-front .obs-reset:active,
+#yuri-front .obs-rel-action:active,
+#yuri-front .obs-rail-item:active,
+#yuri-front .obs-char-item:active,
+#yuri-front .map-zoom-button:active:not(:disabled),
+#yuri-front .node-detail .node-close:active,
+#yuri-front .travel-button:active {
+  transform: translate(1px, 1px);
+  transition-duration: 80ms;
 }
 
 /* ── 手机面板层 ──────────────────────────────────────────── */
 
 #yuri-front .phone-layer-scrim {
   opacity: 0;
-  transition: opacity $panel-open $motion-ease;
+  transition: opacity $panel-open $wipe-ease;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-layer-scrim {
@@ -136,8 +112,8 @@ $banner-out: 140ms;
   opacity: 0;
   transform: translateY(10px);
   transition:
-    opacity $banner-in $motion-ease,
-    transform $panel-open $motion-ease;
+    opacity $banner-in $wipe-ease,
+    transform $panel-open $wipe-ease;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-frame {
@@ -154,7 +130,7 @@ $banner-out: 140ms;
 
 /* 入场 220ms 落 6px（同一批的延迟由 phone-banner.ts 写 animation-delay） */
 #yuri-front .phone-banner {
-  animation: phone-banner-drop $banner-in $motion-ease both;
+  animation: phone-banner-drop $banner-in $wipe-ease both;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
@@ -199,7 +175,6 @@ $banner-out: 140ms;
 #yuri-front[data-animate='false'] .obs-window {
   clip-path: none;
   opacity: 1;
-  transform: none;
 }
 
 #yuri-front[data-animate='false'] .obs-body > *,
@@ -248,7 +223,6 @@ $banner-out: 140ms;
   #yuri-front .obs-window {
     clip-path: none;
     opacity: 1;
-    transform: none;
   }
 
   #yuri-front .obs-body > *,

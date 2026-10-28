@@ -2,7 +2,7 @@
 
 $targets: m.$press-targets;
 
-/* ── 纸边按压：所有可点纸片共用一套节奏 ─────────────────── */
+/* ── 硬边按压：整体位移 2px，硬投影归零；松开走 180ms 回位 ───────── */
 
 #yuri-front :is(#{$targets}) {
   position: relative;
@@ -10,8 +10,8 @@ $targets: m.$press-targets;
   @include m.focus-ring;
 
   &:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: inset 0 -1px 0 rgba(var(--rose), 0.32);
+    transform: translate(2px, 2px);
+    box-shadow: none;
   }
 
   &:disabled {
@@ -19,86 +19,61 @@ $targets: m.$press-targets;
   }
 }
 
-/* 触摸端不保留悬停抬升 */
+/* 触摸端不保留悬停反色的余影 */
 @include m.coarse-pointer {
   #yuri-front :is(#{$targets}):hover {
     transform: none;
   }
 }
 
-/* ── 墨点落款：按下落一点玫瑰墨 ────────────────────────────── */
-
-#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
-  position: absolute;
-  top: 50%;
-  left: 14px;
-  width: 4px;
-  height: 4px;
-  margin-top: -2px;
-  border-radius: 50%;
-  background: var(--seal-dot, rgba(60, 24, 40, 0.5));
-  opacity: 0;
-  transform: scale(0.4);
-  transition:
-    opacity m.$press m.$ease-ink,
-    transform m.$press m.$ease-paper;
-  content: '';
-  pointer-events: none;
-}
-
-#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled)::before {
-  opacity: 0.6;
-  transform: scale(1);
-}
-
-/* 盖下后的墨晕：从印章里泅开的一圈，只播一次 */
+/* ── 实底按钮按下后：底沿一道白色细线擦过，只播一次 ─────────────── */
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
   position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: radial-gradient(circle at 50% 50%, rgba(52, 18, 32, 0.32), transparent 66%);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: #fff;
   opacity: 0;
-  transform: scale(0.7);
+  transform: scaleX(0);
+  transform-origin: left center;
   content: '';
   pointer-events: none;
 }
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button).is-sealed::after {
-  animation: front-seal 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fired-line 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes front-seal {
+@keyframes fired-line {
   0% {
-    opacity: 0.55;
-    transform: scale(0.7);
+    opacity: 0.9;
+    transform: scaleX(0);
   }
 
   100% {
     opacity: 0;
-    transform: scale(1.18);
+    transform: scaleX(1);
   }
 }
 
-/* 开局提交是深玫瑰底，回用浅纸色做印泥 */
+/* 开局提交是深底按钮，细线用纸色 */
 #yuri-front .opening-shell .primary-button {
   position: relative;
-  --seal-dot: rgba(255, 250, 248, 0.62);
-  --seal-line: rgba(255, 250, 248, 0.8);
 }
 
-/* 减少动效时不做印章，只把按下换成背景加深 */
+/* 减少动效时不做擦线，只把按下换成位移 0 的底色加深 */
 @include m.reduced-motion {
   #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled) {
     transform: none;
-    box-shadow: inset 0 0 0 999px rgba(38, 16, 26, 0.14);
   }
 
-  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
     display: none;
   }
 
-  /* 全局 reduced 兜底会把所有过渡压成 0.01ms，这里把纸边按压的 90–180ms 要回来 */
+  /* 全局 reduced 兜底会把所有过渡压成 0.01ms，这里把按压节奏要回来 */
   #yuri-front :is(#{$targets}) {
     transition-duration: m.$hover !important;
   }
@@ -108,7 +83,7 @@ $targets: m.$press-targets;
   }
 }
 
-/* ── 落墨输入：聚焦时一笔墨线从左写到纸边 ───────────────── */
+/* ── 下划线输入：聚焦时底线变猩红，自左向右擦满 ─────────────────── */
 
 #yuri-front .story-input {
   caret-color: var(--accent);
@@ -118,16 +93,16 @@ $targets: m.$press-targets;
   position: absolute;
   z-index: 2;
   right: 0;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, rgba(var(--rose), 0.15), rgba(var(--rose), 0.85) 96%, rgba(var(--rose), 0.95));
+  background: var(--accent);
   opacity: 0;
   transform: scaleX(0);
   transform-origin: left center;
   transition:
-    transform m.$expand m.$ease-paper,
-    opacity m.$focus m.$ease-ink;
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 120ms linear;
   content: '';
   pointer-events: none;
 }
@@ -137,23 +112,20 @@ $targets: m.$press-targets;
   transform: scaleX(1);
 }
 
-/* 发出去的一刻：纸页往里收一下再铺平，只播一次 */
-
-#yuri-front .story-composer.is-sent {
-  animation: story-composer-fold 300ms m.$ease-paper 1 both;
+/* 发出的一刻：擦满的猩红底线往下落 6px 并淡出，只播一次 */
+#yuri-front .story-composer.is-sent::after {
+  animation: composer-line-drop 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes story-composer-fold {
-  0% {
-    transform: none;
+@keyframes composer-line-drop {
+  from {
+    opacity: 1;
+    transform: translateY(0) scaleX(1);
   }
 
-  35% {
-    transform: translateY(2px) scale(0.985, 0.94);
-  }
-
-  100% {
-    transform: none;
+  to {
+    opacity: 0;
+    transform: translateY(6px) scaleX(1);
   }
 }
 
@@ -161,7 +133,7 @@ $targets: m.$press-targets;
   transition: none;
 }
 
-@include m.still('.story-composer.is-sent') {
+@include m.still('.story-composer.is-sent::after') {
   animation: none;
 }
 
@@ -180,8 +152,8 @@ $targets: m.$press-targets;
   bottom: 2px;
   left: 0;
   width: var(--obs-tab-w, 0px);
-  height: 1px;
-  background: rgba(var(--rose), 0.6);
+  height: 2px;
+  background: var(--accent);
   opacity: var(--obs-tab-o, 0);
   transform: translateX(var(--obs-tab-x, 0px));
   transition:

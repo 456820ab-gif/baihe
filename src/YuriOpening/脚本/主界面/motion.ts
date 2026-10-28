@@ -1,5 +1,5 @@
 /*
- * 常驻动效的运行时：指针视差、时间墨线、印章与页签下划线。
+ * 常驻动效的运行时：指针视差、时间擦线与页签下划线。
  * 循环与氛围本身都在 motion.ambient.scss / motion.interaction.scss 里，这里只做 CSS 做不到的部分。
  */
 
@@ -26,7 +26,7 @@ export function tapHaptic(duration = 8): void {
   }
 }
 
-/** 主操作成功时盖一枚玫瑰小印；减少动效时不做印章动画。 */
+/** 主操作成功后沿底边擦过一道细线，只播一次；减少动效时不做。 */
 export function stampSeal(target: Element | null | undefined): void {
   const el = target as HTMLElement | null;
   if (!el || isReducedMotion()) return;

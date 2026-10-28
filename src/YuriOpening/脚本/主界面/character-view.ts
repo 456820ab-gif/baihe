@@ -194,13 +194,13 @@ export class CharacterView {
     wrap.style.setProperty('--char-glow', char.glow);
 
     const rail = make('div', 'obs-char-rail');
-    CHARACTERS.forEach(item => {
+    CHARACTERS.forEach((item, index) => {
       const railButton = make('button', `obs-rail-item${item.id === char.id ? ' is-active' : ''}`);
       railButton.type = 'button';
       railButton.dataset.character = item.id;
       railButton.style.setProperty('--char-accent', item.accent);
       railButton.setAttribute('aria-label', item.name);
-      railButton.append(flowerMark(item));
+      railButton.append(make('span', 'obs-rail-num', String(index + 1).padStart(2, '0')), flowerMark(item));
       railButton.addEventListener('click', () => {
         if (item.id === char.id) return;
         this.selected = item.id;
