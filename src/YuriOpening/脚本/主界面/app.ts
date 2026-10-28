@@ -240,7 +240,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
   let unmountOpening: (() => void) | null = null;
   let floorFull = false;
   let floorPromoted = false;
-  let floorPinned = false;
   let floorFrameStyle = '';
 
   function applySettings() {
@@ -380,16 +379,9 @@ export function mountApp(options: { floor?: boolean } = {}) {
   }
 
   function restoreFloorFrame() {
-    /* 楼层模式从挂载起就把 iframe 钉在视口上：楼层本体高度归零，还原会把它一起裁掉 */
-    if (floorPinned) return;
     const frame = window.frameElement as HTMLIFrameElement | null;
     if (frame && floorPromoted) frame.style.cssText = floorFrameStyle;
     floorPromoted = false;
-  }
-
-  function pinFloorFrame() {
-    promoteFloorFrame();
-    floorPinned = true;
   }
 
   async function toggleFloorFull() {
@@ -573,8 +565,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
 
   applySettings();
   updatePlayer(true);
-  /* 卡片里的预置脚本已经钉过一次；远端脚本没跑到那一步时，这里补上 */
-  if (options.floor) pinFloorFrame();
   renderAll();
   updateGate();
   const hostWin = hostWindow();
