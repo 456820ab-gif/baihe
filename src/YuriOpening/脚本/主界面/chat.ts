@@ -528,15 +528,29 @@ export function mountChat(host: HTMLElement): ChatHandle {
     return true;
   }
 
+  function markSent() {
+    composer.classList.remove('is-sent');
+    void composer.offsetWidth;
+    composer.classList.add('is-sent');
+  }
+
+  composer.addEventListener('animationend', event => {
+    if (event.target === composer) composer.classList.remove('is-sent');
+  });
+
   function submit() {
     const value = input.value.trim();
     if (!value) return;
-    if (nativeSend()) return;
+    if (nativeSend()) {
+      markSent();
+      return;
+    }
     try {
       triggerSlash(`/send ${value.replace(/\n/g, ' ')}`);
       triggerSlash('/trigger');
       input.value = '';
       input.style.height = '';
+      markSent();
     } catch {
       setStatus('原生输入不可用，请切回原生视图。');
     }

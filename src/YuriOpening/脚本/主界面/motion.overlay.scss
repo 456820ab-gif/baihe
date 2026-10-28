@@ -31,6 +31,15 @@ $banner-out: 140ms;
   opacity: 1;
 }
 
+/* 设置是小窗：遮罩压深一档，背景不再抢读（只改颜色，不动 blur） */
+#yuri-front .obs-layer:has(.obs-window[data-tab='settings']) {
+  background: rgba(9, 6, 12, 0.7);
+}
+
+#yuri-front[data-theme='light'] .obs-layer:has(.obs-window[data-tab='settings']) {
+  background: rgba(60, 44, 52, 0.42);
+}
+
 #yuri-front .obs-layer[data-state='closing'] {
   transition-duration: $motion-close;
 }
@@ -40,13 +49,16 @@ $banner-out: 140ms;
   pointer-events: none;
 }
 
-/* 窗口：clip-path 收放 + 透明度；blur 28px → 10px，静止不参与动画 */
+/* 窗口：纸页自上而下展开（clip-path 底边下放 + 轻微下落），关闭沿原路快速收回；blur 静止不参与动画 */
 #yuri-front .obs-window {
-  clip-path: inset(12% 16% 12% 16%);
+  clip-path: inset(0 0 72% 0 round var(--radius));
   opacity: 0;
+  transform: translateY(-10px);
+  transform-origin: top center;
   transition:
     clip-path $motion-open $motion-ease,
-    opacity $motion-open $motion-ease,
+    opacity 200ms ease-out,
+    transform $motion-open $motion-ease,
     width 0.28s ease;
   backdrop-filter: blur(10px) saturate(130%);
   -webkit-backdrop-filter: blur(10px) saturate(130%);
@@ -54,14 +66,16 @@ $banner-out: 140ms;
 
 #yuri-front .obs-layer[data-state='closing'] .obs-window {
   transition:
-    clip-path $motion-close $motion-ease,
-    opacity $motion-close $motion-ease,
+    clip-path $motion-close ease-in,
+    opacity $motion-close ease-in,
+    transform $motion-close ease-in,
     width 0.28s ease;
 }
 
 #yuri-front .obs-layer[data-state='open'] .obs-window {
-  clip-path: inset(0);
+  clip-path: inset(0 0 0 0 round var(--radius));
   opacity: 1;
+  transform: none;
 }
 
 /* 入场交给上面的 clip/opacity 过渡，停掉 styles.scss 里的旧缩放关键帧 */
@@ -69,9 +83,9 @@ $banner-out: 140ms;
   animation: none;
 }
 
-/* 页签内容：140ms 淡入上移 4px */
+/* 页签内容：容器级一次 180ms 淡入上移 4px（render(true) 会重建 body，不对内部元素做 stagger） */
 #yuri-front .obs-layer[data-state='open'] .obs-body > * {
-  animation: obs-tab-in 140ms $motion-ease both;
+  animation: obs-tab-in 180ms $motion-ease both;
 }
 
 @keyframes obs-tab-in {
@@ -86,11 +100,11 @@ $banner-out: 140ms;
   }
 }
 
-/* 触屏设备回退：不做 clip-path 逐帧重绘，只淡入 + 上移 8px */
+/* 触屏设备回退：不做 clip-path 逐帧重绘，只淡入 + 自上落下 8px */
 @media (pointer: coarse) {
   #yuri-front .obs-window {
     clip-path: none;
-    transform: translateY(8px);
+    transform: translateY(-8px);
     transition:
       opacity $motion-open $motion-ease,
       transform $motion-open $motion-ease,
@@ -99,12 +113,13 @@ $banner-out: 140ms;
 
   #yuri-front .obs-layer[data-state='closing'] .obs-window {
     transition:
-      opacity $motion-close $motion-ease,
-      transform $motion-close $motion-ease,
+      opacity $motion-close ease-in,
+      transform $motion-close ease-in,
       width 0.28s ease;
   }
 
   #yuri-front .obs-layer[data-state='open'] .obs-window {
+    clip-path: none;
     transform: none;
   }
 }

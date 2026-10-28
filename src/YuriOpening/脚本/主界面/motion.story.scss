@@ -25,20 +25,36 @@
   }
 }
 
-.story-list > .story-typing::before {
-  animation: story-typing-breathe 2.2s ease-in-out infinite;
+/* 写字的墨点：一小段墨在淡线上来回走，只动 transform，周期 2.8s */
+
+.story-list > .story-typing::after {
+  animation: story-ink-write 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
-@keyframes story-typing-breathe {
-  0%,
-  100% {
-    opacity: 0.35;
-    transform: translateY(1px);
+@keyframes story-ink-write {
+  from {
+    transform: translateX(0);
   }
 
-  50% {
-    opacity: 1;
-    transform: translateY(-1px);
+  to {
+    transform: translateX(20px);
+  }
+}
+
+/* 新到的叙述：左侧细线从上往下画出，只播一次 */
+
+.story-msg.is-arriving .story-bubble::before {
+  animation: story-ink-rule 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--arrive-delay, 0ms) + 80ms);
+}
+
+@keyframes story-ink-rule {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
   }
 }
 
@@ -88,10 +104,17 @@
   }
 }
 
+#yuri-front[data-animate='false'] .story-msg.is-arriving,
+#yuri-front[data-animate='false'] .story-msg.is-arriving .story-bubble::before,
+#yuri-front[data-animate='false'] .story-list > .story-typing::after {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .story-list > .story-msg,
   .story-msg.is-arriving,
-  .story-list > .story-typing::before,
+  .story-msg.is-arriving .story-bubble::before,
+  .story-list > .story-typing::after,
   .obs-gate-fill.is-sweeping::after {
     animation: none;
     animation-delay: 0s;

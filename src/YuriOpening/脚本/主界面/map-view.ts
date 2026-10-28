@@ -271,7 +271,9 @@ export class MapView {
     bob.append(svg('ellipse', { cx: '0', cy: '9.5', rx: '3.2', ry: '1.1', class: 'heroine-pin-shadow' }));
     bob.append(svg('path', { d: 'M0,9 C-2.6,5.8 -6.5,3.2 -6.5,-1.5 A6.5,6.5 0 1,1 6.5,-1.5 C6.5,3.2 2.6,5.8 0,9 Z', class: 'heroine-pin-body' }));
     bob.append(svg('path', { d: flowerMarkPath(char.flower, 4.4), transform: 'translate(0, -1.6)', class: 'heroine-pin-flower' }));
-    group.append(bob);
+    const name = svg('text', { x: '0', y: '-11', class: 'heroine-pin-name' });
+    name.textContent = char.name;
+    group.append(bob, name);
     return group;
   }
 

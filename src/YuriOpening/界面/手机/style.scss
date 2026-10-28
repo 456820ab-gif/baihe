@@ -21,7 +21,7 @@
 
 #phone-root-host {
   // ── 主色：玫红
-  --ph-accent:        #b8627f;
+  --ph-accent:        #a24e6c;
   --ph-accent-mid:    #c97490;
   --ph-accent-light:  #e0a0b2;
   --ph-accent-faint:  #f9ecef;
@@ -42,23 +42,28 @@
   --ph-surface:       #ffffff;
   --ph-card:          #fffdfc;
   --ph-ink:           #2b1e1b;
-  --ph-ink-soft:      #7a6058;
-  --ph-ink-faint:     #b3a19e;
+  --ph-ink-soft:      #674e47;
+  --ph-ink-faint:     #7c655f;
   --ph-border:        #e7dbd7;
   --ph-border-soft:   #f1e9e6;
   --ph-hairline:      rgba(120, 90, 96, 0.1);
+  --ph-glass:         rgba(255, 255, 255, 0.95);
+  --ph-chip:          rgba(120, 96, 102, 0.09);
+  --ph-shell-edge:    rgba(255, 255, 255, 0.6);
+  --ph-ok:            #2f7d54;
+  --ph-err:           #a93a2e;
 
   // ── 气泡
-  --ph-bubble-out:      linear-gradient(135deg, #c06a86 0%, #b05571 55%, #a24a67 100%);
+  --ph-bubble-out:      linear-gradient(135deg, #b35a79 0%, #a64f6d 55%, #9a4766 100%);
   --ph-bubble-out-solid:#b8627f;
   --ph-bubble-out-ink:  #ffffff;
   --ph-bubble-in:       #ffffff;
   --ph-bubble-in-ink:   #2b1e1b;
 
   // ── 渐变
-  --ph-topbar: linear-gradient(135deg, #b8627f 0%, #a95575 45%, #8f6a97 100%);
+  --ph-topbar: linear-gradient(135deg, #b35a79 0%, #a14d6b 45%, #7d5f86 100%);
   --ph-cover:  linear-gradient(158deg, #d8889e 0%, #c06a86 30%, #a05a7e 62%, #8f6a97 100%);
-  --ph-fab:    linear-gradient(140deg, #c97490 0%, #b8627f 55%, #9a4a66 100%);
+  --ph-fab:    linear-gradient(140deg, #b35a79 0%, #a64f6d 55%, #8f4361 100%);
 
   // ── 圆角：四档统一
   --ph-r-sm:   8px;
@@ -70,12 +75,12 @@
   --ph-sh-1: 0 1px 2px rgba(74, 46, 56, 0.06);
   --ph-sh-2: 0 2px 10px rgba(74, 46, 56, 0.09), 0 1px 2px rgba(74, 46, 56, 0.05);
   --ph-sh-3: 0 10px 30px rgba(74, 46, 56, 0.16), 0 2px 8px rgba(74, 46, 56, 0.08);
-  --ph-sh-accent: 0 4px 14px rgba(184, 98, 127, 0.36);
-  --ph-sh-accent-lg: 0 8px 24px rgba(184, 98, 127, 0.44);
+  --ph-sh-accent: 0 4px 12px rgba(74, 46, 56, 0.22);
+  --ph-sh-accent-lg: 0 8px 20px rgba(74, 46, 56, 0.26);
 
-  // ── 动效
-  --ph-ease:    cubic-bezier(0.32, 0.72, 0, 1);
-  --ph-ease-pop: cubic-bezier(0.34, 1.42, 0.64, 1);
+  // ── 动效：统一一条无回弹曲线（--ph-ease-pop 保留名字，已去掉 overshoot）
+  --ph-ease:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ph-ease-pop: cubic-bezier(0.22, 1, 0.36, 1);
 
   position: fixed;
   z-index: 9100;
@@ -84,6 +89,51 @@
 
   font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+// 主应用深色主题：夜雨巷 · 墨玻璃。只覆盖令牌，结构样式全部复用
+#yuri-front[data-theme='dark'] #phone-root-host {
+  --ph-accent:        #e38aa5;
+  --ph-accent-mid:    #d27894;
+  --ph-accent-light:  #b8738a;
+  --ph-accent-faint:  #34232f;
+  --ph-accent-deep:   #f0b4c6;
+  --ph-petal-soft:    #2c2130;
+  --ph-violet:        #b295b8;
+  --ph-violet-soft:   #8f6a97;
+
+  --ph-bg:            #1a1520;
+  --ph-bg2:           #15111a;
+  --ph-surface:       #231c29;
+  --ph-card:          #261f2c;
+  --ph-ink:           #f3e9ec;
+  --ph-ink-soft:      #d0c0c7;
+  --ph-ink-faint:     #a8979f;
+  --ph-border:        #3a3040;
+  --ph-border-soft:   #2e2634;
+  --ph-hairline:      rgba(243, 233, 236, 0.08);
+  --ph-glass:         rgba(28, 23, 33, 0.94);
+  --ph-chip:          rgba(243, 233, 236, 0.07);
+  --ph-shell-edge:    rgba(243, 233, 236, 0.06);
+  --ph-ok:            #8fc3ad;
+  --ph-err:           #ef9a9a;
+
+  --ph-bubble-out:      linear-gradient(135deg, #9a4d69 0%, #87425e 55%, #743a57 100%);
+  --ph-bubble-out-solid:#87425e;
+  --ph-bubble-in:       #2a2230;
+  --ph-bubble-in-ink:   #f3e9ec;
+
+  --ph-topbar: linear-gradient(135deg, #4a2b3c 0%, #3d2738 50%, #322a42 100%);
+  --ph-cover:  linear-gradient(158deg, #5a3044 0%, #4a2a40 40%, #362840 100%);
+  --ph-fab:    linear-gradient(140deg, #a95a76 0%, #944a66 55%, #7e3e58 100%);
+
+  --ph-sh-1: 0 1px 2px rgba(0, 0, 0, 0.28);
+  --ph-sh-2: 0 2px 10px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --ph-sh-3: 0 10px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --ph-sh-accent: 0 4px 12px rgba(0, 0, 0, 0.36);
+  --ph-sh-accent-lg: 0 8px 20px rgba(0, 0, 0, 0.42);
+
+  color-scheme: dark;
 }
 
 // 尊重系统「减少动态效果」
@@ -102,19 +152,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 @keyframes ph-fab-in {
-  from { opacity: 0; transform: scale(0.72); }
+  from { opacity: 0; transform: scale(0.86); }
   to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes ph-bubble-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
 
 @keyframes ph-heart-pop {
   0%   { transform: scale(1); }
-  38%  { transform: scale(1.32); }
+  40%  { transform: scale(1.14); }
   100% { transform: scale(1); }
+}
+
+// 输入中三点：只做 2px 位移，不改透明度
+@keyframes ph-typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30%           { transform: translateY(-2px); }
 }
 
 @keyframes ph-fade-up {
@@ -143,7 +199,7 @@
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 6px 18px rgba(154, 74, 102, 0.46),
+    0 6px 18px rgba(74, 46, 56, 0.3),
     0 2px 5px rgba(74, 46, 56, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.34),
     inset 0 -1px 0 rgba(120, 50, 74, 0.24);
@@ -168,13 +224,13 @@
   svg { width: 21px; height: 21px; }
 
   &:hover {
-    transform: scale(1.08);
+    transform: scale(1.04);
     box-shadow:
-      0 10px 26px rgba(154, 74, 102, 0.54),
+      0 10px 26px rgba(74, 46, 56, 0.34),
       0 3px 8px rgba(74, 46, 56, 0.22),
       inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
-  &:active { transform: scale(0.95); }
+  &:active { transform: scale(0.96); }
 
   // 拖动中：必须保留 transition: none，否则按钮跟不上手指
   &.is-dragging,
@@ -203,7 +259,7 @@
   padding: 0 4px;
   display: none;
   pointer-events: none;
-  box-shadow: 0 2px 6px rgba(200, 60, 76, 0.4);
+  box-shadow: 0 2px 6px rgba(74, 46, 56, 0.28);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -225,7 +281,7 @@
   // 外壳只做淡入：浮起交给主应用面板层（.phone-frame）
   transition: opacity 0.26s ease;
   // 内描边让整机与页面内容分离开
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 1px var(--ph-shell-edge);
 
   &.is-open {
     opacity: 1;
@@ -264,7 +320,7 @@
 .phone-close-btn,
 .phone-mode-btn {
   position: absolute;
-  top: calc(10px + env(safe-area-inset-top, 0px));
+  top: calc(8px + env(safe-area-inset-top, 0px));
   width: 28px;
   height: 28px;
   border: 1px solid rgba(255, 255, 255, 0.34);
@@ -281,16 +337,17 @@
   -webkit-backdrop-filter: blur(6px);
 
   svg { width: 13px; height: 13px; }
-  &:hover { background: rgba(255, 255, 255, 0.38); transform: scale(1.06); }
-  &:active { transform: scale(0.92); }
+  &:hover { background: rgba(255, 255, 255, 0.34); }
+  &:active { transform: scale(0.94); }
+  &:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.8); outline-offset: 2px; }
 }
 
 .phone-close-btn {
-  right: 12px;
+  right: 14px;
 }
 
 .phone-mode-btn {
-  right: 48px;
+  right: 50px;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -301,14 +358,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 84px 8px 16px;
+  // 最小高度要盖住绝对定位的 28px 关闭键（8 + 28 + 8），否则按钮会压到内容区
+  min-height: calc(44px + env(safe-area-inset-top, 0px));
+  padding: calc(8px + env(safe-area-inset-top, 0px)) 92px 8px 16px;
   background: var(--ph-topbar);
   color: #fff;
   font-size: 11px;
   letter-spacing: 0.04em;
   flex-shrink: 0;
   position: relative;
-  text-shadow: 0 1px 1px rgba(120, 50, 74, 0.28);
+  text-shadow: 0 1px 1px rgba(40, 20, 30, 0.24);
 
   // 底部高光线，替代原来的纯线，做出玻璃边缘
   &::after {
@@ -377,7 +436,7 @@
 
 .phone-navbar {
   display: flex;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--ph-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--ph-hairline);
@@ -414,9 +473,9 @@
   &.is-active {
     color: var(--ph-accent);
 
-    svg { transform: translateY(-1px) scale(1.06); }
+    svg { transform: translateY(-1px); }
 
-    // 顶部胶囊指示条，替代原来的固定短线
+    // 顶部短线指示条；支持 :has() 时改由 .phone-navbar::after 滑动承担
     &::before {
       content: '';
       position: absolute;
@@ -426,17 +485,39 @@
       width: 26px;
       height: 2.5px;
       border-radius: 0 0 3px 3px;
-      background: linear-gradient(90deg, var(--ph-accent-light) 0%, var(--ph-accent) 50%, var(--ph-violet-soft) 100%);
-      box-shadow: 0 1px 4px rgba(184, 98, 127, 0.4);
-      animation: ph-bubble-in 0.26s var(--ph-ease) both;
+      background: var(--ph-accent);
     }
   }
 
-  &:active svg { transform: scale(0.9); }
+  &:active svg { transform: scale(0.92); }
+  &:focus-visible { outline: 2px solid var(--ph-accent-light); outline-offset: -4px; border-radius: 10px; }
+}
+
+// 页签下划线滑动：纯 CSS，位置跟随 .is-active 所在的序号
+@supports selector(:has(*)) {
+  .phone-tab.is-active::before { content: none; }
+
+  .phone-navbar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 25%;
+    height: 2.5px;
+    background: linear-gradient(var(--ph-accent), var(--ph-accent)) 50% 0 / 26px 100% no-repeat;
+    transform: translateX(0);
+    transition: transform 0.28s var(--ph-ease);
+    pointer-events: none;
+  }
+
+  .phone-navbar:not(:has(.phone-tab.is-active))::after { opacity: 0; }
+  .phone-navbar:has(.phone-tab:nth-child(2).is-active)::after { transform: translateX(100%); }
+  .phone-navbar:has(.phone-tab:nth-child(3).is-active)::after { transform: translateX(200%); }
+  .phone-navbar:has(.phone-tab:nth-child(4).is-active)::after { transform: translateX(300%); }
 }
 
 .phone-tab-label {
-  font-size: 10px;
+  font-size: 10.5px;
   letter-spacing: 0.03em;
   font-weight: 500;
 }
@@ -451,7 +532,7 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  animation: ph-fade-up 0.24s var(--ph-ease) both;
+  animation: ph-fade-up 0.22s var(--ph-ease) both;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -471,15 +552,15 @@
   justify-content: center;
   height: 100%;
   padding: 24px;
+  background: radial-gradient(circle at 50% 44%, var(--ph-petal-soft) 0%, transparent 58%);
 }
 
 .wc-empty-deco {
-  animation: ph-fade-up 0.5s var(--ph-ease) both;
+  animation: ph-fade-up 0.36s var(--ph-ease) both;
 
   svg {
-    width: 116px;
-    height: 116px;
-    filter: drop-shadow(0 6px 16px rgba(184, 98, 127, 0.16));
+    width: 148px;
+    height: 148px;
   }
 }
 
@@ -516,7 +597,7 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    box-shadow: var(--ph-sh-2), 0 0 0 1px rgba(154, 74, 102, 0.14);
+    box-shadow: var(--ph-sh-2), 0 0 0 1px var(--ph-hairline);
     display: block;
   }
 }
@@ -575,7 +656,7 @@
   align-items: center;
   gap: 8px;
   padding: 9px 12px 9px 8px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--ph-glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--ph-hairline);
@@ -647,7 +728,7 @@
   margin: 4px 0 0;
   padding: 3px 10px;
   border-radius: var(--ph-r-full);
-  background: rgba(120, 96, 102, 0.09);
+  background: var(--ph-chip);
   color: var(--ph-ink-faint);
   font-size: 11px;
   line-height: 1.5;
@@ -662,7 +743,9 @@
   display: flex;
   align-items: flex-end;
   gap: 7px;
-  animation: ph-bubble-in 0.3s var(--ph-ease) both;
+
+  // 只给进页后新到的消息做入场；历史记录跟随整页淡入
+  &.is-new { animation: ph-bubble-in 0.24s var(--ph-ease) both; }
 
   &.wc-msg-out { flex-direction: row-reverse; }
 }
@@ -677,7 +760,7 @@
     height: 30px;
     border-radius: 9px;
     display: block;
-    box-shadow: var(--ph-sh-1), 0 0 0 1px rgba(154, 74, 102, 0.12);
+    box-shadow: var(--ph-sh-1), 0 0 0 1px var(--ph-hairline);
   }
 }
 
@@ -695,8 +778,8 @@
     color: var(--ph-bubble-out-ink);
     border-radius: 15px 4px 15px 15px;
     box-shadow:
-      0 3px 12px rgba(154, 74, 102, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      0 2px 8px rgba(74, 46, 56, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
   }
 
   .wc-msg-in & {
@@ -708,21 +791,27 @@
   }
 
   &.is-streaming {
-    opacity: 0.7;
+    opacity: 0.78;
+  }
+}
 
-    // 流式回复时右下角一颗呼吸的点，提示还在打字
-    &::after {
-      content: '';
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      margin-left: 3px;
-      border-radius: 50%;
-      background: currentColor;
-      opacity: 0.55;
-      animation: ph-heart-pop 1.1s ease-in-out infinite;
-      vertical-align: middle;
-    }
+// 输入中三点：首个 token 写入时随 textContent 一起被替换掉；动效关闭时就是静态省略号
+.wc-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 1.2em;
+  vertical-align: middle;
+
+  i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: ph-typing 1.2s ease-in-out infinite;
+
+    &:nth-child(2) { animation-delay: 0.15s; }
+    &:nth-child(3) { animation-delay: 0.3s; }
   }
 }
 
@@ -771,7 +860,7 @@
   align-items: flex-end;
   gap: 7px;
   padding: 9px 10px;
-  background: rgba(255, 255, 255, 0.97);
+  background: var(--ph-glass);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--ph-hairline);
@@ -908,7 +997,7 @@
   &.is-active {
     background: var(--ph-fab);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(184, 98, 127, 0.32);
+    box-shadow: var(--ph-sh-1);
   }
 }
 
@@ -1092,10 +1181,10 @@
   &:active { transform: scale(0.96); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
   &.is-done {
-    background: linear-gradient(140deg, #74c896 0%, #5cb37e 100%);
+    background: var(--ph-ok);
     border-color: transparent;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(92, 179, 126, 0.32);
+    color: var(--ph-surface);
+    box-shadow: var(--ph-sh-1);
   }
   // 被拒绝：变成不可再点的灰度按钮，和成功的绿色区分开
   &.is-rejected {
@@ -1251,8 +1340,8 @@
     width: 52px;
     height: 52px;
     border-radius: 13px;
-    border: 2.5px solid #fff;
-    box-shadow: 0 4px 14px rgba(74, 46, 56, 0.22);
+    border: 2.5px solid var(--ph-surface);
+    box-shadow: 0 4px 14px rgba(40, 24, 32, 0.22);
     display: block;
   }
 }
@@ -1293,7 +1382,6 @@
   font-size: 30px;
   color: var(--ph-accent-light);
   line-height: 1;
-  text-shadow: 0 3px 12px rgba(224, 160, 178, 0.5);
 }
 
 .wc-feed { padding-top: 4px; }
@@ -1318,7 +1406,7 @@
     height: 38px;
     border-radius: 10px;
     display: block;
-    box-shadow: var(--ph-sh-1), 0 0 0 1px rgba(154, 74, 102, 0.12);
+    box-shadow: var(--ph-sh-1), 0 0 0 1px var(--ph-hairline);
   }
 }
 
@@ -1499,8 +1587,8 @@
   word-break: break-all;
   line-height: 1.5;
 
-  &.is-ok { color: #4ea877; }
-  &.is-err { color: #c0392b; }
+  &.is-ok { color: var(--ph-ok); }
+  &.is-err { color: var(--ph-err); }
 }
 
 .wc-advanced {
@@ -1743,4 +1831,12 @@
 // 关闭动态效果时外壳直接显隐，显隐时序交给面板层的 data-state
 #yuri-front[data-animate='false'] #phone-root-host .phone-shell {
   transition: none;
+}
+
+#yuri-front[data-animate='false'] #phone-root-host .phone-shell *,
+#yuri-front[data-animate='false'] #phone-root-host .phone-shell *::before,
+#yuri-front[data-animate='false'] #phone-root-host .phone-shell *::after,
+#yuri-front[data-animate='false'] #phone-root-host .phone-navbar::after {
+  animation: none !important;
+  transition: none !important;
 }

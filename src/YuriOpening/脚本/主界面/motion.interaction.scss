@@ -113,19 +113,60 @@ $targets: m.$press-targets;
   }
 }
 
-/* ── 落墨输入：边框 + 下划线，不用光晕 ───────────────────── */
+/* ── 落墨输入：聚焦时一笔墨线从左写到发送键前 ─────────── */
 
 #yuri-front .story-input {
-  background-image: linear-gradient(90deg, rgba(var(--rose), 0.55), rgba(var(--rose), 0.12));
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0% 1px;
   caret-color: var(--accent);
-  transition: background-size m.$focus m.$ease-paper;
 }
 
-#yuri-front .story-composer:focus-within .story-input {
-  background-size: 100% 1px;
+#yuri-front .story-composer::after {
+  position: absolute;
+  right: 104px;
+  bottom: 8px;
+  left: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(var(--rose), 0.6), rgba(var(--rose), 0.1));
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition:
+    transform m.$expand m.$ease-paper,
+    opacity m.$focus m.$ease-ink;
+  content: '';
+  pointer-events: none;
+}
+
+#yuri-front .story-composer:focus-within::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* 发出去的一刻：纸页往里收一下再铺平，只播一次 */
+
+#yuri-front .story-composer.is-sent {
+  animation: story-composer-fold 300ms m.$ease-paper 1 both;
+}
+
+@keyframes story-composer-fold {
+  0% {
+    transform: none;
+  }
+
+  35% {
+    transform: translateY(2px) scale(0.985, 0.94);
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+@include m.still('.story-composer::after') {
+  transition: none;
+}
+
+@include m.still('.story-composer.is-sent') {
+  animation: none;
 }
 
 #yuri-front .story-modal-input {

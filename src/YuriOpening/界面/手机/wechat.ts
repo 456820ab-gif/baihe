@@ -361,15 +361,24 @@ export function renderChatPage(
     return commitHistory();
   }
 
+  let animateNewRows = false;
+
   function appendBubble(role: 'user' | 'assistant', text: string, streaming = false, message?: ChatMessage) {
-    const row = el(doc, 'div', `wc-msg-row wc-msg-${role === 'user' ? 'out' : 'in'}${message?.kind === 'photo' ? ' wc-msg-photo' : ''}`);
+    const row = el(doc, 'div', `wc-msg-row wc-msg-${role === 'user' ? 'out' : 'in'}${message?.kind === 'photo' ? ' wc-msg-photo' : ''}${animateNewRows ? ' is-new' : ''}`);
     if (role === 'assistant') {
       const av = el(doc, 'div', 'wc-bubble-avatar');
       av.innerHTML = avatarFor(char.def);
       row.appendChild(av);
     }
-    const bubble = el(doc, 'div', `wc-bubble${streaming ? ' is-streaming' : ''}`, text);
-    if (!streaming) applyBubbleEmojiStyle(bubble, text);
+    const bubble = el(doc, 'div', `wc-bubble${streaming ? ' is-streaming' : ''}`, streaming ? undefined : text);
+    if (streaming) {
+      const typing = el(doc, 'span', 'wc-typing');
+      typing.setAttribute('aria-label', '输入中');
+      for (let i = 0; i < 3; i++) typing.appendChild(el(doc, 'i'));
+      bubble.appendChild(typing);
+    } else {
+      applyBubbleEmojiStyle(bubble, text);
+    }
     row.appendChild(bubble);
     msgArea.appendChild(row);
     msgArea.scrollTop = msgArea.scrollHeight;
@@ -380,6 +389,7 @@ export function renderChatPage(
     appendStamp(m.date, m.time);
     appendBubble(m.role as 'user' | 'assistant', m.content, false, m);
   });
+  animateNewRows = true;
 
   if (history.filter(m => m.role !== 'system').length === 0) {
     const greetHistory: ChatMessage[] = [
