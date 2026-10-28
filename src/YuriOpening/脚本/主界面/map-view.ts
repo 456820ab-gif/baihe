@@ -232,6 +232,18 @@ export class MapView {
     if (node.nightGlow) group.append(svg('ellipse', { cx: String(node.x), cy: String(node.y), rx: '30', ry: '21', class: 'node-neon' }));
     group.append(svg('ellipse', { cx: String(node.x), cy: String(node.y), rx: '34', ry: '24', class: 'node-halo' }));
     if (isCurrent) {
+      /* 当前位置：一枚图钉 + 一圈柔光，全是静态标记，不挂任何动画 */
+      const pin = svg('g', { class: 'node-pin', transform: `translate(${node.x}, ${node.y - 36})` });
+      pin.append(svg('path', { d: 'M0,12 C-3.6,5.6 -7.5,2.2 -7.5,-2.6 A7.5,7.5 0 1,1 7.5,-2.6 C7.5,2.2 3.6,5.6 0,12 Z', class: 'node-pin-body' }));
+      pin.append(svg('circle', { cx: '0', cy: '-2.6', r: '2.8', class: 'node-pin-hole' }));
+      group.append(pin);
+      group.append(svg('line', {
+        x1: String(node.x),
+        y1: String(node.y - 26),
+        x2: String(node.x),
+        y2: String(node.y - 13),
+        class: 'node-pin-stem',
+      }));
       [0, 1].forEach(ring => {
         const ripple = svg('circle', { cx: String(node.x), cy: String(node.y), r: '18', class: 'node-ripple' });
         ripple.style.animationDelay = `${ring * 1.6}s`;

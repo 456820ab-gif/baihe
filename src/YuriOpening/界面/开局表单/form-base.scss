@@ -48,7 +48,7 @@ button {
   border: 1px solid rgba(217, 137, 158, 0.22);
   border-radius: 50%;
   pointer-events: none;
-  animation: float-slow 8s ease-in-out infinite;
+  animation: float-slow 20s ease-in-out infinite;
 }
 
 
@@ -122,7 +122,7 @@ button {
   left: 3px;
   color: var(--sage);
   font-size: 16px;
-  animation: twinkle 2.8s ease-in-out infinite;
+  animation: twinkle 16s ease-in-out infinite;
 }
 
 
@@ -131,7 +131,7 @@ button {
   bottom: -2px;
   font-size: 42px;
   line-height: 1;
-  animation: breathe 3.8s ease-in-out infinite;
+  animation: breathe 18s ease-in-out infinite;
 }
 
 
@@ -212,11 +212,15 @@ h1 {
 
 .stepper {
   display: flex;
-  gap: 3px;
-  margin-bottom: 14px;
-  padding: 5px;
+  gap: 0;
+  /* 与面板上缘咬合：页签条看上去是压在表格纸上的一排页签 */
+  margin-bottom: -1px;
+  padding: 0;
   border: 1px solid var(--line);
-  background: rgba(255, 253, 251, 0.76);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: #f4ebec;
+  overflow: visible;
 }
 
 
@@ -227,13 +231,21 @@ h1 {
   justify-content: center;
   gap: 7px;
   min-width: 0;
-  min-height: 38px;
-  padding: 6px 4px;
+  min-height: 40px;
+  padding: 9px 6px;
   border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 10px 10px 0 0;
   background: transparent;
-  color: #b49ba3;
+  color: #a48b93;
   font-size: 11px;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  position: relative;
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+
+.step-item:last-child {
+  border-right: 0;
 }
 
 
@@ -246,8 +258,12 @@ h1 {
 
 
 .step-item.active {
-  background: var(--pink-soft);
+  background: var(--paper);
   color: var(--pink-deep);
+  /* 当前页签微微上抬，与下方的表格纸接上 */
+  transform: translateY(-1px);
+  box-shadow: 0 -3px 12px rgba(148, 91, 111, 0.09);
+  z-index: 2;
 }
 
 
@@ -263,9 +279,17 @@ h1 {
   width: 20px;
   height: 20px;
   border: 1px solid currentColor;
-  border-radius: 50%;
+  /* 方章而不是圆点：序号也是一枚印 */
+  border-radius: 3px;
   font-size: 9px;
   line-height: 1;
+}
+
+
+.step-item.done .step-number {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: #fff;
 }
 
 
@@ -287,6 +311,20 @@ h1 {
 
 .form-panel {
   padding: 28px 30px 20px;
+  border-radius: 0 0 14px 14px;
+}
+
+
+.form-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  width: 1px;
+  /* 装订线的针脚虚线：整张表像被装订过 */
+  background: repeating-linear-gradient(180deg, rgba(217, 137, 158, 0.42) 0 4px, transparent 4px 10px);
+  pointer-events: none;
 }
 
 
@@ -295,8 +333,10 @@ h1 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  padding-bottom: 23px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--soft-line);
+  /* 表头的双线：一条实线加一条更淡的副线 */
+  box-shadow: 0 4px 0 -3px var(--soft-line);
 }
 
 
@@ -322,17 +362,21 @@ h1 {
 
 .page-count {
   flex: 0 0 auto;
-  padding-top: 4px;
+  padding: 6px 10px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
   color: var(--muted);
   font-family: Georgia, serif;
   white-space: nowrap;
+  text-align: center;
 }
 
 
 .page-count strong {
   color: var(--pink-deep);
-  font-size: 27px;
+  font-size: 22px;
   font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
 
@@ -387,6 +431,24 @@ h1 {
 
 .two-columns {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 0;
+}
+
+
+/* 两栏之间的骑缝虚线：整张表有一个中缝 */
+.two-columns > * {
+  padding: 0 16px;
+}
+
+
+.two-columns > *:nth-child(odd) {
+  padding-left: 0;
+  border-right: 1px dashed var(--line);
+}
+
+
+.two-columns > *:nth-child(even) {
+  padding-right: 0;
 }
 
 
@@ -402,15 +464,20 @@ h1 {
 
 .field > span,
 .static-field > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--ink);
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 
 .field b {
   color: var(--pink-deep);
   font-weight: 700;
+  font-size: 11px;
 }
 
 
@@ -436,6 +503,8 @@ h1 {
   line-height: 1.5;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  /* 单元格里的一层浅浅内影，像表格纸 */
+  box-shadow: inset 0 1px 2px rgba(148, 91, 111, 0.07);
 }
 
 
@@ -520,6 +589,21 @@ h1 {
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
+  position: relative;
+  padding-left: 11px;
+}
+
+
+/* 分组标题前的色条：表内的分类栏 */
+.subsection-heading h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0.95em;
+  background: var(--pink);
 }
 
 
@@ -710,6 +794,12 @@ h1 {
   min-width: 0;
   padding: 14px 0;
   border-bottom: 1px solid var(--soft-line);
+  transition: background-color 0.18s ease;
+}
+
+
+.ability-row:hover {
+  background: rgba(251, 236, 239, 0.45);
 }
 
 
@@ -941,7 +1031,10 @@ h1 {
   position: relative;
   padding: 22px 20px 18px;
   border: 1px solid var(--line);
-  background: #fffaf8;
+  /* 填好的档案纸：底下有淡淡的横格线 */
+  background:
+    repeating-linear-gradient(180deg, transparent 0 25px, rgba(217, 137, 158, 0.09) 25px 26px),
+    #fffaf8;
 }
 
 
@@ -1225,9 +1318,16 @@ h1 {
   min-width: 126px;
   padding: 8px 16px;
   border: 1px solid var(--pink-deep);
+  border-radius: 4px;
   background: var(--pink-deep);
   color: #fffdfb;
-  box-shadow: 0 6px 14px rgba(169, 87, 115, 0.16);
+  /* 印上的字用衬线体：按下时它像一枚章 */
+  font-family: Georgia, 'Songti SC', serif;
+  font-size: 12.5px;
+  letter-spacing: 0.12em;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 253, 251, 0.26),
+    0 6px 14px rgba(169, 87, 115, 0.16);
 }
 
 
@@ -1310,7 +1410,7 @@ h1 {
   color: var(--sage);
   font-family: Georgia, serif;
   font-size: 25px;
-  animation: breathe 3.8s ease-in-out infinite;
+  animation: breathe 18s ease-in-out infinite;
 }
 
 
@@ -1445,11 +1545,9 @@ h1 {
 @keyframes twinkle {
   0%,
   100% {
-    opacity: 0.45;
     transform: scale(0.9) rotate(0deg);
   }
   50% {
-    opacity: 1;
     transform: scale(1.12) rotate(12deg);
   }
 }

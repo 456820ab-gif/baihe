@@ -14,7 +14,13 @@
       </div>
       <div class="brand-copy">
         <p class="eyebrow">WELCOME TO LILY CITY</p>
-        <h1>百合花期</h1>
+        <div class="title-line">
+          <h1>百合花期</h1>
+          <span class="title-seal" aria-hidden="true">
+            <span>百合</span>
+            <span>花期</span>
+          </span>
+        </div>
         <p class="subtitle">一段慢慢升温的城市恋爱故事，正等着你推开第一扇门。</p>
       </div>
       <div class="world-note">
@@ -382,8 +388,11 @@ async function enterForm() {
   min-height: 100vh;
   margin: 0 auto;
   overflow: hidden;
-  padding: 30px 24px 24px;
-  background: #fffaf8;
+  /* 扉页：上留白宽一些，纸面从暖白渐到米色 */
+  padding: 46px 26px 26px;
+  background:
+    radial-gradient(120% 58% at 14% -6%, rgba(217, 137, 158, 0.1), transparent 62%),
+    linear-gradient(180deg, #fffaf8 0%, #fdf6f1 56%, #faf0ea 100%);
 }
 
 .ambient {
@@ -394,7 +403,7 @@ async function enterForm() {
   border: 1px solid rgba(217, 137, 158, 0.22);
   border-radius: 50%;
   pointer-events: none;
-  animation: float-slow 8s ease-in-out infinite;
+  animation: float-slow 20s ease-in-out infinite;
 }
 
 .ambient-one {
@@ -437,7 +446,8 @@ async function enterForm() {
   align-items: center;
   gap: 16px;
   min-width: 0;
-  padding: 16px 4px 14px;
+  position: relative;
+  padding: 16px 4px 22px;
 }
 
 .brand-mark {
@@ -460,7 +470,7 @@ async function enterForm() {
   left: 3px;
   color: var(--sage);
   font-size: 16px;
-  animation: twinkle 2.8s ease-in-out infinite;
+  animation: twinkle 16s ease-in-out infinite;
 }
 
 .brand-heart {
@@ -468,7 +478,7 @@ async function enterForm() {
   bottom: -2px;
   font-size: 42px;
   line-height: 1;
-  animation: breathe 3.8s ease-in-out infinite;
+  animation: breathe 18s ease-in-out infinite;
 }
 
 .brand-ring {
@@ -483,6 +493,39 @@ async function enterForm() {
 
 .brand-copy {
   min-width: 0;
+  position: relative;
+}
+
+/* 书名与印章同一行：题字旁边盖一枚小章 */
+.title-line {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+}
+
+/* 书名旁的印章：歪一点、边角磨一点，像真的盖上去的 */
+.title-seal {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding-top: 2px;
+  border: 1.5px solid var(--pink-deep);
+  border-radius: 4px;
+  color: var(--pink-deep);
+  font-family: Georgia, 'Songti SC', serif;
+  font-size: 12.5px;
+  line-height: 1.14;
+  letter-spacing: 0.08em;
+  transform: rotate(-6deg);
+  opacity: 0.82;
+  box-shadow: inset 0 0 0 1px rgba(169, 87, 115, 0.22);
+  /* 印泥不匀：一点斑驳 */
+  background-image: radial-gradient(circle at 26% 20%, rgba(255, 255, 255, 0.6), transparent 42%);
 }
 
 .eyebrow {
@@ -498,9 +541,11 @@ h1 {
   margin: 0;
   color: var(--ink);
   font-family: Georgia, 'Songti SC', serif;
-  font-size: 31px;
+  font-size: 38px;
   font-weight: 500;
   line-height: 1.15;
+  /* 书名的疏排：字与字之间留出纸的味道 */
+  letter-spacing: 0.16em;
 }
 
 .subtitle {
@@ -526,7 +571,8 @@ h1 {
   height: 6px;
   border-radius: 50%;
   background: var(--pink);
-  box-shadow: 0 0 6px rgba(217, 137, 158, 0.7);
+  /* 一圈纸压痕，不发光 */
+  box-shadow: 0 0 0 3px rgba(217, 137, 158, 0.18);
 }
 
 .intro-block {
@@ -636,7 +682,7 @@ h1 {
   inset: -4px;
   border-radius: 50%;
   content: '';
-  opacity: 0.28;
+  opacity: 0.16;
   transition: background-color 0.35s ease;
 }
 
@@ -680,7 +726,7 @@ h1 {
 
 .check-card.is-ok .check-light {
   background: #55b476;
-  box-shadow: 0 0 8px rgba(85, 180, 118, 0.65);
+  box-shadow: 0 0 0 3px rgba(85, 180, 118, 0.18);
 }
 
 .check-card.is-ok .check-light::after {
@@ -698,7 +744,7 @@ h1 {
 
 .check-card.is-missing .check-light {
   background: #d96459;
-  box-shadow: 0 0 8px rgba(217, 100, 89, 0.6);
+  box-shadow: 0 0 0 3px rgba(217, 100, 89, 0.18);
 }
 
 .check-card.is-missing .check-light::after {
@@ -934,9 +980,37 @@ h1 {
   font-size: 17px;
 }
 
+/* 进入按钮像题跋落款：一行签名，而不是一块塑料 */
 .intro-start {
-  margin: 4px auto 0;
+  margin: 12px auto 0;
   width: min(100%, 340px);
+  min-height: 0;
+  padding: 12px 20px 11px;
+  border: 0;
+  border-bottom: 1px solid var(--pink-deep);
+  border-radius: 0;
+  background: transparent;
+  color: var(--pink-deep);
+  font-family: Georgia, 'Songti SC', serif;
+  font-size: 14px;
+  letter-spacing: 0.26em;
+  box-shadow: none;
+}
+
+.intro-start:hover:not(:disabled) {
+  background: transparent;
+  border-bottom-color: #934863;
+  color: #934863;
+}
+
+.intro-start:focus-visible:not(:disabled) {
+  background: transparent;
+  outline: 2px solid var(--pink-deep);
+  outline-offset: 4px;
+}
+
+.intro-start:disabled {
+  opacity: 0.62;
 }
 
 .swipe-hint {
@@ -960,11 +1034,9 @@ h1 {
 @keyframes twinkle {
   0%,
   100% {
-    opacity: 0.45;
     transform: scale(0.9) rotate(0deg);
   }
   50% {
-    opacity: 1;
     transform: scale(1.12) rotate(12deg);
   }
 }

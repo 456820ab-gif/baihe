@@ -26,7 +26,7 @@ $targets: m.$press-targets;
   }
 }
 
-/* ── 墨点落款：按下落一点玫瑰墨，成功盖一枚小印 ─────────────── */
+/* ── 墨点落款：按下落一点玫瑰墨 ────────────────────────────── */
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
   position: absolute;
@@ -51,37 +51,32 @@ $targets: m.$press-targets;
   transform: scale(1);
 }
 
+/* 盖下后的墨晕：从印章里泅开的一圈，只播一次 */
+
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
   position: absolute;
-  top: 7px;
-  right: 9px;
-  width: 11px;
-  height: 11px;
-  border: 1px solid var(--seal-line, rgba(var(--rose), 0.85));
-  border-radius: 2px;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(52, 18, 32, 0.32), transparent 66%);
   opacity: 0;
-  transform: rotate(-8deg) scale(1.5);
+  transform: scale(0.7);
   content: '';
   pointer-events: none;
 }
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button).is-sealed::after {
-  animation: front-seal m.$expand m.$ease-bloom both;
+  animation: front-seal 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes front-seal {
   0% {
-    opacity: 0;
-    transform: rotate(-8deg) scale(1.5);
-  }
-
-  40% {
-    opacity: 0.9;
+    opacity: 0.55;
+    transform: scale(0.7);
   }
 
   100% {
     opacity: 0;
-    transform: rotate(-8deg) scale(1);
+    transform: scale(1.18);
   }
 }
 
@@ -113,7 +108,7 @@ $targets: m.$press-targets;
   }
 }
 
-/* ── 落墨输入：聚焦时一笔墨线从左写到发送键前 ─────────── */
+/* ── 落墨输入：聚焦时一笔墨线从左写到纸边 ───────────────── */
 
 #yuri-front .story-input {
   caret-color: var(--accent);
@@ -121,11 +116,12 @@ $targets: m.$press-targets;
 
 #yuri-front .story-composer::after {
   position: absolute;
-  right: 104px;
-  bottom: 8px;
-  left: 20px;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(var(--rose), 0.6), rgba(var(--rose), 0.1));
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(var(--rose), 0.15), rgba(var(--rose), 0.85) 96%, rgba(var(--rose), 0.95));
   opacity: 0;
   transform: scaleX(0);
   transform-origin: left center;

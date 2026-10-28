@@ -99,14 +99,25 @@ function pulseRing(heart: number) {
   const box = make('div', 'obs-pulse-ring');
   const radius = 26;
   const circumference = 2 * Math.PI * radius;
+  const ticks = Array.from({ length: 12 }, (_, index) => {
+    const angle = (index / 12) * Math.PI * 2;
+    const inner = 30.4;
+    const outer = 32.4;
+    return `<line class="ring-tick" x1="${(33 + Math.cos(angle) * inner).toFixed(1)}" y1="${(33 + Math.sin(angle) * inner).toFixed(1)}" x2="${(33 + Math.cos(angle) * outer).toFixed(1)}" y2="${(33 + Math.sin(angle) * outer).toFixed(1)}"></line>`;
+  }).join('');
   box.innerHTML = `<svg viewBox="0 0 66 66" aria-hidden="true">
     <circle class="ring-track" cx="33" cy="33" r="${radius}"></circle>
     <circle class="ring-fill" cx="33" cy="33" r="${radius}" stroke-dasharray="${circumference.toFixed(1)}" stroke-dashoffset="${(circumference * (1 - heart / 100)).toFixed(1)}"></circle>
+    ${ticks}
   </svg>`;
+  return box;
+}
+
+/* 读数在盘外：数字大而克制，单位只做注解 */
+function pulseReadout(heart: number) {
   const readout = make('div', 'obs-pulse-readout');
   readout.append(make('strong', '', String(heartbeatBpm(heart))), make('small', '', '次 / 分'));
-  box.append(readout);
-  return box;
+  return readout;
 }
 
 export class CharacterView {
@@ -243,11 +254,16 @@ export class CharacterView {
     });
     applyBloomArt(bloom, char.flower, stage.leaf, stage.bloom, closeDown);
     const bloomCaption = make('figcaption');
+    const meta = flowerMeta(char.flower);
     bloomCaption.append(
       make('strong', 'obs-bloom-name', point ? flowerName(char.flower, stage.leaf, stage.bloom) : '尚未播种'),
-      make('small', '', point ? `${flowerMeta(char.flower).leafStages[stage.leaf]} · ${flowerMeta(char.flower).bloomStages[stage.bloom]}` : flowerMeta(char.flower).period),
+      make('small', '', point ? `${meta.leafStages[stage.leaf]} · ${meta.bloomStages[stage.bloom]}` : meta.period),
     );
     bloom.append(bloomCaption);
+    /* 标本签：右下角小字，记季节与档位 */
+    bloom.append(make('span', 'obs-bloom-stamp', point
+      ? `${meta.period} · 叶${stage.leaf + 1} 花${stage.bloom + 1}`
+      : meta.period));
 
     const chart = make('figure', 'obs-chart-box');
     chart.innerHTML = starChartSvg({
@@ -267,7 +283,7 @@ export class CharacterView {
       const line = make('div');
       line.innerHTML = heartbeatSvg();
       copy.append(line);
-      pulse.append(pulseRing(point.heart), copy);
+      pulse.append(pulseRing(point.heart), pulseReadout(point.heart), copy);
     } else {
       pulse.append(make('span', 'obs-pulse-title', '心跳'), make('span', 'obs-pulse-note', '尚无可读的心跳'));
     }

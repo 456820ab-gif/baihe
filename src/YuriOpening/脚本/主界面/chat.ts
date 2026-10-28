@@ -25,6 +25,24 @@ function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string,
   return el;
 }
 
+/* 纯文本正文按行包成节点：引用行与强调行各自成样式，文字本身一字不改 */
+function renderProse(host: HTMLElement, content: string) {
+  content.split('\n').forEach(line => {
+    const span = make('span', 'story-line');
+    const trimmed = line.trim();
+    if (trimmed.startsWith('>')) {
+      span.classList.add('is-quote');
+      span.textContent = trimmed.replace(/^>\s?/, '');
+    } else if (/^\*\*.+\*\*$/.test(trimmed)) {
+      span.classList.add('is-emphasis');
+      span.textContent = trimmed.replace(/\*\*/g, '');
+    } else {
+      span.textContent = line;
+    }
+    host.append(span);
+  });
+}
+
 type MessageSegment = { kind: 'text' | 'page'; content: string };
 
 /* 内容签名取 FNV-1a：长消息只留摘要，逐条比对不涨内存 */
@@ -262,7 +280,11 @@ export function mountChat(host: HTMLElement): ChatHandle {
         return;
       }
       const text = make('div', 'story-bubble story-text');
-      text.textContent = segment.content;
+      if (row.role === 'user') {
+        text.textContent = segment.content;
+      } else {
+        renderProse(text, segment.content);
+      }
       content.append(text);
     });
     article.append(head, content);

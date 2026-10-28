@@ -60,6 +60,23 @@
   --ph-bubble-in:       #ffffff;
   --ph-bubble-in-ink:   #2b1e1b;
 
+  // ── 信笺（我方发出的消息）：纸面 + 折角 + 装订线
+  --ph-note-bg:      #fffdf7;
+  --ph-note-bg2:     #f9f0e7;
+  --ph-note-ink:     #3b2b2f;
+  --ph-note-line:    #e4d6cc;
+  --ph-note-fold:    #e6d2c2;
+  --ph-note-rule:    #d7b4c2;
+
+  // ── 语音泡（对方发来的消息）：不对称 + 小尾巴
+  --ph-voice-bg:     #f6ebf0;
+  --ph-voice-ink:    #33232a;
+  --ph-voice-line:   #e8d4dc;
+
+  // ── 机身（外壳边缘与高光）
+  --ph-chassis:      #2b2430;
+  --ph-chassis-edge: rgba(255, 255, 255, 0.14);
+
   // ── 渐变
   --ph-topbar: linear-gradient(135deg, #b35a79 0%, #a14d6b 45%, #7d5f86 100%);
   --ph-cover:  linear-gradient(158deg, #d8889e 0%, #c06a86 30%, #a05a7e 62%, #8f6a97 100%);
@@ -123,6 +140,20 @@
   --ph-bubble-in:       #2a2230;
   --ph-bubble-in-ink:   #f3e9ec;
 
+  --ph-note-bg:      #342a3c;
+  --ph-note-bg2:     #2d2335;
+  --ph-note-ink:     #f1e6ea;
+  --ph-note-line:    #4b3c57;
+  --ph-note-fold:    #1c1421;
+  --ph-note-rule:    #b8738a;
+
+  --ph-voice-bg:     #241c2a;
+  --ph-voice-ink:    #f0e5e9;
+  --ph-voice-line:   #3c3046;
+
+  --ph-chassis:      #171219;
+  --ph-chassis-edge: rgba(255, 255, 255, 0.08);
+
   --ph-topbar: linear-gradient(135deg, #4a2b3c 0%, #3d2738 50%, #322a42 100%);
   --ph-cover:  linear-gradient(158deg, #5a3044 0%, #4a2a40 40%, #362840 100%);
   --ph-fab:    linear-gradient(140deg, #a95a76 0%, #944a66 55%, #7e3e58 100%);
@@ -158,6 +189,12 @@
 
 @keyframes ph-bubble-in {
   from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+// 我方发出的消息是一张信笺：入场时轻轻落定，带一点点倾斜
+@keyframes ph-card-in {
+  from { opacity: 0; transform: translateY(10px) rotate(-1.4deg); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -283,6 +320,22 @@
   // 内描边让整机与页面内容分离开
   box-shadow: inset 0 0 0 1px var(--ph-shell-edge);
 
+  // 灵动岛：顶栏正中一颗黑色胶囊，是「这是一台真机」最快的暗示
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(9px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 62px;
+    height: 15px;
+    border-radius: 999px;
+    background: rgba(8, 4, 10, 0.82);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    z-index: 4;
+    pointer-events: none;
+  }
+
   &.is-open {
     opacity: 1;
     pointer-events: auto;
@@ -336,7 +389,11 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 
-  svg { width: 13px; height: 13px; }
+  svg {
+    width: 13px;
+    height: 13px;
+    stroke: rgba(255, 255, 255, 0.94);
+  }
   &:hover { background: rgba(255, 255, 255, 0.34); }
   &:active { transform: scale(0.94); }
   &:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.8); outline-offset: 2px; }
@@ -444,6 +501,22 @@
   padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px));
   position: relative;
   box-shadow: 0 -2px 12px rgba(74, 46, 56, 0.05);
+
+  // 页签栏上缘的一道内高光，像书页被夹住的那条边
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.34) 22%,
+      rgba(255, 255, 255, 0.34) 78%,
+      rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+  }
 }
 
 .phone-tab {
@@ -453,10 +526,11 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 7px 0;
+  padding: 8px 0 7px;
   border: none;
   background: none;
-  color: var(--ph-ink-faint);
+  // 未选中也要能看清：ink-soft 对两种底色都在 4.5:1 以上
+  color: var(--ph-ink-soft);
   cursor: pointer;
   transition: color 0.2s ease;
   position: relative;
@@ -465,7 +539,7 @@
   svg {
     width: 21px;
     height: 21px;
-    stroke: currentColor;
+    stroke: var(--ph-ink-soft);
     fill: none;
     transition: transform 0.24s var(--ph-ease-pop);
   }
@@ -473,18 +547,21 @@
   &.is-active {
     color: var(--ph-accent);
 
-    svg { transform: translateY(-1px); }
+    svg {
+      transform: translateY(-2px);
+      stroke: var(--ph-accent);
+    }
 
-    // 顶部短线指示条；支持 :has() 时改由 .phone-navbar::after 滑动承担
+    // 不支持 :has() 时的兜底：页签顶端露出一截书签
     &::before {
       content: '';
       position: absolute;
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 26px;
-      height: 2.5px;
-      border-radius: 0 0 3px 3px;
+      width: 12px;
+      height: 3px;
+      border-radius: 0 0 2px 2px;
       background: var(--ph-accent);
     }
   }
@@ -493,20 +570,28 @@
   &:focus-visible { outline: 2px solid var(--ph-accent-light); outline-offset: -4px; border-radius: 10px; }
 }
 
-// 页签下划线滑动：纯 CSS，位置跟随 .is-active 所在的序号
+// 书签指示器：一条从页签栏上缘挑出来的书签带，随选中页签连续位移
 @supports selector(:has(*)) {
   .phone-tab.is-active::before { content: none; }
 
   .phone-navbar::after {
     content: '';
     position: absolute;
-    top: 0;
+    top: -7px;
     left: 0;
     width: 25%;
-    height: 2.5px;
-    background: linear-gradient(var(--ph-accent), var(--ph-accent)) 50% 0 / 26px 100% no-repeat;
+    height: 13px;
+    // 只露出居中的一枚书签：下缘是燕尾缺口
+    clip-path: polygon(
+      calc(50% - 6px) 0,
+      calc(50% + 6px) 0,
+      calc(50% + 6px) 100%,
+      50% 72%,
+      calc(50% - 6px) 100%
+    );
+    background: linear-gradient(180deg, var(--ph-accent-light) 0%, var(--ph-accent) 62%, var(--ph-accent-deep) 100%);
     transform: translateX(0);
-    transition: transform 0.28s var(--ph-ease);
+    transition: transform 0.34s var(--ph-ease);
     pointer-events: none;
   }
 
@@ -520,6 +605,14 @@
   font-size: 10.5px;
   letter-spacing: 0.03em;
   font-weight: 500;
+  /* 自己声明颜色：主应用的 color: inherit 重置只作用在 button 上，
+     页签文字必须自己扛住，否则选中态与未选中态分不开 */
+  color: var(--ph-ink-soft);
+}
+
+.phone-tab.is-active .phone-tab-label {
+  color: var(--ph-accent);
+  font-weight: 600;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -553,10 +646,35 @@
   height: 100%;
   padding: 24px;
   background: radial-gradient(circle at 50% 44%, var(--ph-petal-soft) 0%, transparent 58%);
+
+  // 空态落款：不是一行灰字，而是一句带签名的题注
+  &::after {
+    content: '— 百合花期 · 通讯录 —';
+    margin-top: 16px;
+    color: var(--ph-ink-faint);
+    font-family: Georgia, 'Songti SC', serif;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    opacity: 0.9;
+  }
 }
 
 .wc-empty-deco {
+  position: relative;
+  z-index: 0;
   animation: ph-fade-up 0.36s var(--ph-ease) both;
+
+  // 一张托住花朵的纸卡
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 8% 4% -7% 4%;
+    border: 1px solid var(--ph-border);
+    border-radius: 18px;
+    background: var(--ph-card);
+    box-shadow: var(--ph-sh-2);
+    z-index: -1;
+  }
 
   svg {
     width: 148px;
@@ -597,7 +715,11 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    box-shadow: var(--ph-sh-2), 0 0 0 1px var(--ph-hairline);
+    // 与聊天页头像同一套环：发丝线 + 内高光 + 贴地影
+    box-shadow:
+      0 0 0 1px var(--ph-hairline),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      var(--ph-sh-2);
     display: block;
   }
 }
@@ -725,18 +847,28 @@
 
 .wc-time-divider {
   align-self: center;
-  margin: 4px 0 0;
-  padding: 3px 10px;
-  border-radius: var(--ph-r-full);
-  background: var(--ph-chip);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 2px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
   color: var(--ph-ink-faint);
   font-size: 11px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
   user-select: none;
-  letter-spacing: 0.03em;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  letter-spacing: 0.06em;
+
+  // 两侧各一段发丝线：像信纸上折出来的一道分隔
+  &::before,
+  &::after {
+    content: '';
+    width: 30px;
+    height: 1px;
+    background: var(--ph-border);
+  }
 }
 
 .wc-msg-row {
@@ -746,6 +878,8 @@
 
   // 只给进页后新到的消息做入场；历史记录跟随整页淡入
   &.is-new { animation: ph-bubble-in 0.24s var(--ph-ease) both; }
+  // 我方消息是一张信笺：入场时带着一点倾斜落定
+  &.is-new.wc-msg-out { animation: ph-card-in 0.26s var(--ph-ease) both; }
 
   &.wc-msg-out { flex-direction: row-reverse; }
 }
@@ -754,40 +888,74 @@
   width: 30px;
   height: 30px;
   flex-shrink: 0;
+  position: relative;
 
   svg {
     width: 30px;
     height: 30px;
     border-radius: 9px;
     display: block;
-    box-shadow: var(--ph-sh-1), 0 0 0 1px var(--ph-hairline);
+    // 与列表、通讯录、朋友圈同一套头像环：一层发丝线 + 一层内高光
+    box-shadow:
+      0 0 0 1px var(--ph-hairline),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      var(--ph-sh-1);
   }
 }
 
 .wc-bubble {
   max-width: 214px;
-  padding: 8px 12px;
+  padding: 9px 12px;
   font-size: 13px;
   line-height: 1.62;
   word-break: break-word;
   white-space: pre-wrap;
   position: relative;
 
-  .wc-msg-out & {
-    background: var(--ph-bubble-out);
-    color: var(--ph-bubble-out-ink);
-    border-radius: 15px 4px 15px 15px;
+  // 我方发出的：一张信笺卡片 —— 直角、折角、左侧一道装订线
+  .wc-msg-out &:not(.is-emoji) {
+    color: var(--ph-note-ink);
+    border-radius: 4px 4px 10px 4px;
+    background: linear-gradient(180deg, var(--ph-note-bg) 0%, var(--ph-note-bg2) 100%);
+    border: 1px solid var(--ph-note-line);
     box-shadow:
-      0 2px 8px rgba(74, 46, 56, 0.16),
-      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      0 1px 2px rgba(74, 46, 56, 0.09),
+      inset 3px 0 0 0 var(--ph-note-rule);
+    padding-right: 15px;
   }
 
-  .wc-msg-in & {
-    background: var(--ph-bubble-in);
-    color: var(--ph-bubble-in-ink);
-    border-radius: 4px 15px 15px 15px;
-    border: 1px solid var(--ph-border-soft);
-    box-shadow: var(--ph-sh-2);
+  // 信笺右下角的折角：颜色比纸面深一层，像被掀起来的一角
+  .wc-msg-out .wc-bubble:not(.is-emoji)::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 12px 12px;
+    border-color: transparent transparent var(--ph-note-fold) transparent;
+  }
+
+  // 对方发来的：不对称语音泡 —— 左下带一个小尾巴
+  .wc-msg-in &:not(.is-emoji) {
+    color: var(--ph-voice-ink);
+    background: var(--ph-voice-bg);
+    border-radius: 10px 12px 12px 4px;
+    border: 1px solid var(--ph-voice-line);
+    box-shadow: 0 1px 2px rgba(74, 46, 56, 0.08);
+  }
+
+  .wc-msg-in .wc-bubble:not(.is-emoji)::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 5px 6px 0;
+    border-color: transparent var(--ph-voice-bg) transparent transparent;
   }
 
   &.is-streaming {
@@ -871,25 +1039,31 @@
 .wc-input {
   flex: 1;
   min-width: 0;
-  border: 1.5px solid var(--ph-border);
-  border-radius: var(--ph-r-lg);
-  padding: 8px 13px;
+  border: 1px solid var(--ph-border);
+  border-radius: var(--ph-r-md);
+  padding: 8px 12px 8px 15px;
   font-size: 13px;
   line-height: 1.5;
   resize: none;
   outline: none;
-  background: var(--ph-bg);
+  background: var(--ph-surface);
   color: var(--ph-ink);
   max-height: 96px;
   overflow-y: auto;
   font-family: inherit;
   transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: inset 0 1px 3px rgba(74, 46, 56, 0.05);
+  // 左侧一道装订线：与发出的信笺卡片同一套语言
+  box-shadow:
+    inset 3px 0 0 0 var(--ph-note-rule),
+    inset 0 1px 3px rgba(74, 46, 56, 0.05);
 
   &:focus {
     border-color: var(--ph-accent-light);
     background: var(--ph-surface);
-    box-shadow: inset 0 1px 3px rgba(74, 46, 56, 0.04), 0 0 0 3px rgba(224, 160, 178, 0.2);
+    box-shadow:
+      inset 3px 0 0 0 var(--ph-accent),
+      inset 0 1px 3px rgba(74, 46, 56, 0.04),
+      0 0 0 3px rgba(224, 160, 178, 0.2);
   }
   &::placeholder { color: var(--ph-ink-faint); }
 }
@@ -909,7 +1083,12 @@
   box-shadow: var(--ph-sh-accent), inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition: transform 0.18s var(--ph-ease-pop), opacity 0.18s ease, box-shadow 0.18s ease;
 
-  svg { width: 15px; height: 15px; transform: translateX(1px); }
+  svg {
+    width: 15px;
+    height: 15px;
+    transform: translateX(1px);
+    stroke: #fff;
+  }
 
   &:hover:not(:disabled) {
     box-shadow: var(--ph-sh-accent-lg), inset 0 1px 0 rgba(255, 255, 255, 0.32);
@@ -1406,7 +1585,10 @@
     height: 38px;
     border-radius: 10px;
     display: block;
-    box-shadow: var(--ph-sh-1), 0 0 0 1px var(--ph-hairline);
+    box-shadow:
+      0 0 0 1px var(--ph-hairline),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      var(--ph-sh-1);
   }
 }
 
@@ -1749,10 +1931,11 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 11px 14px;
   cursor: pointer;
   border-bottom: 1px solid var(--ph-hairline);
   transition: background 0.14s ease;
+  position: relative;
 
   &:hover { background: var(--ph-bg2); }
   &:active { background: var(--ph-accent-faint); }
@@ -1765,6 +1948,9 @@
   border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
+  box-shadow:
+    0 0 0 1px var(--ph-hairline),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 
   svg { display: block; width: 100%; height: 100%; }
 }
@@ -1800,6 +1986,19 @@
 
 .wc-notify-item.is-unread {
   background: var(--ph-petal-soft);
+  position: relative;
+
+  // 未读条目左边一道细签，像通知卡上的“新”标记
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+    width: 2px;
+    border-radius: 0 2px 2px 0;
+    background: var(--ph-accent);
+  }
 
   .wc-notify-name { color: var(--ph-accent-deep); }
   .wc-notify-text { color: var(--ph-ink); }
@@ -1818,6 +2017,9 @@
   width: 100%;
   height: 100%;
   min-height: 280px;
+  // 屏幕四角随设备框的内圆角切掉
+  border-radius: inherit;
+  overflow: hidden;
 }
 
 #yuri-front #phone-root-host[data-embedded] .phone-shell {
@@ -1826,6 +2028,24 @@
   z-index: 1;
   width: 100%;
   height: 100%;
+  border-radius: inherit;
+}
+
+/* 主应用对 button / input / textarea 有 color: inherit 的重置（优先级 1,0,1），
+   会把手机这几个带文字的控件的配色整个吃掉。图标类控件已经用 svg 的 stroke
+   绕开了，这里把带文字的补回来。 */
+#yuri-front #phone-root-host {
+  .wc-add-btn { color: var(--ph-accent); }
+  .wc-add-btn.is-done { color: var(--ph-surface); }
+  .wc-add-btn.is-rejected { color: var(--ph-ink-faint); }
+  .wc-test-btn { color: var(--ph-accent); }
+  .wc-emoji-mode { color: var(--ph-ink-soft); }
+  .wc-emoji-mode.is-active { color: #fff; }
+  .wc-emoji-chip { color: var(--ph-ink-faint); }
+  .wc-emoji-chip.is-active { color: var(--ph-accent); }
+  .wc-input { color: var(--ph-ink); }
+  .wc-search-input { color: var(--ph-ink); }
+  .wc-setting-input { color: var(--ph-ink); }
 }
 
 // 关闭动态效果时外壳直接显隐，显隐时序交给面板层的 data-state

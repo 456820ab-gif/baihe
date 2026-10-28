@@ -25,8 +25,7 @@
   }
 }
 
-/* 写字的墨点：一小段墨在淡线上来回走，只动 transform，周期 2.8s */
-
+/* 写字的墨点：一小段墨在淡线上来回走，只动 transform，周期 1.4s */
 .story-list > .story-typing::after {
   animation: story-ink-write 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
@@ -41,10 +40,10 @@
   }
 }
 
-/* 新到的叙述：左侧细线从上往下画出，只播一次 */
+/* 新到的叙述：左侧墨线从上往下画出，只播一次 */
 
-.story-msg.is-arriving .story-bubble::before {
-  animation: story-ink-rule 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+.story-msg.is-arriving .story-content::before {
+  animation: story-ink-rule 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--arrive-delay, 0ms) + 80ms);
 }
 
@@ -55,6 +54,26 @@
 
   to {
     transform: scaleY(1);
+  }
+}
+
+/* 首行微标：一道短横从左端长出来，跟着楼层一起落下 */
+
+.story-msg.is-arriving .story-content::after {
+  animation: story-mark-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--arrive-delay, 0ms) + 140ms);
+  transform-origin: left center;
+}
+
+@keyframes story-mark-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
   }
 }
 
@@ -105,7 +124,8 @@
 }
 
 #yuri-front[data-animate='false'] .story-msg.is-arriving,
-#yuri-front[data-animate='false'] .story-msg.is-arriving .story-bubble::before,
+#yuri-front[data-animate='false'] .story-msg.is-arriving .story-content::before,
+#yuri-front[data-animate='false'] .story-msg.is-arriving .story-content::after,
 #yuri-front[data-animate='false'] .story-list > .story-typing::after {
   animation: none;
 }
@@ -113,7 +133,8 @@
 @media (prefers-reduced-motion: reduce) {
   .story-list > .story-msg,
   .story-msg.is-arriving,
-  .story-msg.is-arriving .story-bubble::before,
+  .story-msg.is-arriving .story-content::before,
+  .story-msg.is-arriving .story-content::after,
   .story-list > .story-typing::after,
   .obs-gate-fill.is-sweeping::after {
     animation: none;

@@ -11,9 +11,9 @@
  */
 
 $motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
-$motion-open: 320ms;
+$motion-open: 240ms;
 $motion-close: 180ms;
-$panel-open: 300ms;
+$panel-open: 260ms;
 $banner-in: 220ms;
 $banner-out: 140ms;
 
@@ -51,15 +51,14 @@ $banner-out: 140ms;
 
 /* 窗口：纸页自上而下展开（clip-path 底边下放 + 轻微下落），关闭沿原路快速收回；blur 静止不参与动画 */
 #yuri-front .obs-window {
-  clip-path: inset(0 0 72% 0 round var(--radius));
+  clip-path: inset(0 0 78% 0 round var(--radius));
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-6px);
   transform-origin: top center;
   transition:
     clip-path $motion-open $motion-ease,
-    opacity 200ms ease-out,
-    transform $motion-open $motion-ease,
-    width 0.28s ease;
+    opacity 160ms ease-out,
+    transform $motion-open $motion-ease;
   backdrop-filter: blur(10px) saturate(130%);
   -webkit-backdrop-filter: blur(10px) saturate(130%);
 }
@@ -68,8 +67,7 @@ $banner-out: 140ms;
   transition:
     clip-path $motion-close ease-in,
     opacity $motion-close ease-in,
-    transform $motion-close ease-in,
-    width 0.28s ease;
+    transform $motion-close ease-in;
 }
 
 #yuri-front .obs-layer[data-state='open'] .obs-window {
@@ -83,15 +81,15 @@ $banner-out: 140ms;
   animation: none;
 }
 
-/* 页签内容：容器级一次 180ms 淡入上移 4px（render(true) 会重建 body，不对内部元素做 stagger） */
+/* 页签内容：容器级一次 160ms 淡入上移 3px（render(true) 会重建 body，不对内部元素做 stagger） */
 #yuri-front .obs-layer[data-state='open'] .obs-body > * {
-  animation: obs-tab-in 180ms $motion-ease both;
+  animation: obs-tab-in 160ms $motion-ease both;
 }
 
 @keyframes obs-tab-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(3px);
   }
 
   to {
@@ -107,15 +105,13 @@ $banner-out: 140ms;
     transform: translateY(-8px);
     transition:
       opacity $motion-open $motion-ease,
-      transform $motion-open $motion-ease,
-      width 0.28s ease;
+      transform $motion-open $motion-ease;
   }
 
   #yuri-front .obs-layer[data-state='closing'] .obs-window {
     transition:
       opacity $motion-close ease-in,
-      transform $motion-close ease-in,
-      width 0.28s ease;
+      transform $motion-close ease-in;
   }
 
   #yuri-front .obs-layer[data-state='open'] .obs-window {
@@ -189,6 +185,7 @@ $banner-out: 140ms;
 
 #yuri-front[data-animate='false'] .obs-layer,
 #yuri-front[data-animate='false'] .obs-window,
+#yuri-front[data-animate='false'] .obs-handle,
 #yuri-front[data-animate='false'] .phone-layer-scrim,
 #yuri-front[data-animate='false'] .phone-frame,
 #yuri-front[data-animate='false'] .phone-banner {
@@ -225,9 +222,19 @@ $banner-out: 140ms;
   opacity: 0;
 }
 
+/* 关掉动态效果：观景窗内部所有过渡与动画一并停下（悬停仍有颜色变化，只是不再有位移） */
+#yuri-front[data-animate='false'] .obs-window *,
+#yuri-front[data-animate='false'] .obs-window *::before,
+#yuri-front[data-animate='false'] .obs-window *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #yuri-front .obs-layer,
   #yuri-front .obs-window,
+  #yuri-front .obs-handle,
   #yuri-front .phone-layer-scrim,
   #yuri-front .phone-frame,
   #yuri-front .phone-banner {
@@ -261,5 +268,14 @@ $banner-out: 140ms;
   #yuri-front .phone-layer[data-state='closing'] .phone-layer-scrim,
   #yuri-front .phone-layer[data-state='closing'] .phone-frame {
     opacity: 0;
+  }
+
+  /* 减少动效：观景窗内部所有过渡与动画一并停下 */
+  #yuri-front .obs-window *,
+  #yuri-front .obs-window *::before,
+  #yuri-front .obs-window *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

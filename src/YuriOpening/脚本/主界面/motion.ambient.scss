@@ -6,14 +6,18 @@
   position: absolute;
   inset: 0;
   display: block;
-  background: radial-gradient(84% 66% at 48% 38%, rgba(var(--rose), 0.05), transparent 72%);
+  background:
+    repeating-linear-gradient(102deg, rgba(var(--tone), 0.022) 0 2px, transparent 2px 7px),
+    radial-gradient(84% 66% at 48% 38%, rgba(var(--rose), 0.05), transparent 72%);
   --paper-rest: #{m.$paper-rest};
   opacity: var(--paper-rest);
   pointer-events: none;
 }
 
 #yuri-front[data-theme='light'] .front-paper {
-  background: radial-gradient(84% 66% at 48% 38%, rgba(255, 255, 255, 0.5), transparent 72%);
+  background:
+    repeating-linear-gradient(102deg, rgba(var(--tone), 0.03) 0 2px, transparent 2px 7px),
+    radial-gradient(84% 66% at 48% 38%, rgba(255, 255, 255, 0.5), transparent 72%);
   --paper-rest: #{m.$paper-rest-light};
 }
 
