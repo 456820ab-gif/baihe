@@ -202,6 +202,20 @@ export function mountChat(host: HTMLElement): ChatHandle {
     status.hidden = !message;
   }
 
+  /* AI 回复的 HTML iframe 颜色固化在 srcdoc 里；主题切换后要把新墨色写进去 */
+  function retheme() {
+    const frameStyle = hostWindow().getComputedStyle(host);
+    const color = frameStyle.getPropertyValue('--ink').trim() || frameStyle.color;
+    list.querySelectorAll<HTMLIFrameElement>('iframe.story-frame').forEach(frame => {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      doc.documentElement.style.color = color;
+      doc.body.style.color = color;
+      const content = doc.getElementById('story-content');
+      if (content) content.style.color = color;
+    });
+  }
+
   let generating = false;
   let awaitingReply = false;
   let modal: HTMLElement | null = null;
@@ -570,6 +584,7 @@ export function mountChat(host: HTMLElement): ChatHandle {
     hasInput: () => input.value.trim().length > 0,
     setStatus,
     refresh: render,
+    retheme,
     destroy() {
       closeModal();
       while (disposers.length) {

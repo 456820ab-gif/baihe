@@ -202,13 +202,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
       const data = readData();
       const theme = resolveTheme(data);
       if (tab === 'map') {
-        return JSON.stringify({
-          tab, theme, settings,
-          place: getPath(data, '环境.地点'),
-          risk: getPath(data, '环境.风险'),
-          relation: getPath(data, '关系'),
-          characters: getPath(data, '角色'),
-        });
+        return JSON.stringify({ tab, theme, settings, place: getPath(data, '环境.地点') });
       }
       if (tab === 'relation') return JSON.stringify({ tab, theme, settings, relation: getPath(data, '关系') });
       if (tab === 'character') return JSON.stringify({ tab, theme, settings, characters: getPath(data, '角色'), relation: getPath(data, '关系') });
@@ -249,12 +243,14 @@ export function mountApp(options: { floor?: boolean } = {}) {
   let floorFrameStyle = '';
 
   function applySettings() {
+    const themeChanged = root.dataset.theme !== settings.theme;
     root.dataset.animate = String(settings.animate);
     root.dataset.scene = String(settings.scene);
     root.dataset.theme = settings.theme;
     weather.dataset.animate = String(settings.animate);
     weather.dataset.scene = String(settings.scene);
     motion.setEnabled(settings.animate);
+    if (themeChanged) chat.retheme();
   }
 
   function renderHeader(data: HudData | null, theme: ThemeState) {
