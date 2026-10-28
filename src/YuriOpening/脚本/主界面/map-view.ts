@@ -82,7 +82,8 @@ export class MapView {
     wrap.append(head);
 
     const art = make('div', 'obs-map-art hud-shell');
-    art.dataset.animate = 'true';
+    /* 地图背景动画（河道/霓虹/萤火/涟漪）在部分设备和录制下会高频闪，保持静态 */
+    art.dataset.animate = 'false';
     art.dataset.scene = 'true';
     art.dataset.daypart = theme.daypart;
     art.dataset.weather = theme.weather === '待设定' ? 'cloudy' : theme.weather;
