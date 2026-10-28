@@ -197,10 +197,22 @@ export function mountApp(options: { floor?: boolean } = {}) {
   const observatory = new Observatory({
     root,
     isTabAvailable: tab => tab !== 'relation' || relationEnabled(readData()),
-    /* 只有页签与真正影响画面的数据变化才重建，消息流更新不应重绘地图 */
+    /* 按页签取真正影响画面的字段：消息流只改叙事，不应重建地图/角色页 */
     getRenderKey: tab => {
       const data = readData();
-      return `${tab}:${JSON.stringify({ data, theme: resolveTheme(data), settings, relation: relationEnabled(data) })}`;
+      const theme = resolveTheme(data);
+      if (tab === 'map') {
+        return JSON.stringify({
+          tab, theme, settings,
+          place: getPath(data, '环境.地点'),
+          risk: getPath(data, '环境.风险'),
+          relation: getPath(data, '关系'),
+          characters: getPath(data, '角色'),
+        });
+      }
+      if (tab === 'relation') return JSON.stringify({ tab, theme, settings, relation: getPath(data, '关系') });
+      if (tab === 'character') return JSON.stringify({ tab, theme, settings, characters: getPath(data, '角色'), relation: getPath(data, '关系') });
+      return JSON.stringify({ tab, theme, settings });
     },
     renderTab: tab => {
       const data = readData();
@@ -294,12 +306,16 @@ export function mountApp(options: { floor?: boolean } = {}) {
     launcher.hidden = mode !== 'closed' ? true : !nativeMode && safeMessageId() <= 0;
   }
 
-  function renderAll() {
+  function renderChrome() {
     const data = readData();
     const theme = resolveTheme(data);
     renderHeader(data, theme);
     renderPlayer(data);
     syncLauncher();
+  }
+
+  function renderAll() {
+    renderChrome();
     if (observatory.opened) observatory.render();
   }
 
@@ -542,13 +558,13 @@ export function mountApp(options: { floor?: boolean } = {}) {
     eventOn(Mvu.events.VARIABLE_INITIALIZED, renderAll);
     eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, renderAll);
     eventOn(tavern_events.CHAT_CHANGED, renderAll);
-    eventOn(tavern_events.MESSAGE_RECEIVED, renderAll);
-    eventOn(tavern_events.MESSAGE_EDITED, renderAll);
-    eventOn(tavern_events.MESSAGE_DELETED, renderAll);
-    eventOn(tavern_events.MESSAGE_SWIPED, renderAll);
-    eventOn(tavern_events.USER_MESSAGE_RENDERED, renderAll);
-    eventOn(tavern_events.CHARACTER_MESSAGE_RENDERED, renderAll);
-    eventOn(tavern_events.GENERATION_ENDED, renderAll);
+    eventOn(tavern_events.MESSAGE_RECEIVED, renderChrome);
+    eventOn(tavern_events.MESSAGE_EDITED, renderChrome);
+    eventOn(tavern_events.MESSAGE_DELETED, renderChrome);
+    eventOn(tavern_events.MESSAGE_SWIPED, renderChrome);
+    eventOn(tavern_events.USER_MESSAGE_RENDERED, renderChrome);
+    eventOn(tavern_events.CHARACTER_MESSAGE_RENDERED, renderChrome);
+    eventOn(tavern_events.GENERATION_ENDED, renderChrome);
   } catch { /* ignore */ }
 
   applySettings();
