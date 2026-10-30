@@ -1479,8 +1479,12 @@
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
-  opacity: 0;
+  opacity: 0.75;
   transition: opacity 120ms ease;
+}
+
+.story-msg:hover .story-meta {
+  opacity: 1;
 }
 
 .story-head:hover .story-meta,
@@ -1502,10 +1506,14 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 0;
+  gap: 2px;
   margin-left: 6px;
-  opacity: 0;
+  opacity: 0.85;
   transition: opacity 120ms ease;
+}
+
+.story-msg:hover .story-actions {
+  opacity: 1;
 }
 
 .story-head:hover .story-actions,
@@ -4961,12 +4969,12 @@
 /* 矮屏（手机横屏）不藏花：一枝从右缘探进来，舞台右侧让出同宽，不压正文 */
 @media (max-height: 560px) {
   .front-specimen {
-    top: 50px;
-    right: -58px;
+    top: 52px;
+    right: 10px;
     bottom: auto;
-    width: 88px;
-    height: 118px;
-    opacity: 0.5;
+    width: 64px;
+    height: 86px;
+    opacity: 0.45;
     transform: rotate(-4deg);
   }
 
@@ -5014,10 +5022,10 @@
 /* 宽屏：正文列放宽，右下标本放大，作为舞台右侧的落点 */
 @media (min-width: 1600px) {
   .front-specimen {
-    right: 44px;
-    bottom: 18px;
-    width: 300px;
-    height: 390px;
+    right: 30px;
+    bottom: 30px;
+    width: 240px;
+    height: 310px;
   }
 }
 
