@@ -106,6 +106,12 @@ function pulseRing(heart: number) {
     return `<line class="ring-tick" x1="${(33 + Math.cos(angle) * inner).toFixed(1)}" y1="${(33 + Math.sin(angle) * inner).toFixed(1)}" x2="${(33 + Math.cos(angle) * outer).toFixed(1)}" y2="${(33 + Math.sin(angle) * outer).toFixed(1)}"></line>`;
   }).join('');
   box.innerHTML = `<svg viewBox="0 0 66 66" aria-hidden="true">
+    <defs>
+      <linearGradient id="pulse-ring-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--accent)"></stop>
+        <stop offset="100%" stop-color="var(--accent-2, var(--accent))"></stop>
+      </linearGradient>
+    </defs>
     <circle class="ring-track" cx="33" cy="33" r="${radius}"></circle>
     <circle class="ring-fill" cx="33" cy="33" r="${radius}" stroke-dasharray="${circumference.toFixed(1)}" stroke-dashoffset="${(circumference * (1 - heart / 100)).toFixed(1)}"></circle>
     ${ticks}

@@ -1,94 +1,93 @@
 /*
- * style.scss — 手机模块样式（NIGHT EDITION · 夜行杂志）
+ * style.scss — 手机模块样式（花信 · 温柔真机感）
  *
- * 硬朗设备：2px 圆角机身、单色底、1px 描边、硬投影；界面语言是编辑排版 ——
- * 等宽数字、全大写 kicker、规则线分段、单点猩红实底块。
+ * 设计语言：大圆角机身、暖暮紫色调、花色渐变气泡、圆角药丸页签；
+ * 整体是乙女向视觉小说的手机界面——温暖、柔软、有呼吸感。
  *
  * 约束（改样式时务必守住）：
- *   - 类名与 id 是渲染层的契约，一个都不能改名（见 verify-phone.mjs 的类名覆盖审查）
+ *   - 类名与 id 是渲染层的契约，一个都不能改名
  *   - --ph-petal-soft / --ph-accent / --ph-accent-light / --ph-ink-soft / --ph-ink-faint
  *     会被 wechat.ts 里内联的 SVG 字符串以 var() 引用，变量名不可改
- *   - .phone-shell 的高度、top、left（小窗模式下还有宽度）由 index.ts 的
- *     syncShellViewport() 写内联样式，这里不能给它加 position 尺寸类属性 /
- *     !important，否则键盘弹起、模式切换或拖动会错位
- *   - .phone-fab 拖动后由 index.ts 写内联 left / top，同理不加定位尺寸；
- *     .is-dragging 的 transition: none 必须保留，否则拖动不跟手
+ *   - .phone-shell 的高度、top、left 由 index.ts 的 syncShellViewport() 写内联样式，
+ *     这里不能给它加 position 尺寸类属性 / !important
+ *   - .phone-fab 拖动后由 index.ts 写内联 left / top；
+ *     .is-dragging 的 transition: none 必须保留
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 设计令牌 · 深色（默认：深夜出刊）
+// 设计令牌 · 深色（默认：暮紫）
 // ─────────────────────────────────────────────────────────────────────────────
 
 #phone-root-host {
-  // ── 猩红：只做点、块、短横线与实底按钮
-  --ph-accent:        #ff3b5c;
-  --ph-accent-mid:    #e01b3f;
-  --ph-accent-light:  #ff5a75;
-  --ph-accent-faint:  rgba(255, 59, 92, 0.12);
-  --ph-accent-deep:   #ff3b5c;
-  --ph-accent-shadow: #c41230;
+  // ── 花色：百合粉→玫瑰渐变，作为主色调
+  --ph-accent:        #e8a0b8;
+  --ph-accent-mid:    #c9708a;
+  --ph-accent-light:  #f0b8cc;
+  --ph-accent-faint:  rgba(232, 160, 184, 0.14);
+  --ph-accent-deep:   #c9708a;
+  --ph-accent-shadow: #b05878;
   // SVG 头像底纹（wechat.ts 内联引用）
-  --ph-petal-soft:    rgba(255, 59, 92, 0.07);
+  --ph-petal-soft:    rgba(232, 160, 184, 0.10);
 
-  // ── 冷银灰与冷紫：次级信息的层次来源
-  --ph-violet:        #8b9bff;
-  --ph-violet-soft:   #8b8896;
-  --ph-rouge:         #ff3b5c;
-  --ph-gold:          #8b8896;
-  --ph-gold-light:    #c8c5cf;
+  // ── 紫藤紫：辅色
+  --ph-violet:        #b89ad4;
+  --ph-violet-soft:   #9882c4;
+  --ph-rouge:         #c9708a;
+  --ph-gold:          #7baa92;
+  --ph-gold-light:    #9ec8ae;
 
   // ── 中性
-  --ph-bg:            #0b0b10;
-  --ph-bg2:           #08080b;
-  --ph-surface:       #121218;
-  --ph-card:          #121218;
-  --ph-ink:           #f4f2ec;
-  --ph-ink-soft:      #c8c5cf;
-  --ph-ink-faint:     #8b8896;
-  --ph-border:        rgba(244, 242, 236, 0.16);
-  --ph-border-soft:   rgba(244, 242, 236, 0.09);
-  --ph-hairline:      rgba(244, 242, 236, 0.1);
-  --ph-glass:         rgba(11, 11, 16, 0.96);
-  --ph-chip:          rgba(244, 242, 236, 0.06);
-  --ph-shell-edge:    rgba(244, 242, 236, 0.1);
-  --ph-ok:            #6fd3b0;
-  --ph-err:           #ff8296;
+  --ph-bg:            #1e1a2c;
+  --ph-bg2:           #1c151f;
+  --ph-surface:       #261f33;
+  --ph-card:          #261f33;
+  --ph-ink:           #f5ece8;
+  --ph-ink-soft:      #d4bec8;
+  --ph-ink-faint:     #9a8492;
+  --ph-border:        rgba(245, 236, 232, 0.12);
+  --ph-border-soft:   rgba(245, 236, 232, 0.07);
+  --ph-hairline:      rgba(245, 236, 232, 0.08);
+  --ph-glass:         rgba(30, 26, 44, 0.96);
+  --ph-chip:          rgba(232, 160, 184, 0.07);
+  --ph-shell-edge:    rgba(255, 255, 255, 0.10);
+  --ph-ok:            #7baa92;
+  --ph-err:           #e8a0b8;
 
-  // ── 气泡：我方是整块猩红，对方是面板底 + 1px 线
-  --ph-bubble-out:      #e01b3f;
-  --ph-bubble-out-solid:#e01b3f;
+  // ── 气泡：我方花色渐变，对方面板底
+  --ph-bubble-out:      linear-gradient(135deg, #e8a0b8, #c9708a);
+  --ph-bubble-out-solid:#c9708a;
   --ph-bubble-out-ink:  #ffffff;
-  --ph-bubble-in:       #121218;
-  --ph-bubble-in-ink:   #f4f2ec;
-  --ph-bubble-in-line:  rgba(244, 242, 236, 0.16);
+  --ph-bubble-in:       #2d2340;
+  --ph-bubble-in-ink:   #f5ece8;
+  --ph-bubble-in-line:  rgba(245, 236, 232, 0.12);
 
-  // ── 机身：单色，不做金属渐变
-  --ph-chassis:      #0b0b10;
-  --ph-chassis-edge: rgba(244, 242, 236, 0.14);
+  // ── 机身：深紫色调，边缘高光
+  --ph-chassis:      #1e1a2c;
+  --ph-chassis-edge: rgba(255, 255, 255, 0.10);
 
   // ── 顶栏 / 封面 / 悬浮键
-  --ph-topbar: #101015;
-  --ph-cover:  #08080b;
-  --ph-fab:    #ff3b5c;
+  --ph-topbar: #241d30;
+  --ph-cover:  #1c151f;
+  --ph-fab:    linear-gradient(135deg, #e8a0b8, #c9708a);
 
-  // ── 圆角：一律 0–2px
-  --ph-r-sm:   0px;
-  --ph-r-md:   2px;
-  --ph-r-lg:   2px;
-  --ph-r-full: 2px;
+  // ── 圆角：柔软感
+  --ph-r-sm:   8px;
+  --ph-r-md:   16px;
+  --ph-r-lg:   20px;
+  --ph-r-full: 999px;
 
-  // ── 抬起：只用硬投影，无模糊、无彩色
-  --ph-sh-1: 1px 1px 0 rgba(0, 0, 0, 0.5);
-  --ph-sh-2: 3px 3px 0 rgba(0, 0, 0, 0.5);
-  --ph-sh-3: 6px 6px 0 rgba(0, 0, 0, 0.55);
-  --ph-sh-accent: 3px 3px 0 rgba(0, 0, 0, 0.55);
-  --ph-sh-accent-lg: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  // ── 投影：柔和，无硬角
+  --ph-sh-1: 0 2px 8px rgba(0, 0, 0, 0.18);
+  --ph-sh-2: 0 4px 16px rgba(0, 0, 0, 0.22);
+  --ph-sh-3: 0 8px 28px rgba(0, 0, 0, 0.28);
+  --ph-sh-accent: 0 4px 16px rgba(201, 112, 138, 0.28);
+  --ph-sh-accent-lg: 0 8px 24px rgba(201, 112, 138, 0.32);
 
-  // ── 动效：编辑风曲线，不回弹
-  --ph-ease:    cubic-bezier(0.16, 1, 0.3, 1);
-  --ph-ease-pop: cubic-bezier(0.16, 1, 0.3, 1);
+  // ── 动效：柔和曲线
+  --ph-ease:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ph-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  --ph-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, Consolas, monospace;
+  --ph-mono: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 
   position: fixed;
   z-index: 9100;
@@ -99,56 +98,56 @@
   -webkit-font-smoothing: antialiased;
 }
 
-// ── 浅色：白天版杂志（纸白底、深墨、同一点猩红）
+// ── 浅色：暖米粉版
 #yuri-front[data-theme='light'] #phone-root-host {
-  --ph-accent:        #d61a38;
-  --ph-accent-mid:    #b3142d;
-  --ph-accent-light:  #b3142d;
-  --ph-accent-faint:  rgba(214, 26, 56, 0.1);
-  --ph-accent-deep:   #b3142d;
-  --ph-accent-shadow: #8f0f24;
-  --ph-petal-soft:    rgba(214, 26, 56, 0.06);
+  --ph-accent:        #c9708a;
+  --ph-accent-mid:    #b05878;
+  --ph-accent-light:  #d98aa0;
+  --ph-accent-faint:  rgba(201, 112, 138, 0.10);
+  --ph-accent-deep:   #b05878;
+  --ph-accent-shadow: #924668;
+  --ph-petal-soft:    rgba(201, 112, 138, 0.07);
 
-  --ph-violet:        #3b4bc9;
-  --ph-violet-soft:   #6a6a76;
-  --ph-gold:          #6a6a76;
-  --ph-gold-light:    #3b3b45;
+  --ph-violet:        #9882c4;
+  --ph-violet-soft:   #7c63a9;
+  --ph-gold:          #6b8a6f;
+  --ph-gold-light:    #7baa92;
 
-  --ph-bg:            #f5f3ee;
-  --ph-bg2:           #eae7e0;
-  --ph-surface:       #fffefb;
-  --ph-card:          #fffefb;
-  --ph-ink:           #101016;
-  --ph-ink-soft:      #3b3b45;
-  --ph-ink-faint:     #6a6a76;
-  --ph-border:        rgba(16, 16, 22, 0.22);
-  --ph-border-soft:   rgba(16, 16, 22, 0.12);
-  --ph-hairline:      rgba(16, 16, 22, 0.1);
-  --ph-glass:         rgba(255, 254, 251, 0.96);
-  --ph-chip:          rgba(16, 16, 22, 0.05);
-  --ph-shell-edge:    rgba(16, 16, 22, 0.14);
-  --ph-ok:            #157a5b;
-  --ph-err:           #b3142d;
+  --ph-bg:            #faf5f2;
+  --ph-bg2:           #f3ebe8;
+  --ph-surface:       #fffaf8;
+  --ph-card:          #fffaf8;
+  --ph-ink:           #3d2d33;
+  --ph-ink-soft:      #5c4450;
+  --ph-ink-faint:     #8c6e78;
+  --ph-border:        rgba(61, 45, 51, 0.14);
+  --ph-border-soft:   rgba(61, 45, 51, 0.08);
+  --ph-hairline:      rgba(61, 45, 51, 0.07);
+  --ph-glass:         rgba(250, 245, 242, 0.96);
+  --ph-chip:          rgba(201, 112, 138, 0.06);
+  --ph-shell-edge:    rgba(61, 45, 51, 0.14);
+  --ph-ok:            #6b8a6f;
+  --ph-err:           #c9708a;
 
-  --ph-bubble-out:      #d61a38;
-  --ph-bubble-out-solid:#d61a38;
+  --ph-bubble-out:      linear-gradient(135deg, #e8a0b8, #c9708a);
+  --ph-bubble-out-solid:#c9708a;
   --ph-bubble-out-ink:  #ffffff;
-  --ph-bubble-in:       #fffefb;
-  --ph-bubble-in-ink:   #101016;
-  --ph-bubble-in-line:  rgba(16, 16, 22, 0.2);
+  --ph-bubble-in:       #fffaf8;
+  --ph-bubble-in-ink:   #3d2d33;
+  --ph-bubble-in-line:  rgba(61, 45, 51, 0.14);
 
-  --ph-chassis:      #edeae3;
-  --ph-chassis-edge: rgba(16, 16, 22, 0.2);
+  --ph-chassis:      #ede8e2;
+  --ph-chassis-edge: rgba(61, 45, 51, 0.16);
 
-  --ph-topbar: #fffefb;
-  --ph-cover:  #eae7e0;
-  --ph-fab:    #d61a38;
+  --ph-topbar: #fffaf8;
+  --ph-cover:  #f3ebe8;
+  --ph-fab:    linear-gradient(135deg, #e8a0b8, #c9708a);
 
-  --ph-sh-1: 1px 1px 0 rgba(16, 16, 22, 0.28);
-  --ph-sh-2: 3px 3px 0 rgba(16, 16, 22, 0.24);
-  --ph-sh-3: 6px 6px 0 rgba(16, 16, 22, 0.22);
-  --ph-sh-accent: 3px 3px 0 rgba(16, 16, 22, 0.32);
-  --ph-sh-accent-lg: 3px 3px 0 rgba(16, 16, 22, 0.4);
+  --ph-sh-1: 0 2px 8px rgba(61, 45, 51, 0.10);
+  --ph-sh-2: 0 4px 16px rgba(61, 45, 51, 0.12);
+  --ph-sh-3: 0 8px 28px rgba(61, 45, 51, 0.14);
+  --ph-sh-accent: 0 4px 16px rgba(201, 112, 138, 0.22);
+  --ph-sh-accent-lg: 0 8px 24px rgba(201, 112, 138, 0.26);
 
   color-scheme: light;
 }
@@ -165,123 +164,117 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 关键帧 · 硬、快、准
+// 关键帧 · 温柔有呼吸
 // ─────────────────────────────────────────────────────────────────────────────
 
-// 悬浮键：横向擦除落位
+// 悬浮键：花开入场（scale + opacity）
 @keyframes ph-fab-in {
-  from { opacity: 0; clip-path: inset(0 100% 0 0); }
-  to   { opacity: 1; clip-path: inset(0); }
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-// 对方消息：行内升起
+// 对方消息：轻盈升起
 @keyframes ph-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+// 我方消息：从右侧柔和滑入
+@keyframes ph-card-in {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+// 心跳脉动：极小幅度
+@keyframes ph-heart-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+// 输入中三点：柔和弹跳
+@keyframes ph-typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30%           { transform: translateY(-3px); opacity: 1; }
+}
+
+// 淡入上浮
+@keyframes ph-fade-up {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
 
-// 我方消息：横向擦除（实底块像被一条一条扫上去）
-@keyframes ph-card-in {
-  from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0); }
-}
-
-@keyframes ph-heart-pop {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
-
-// 输入中三点：只做 2px 位移，不改透明度
-@keyframes ph-typing {
-  0%, 60%, 100% { transform: translateY(0); }
-  30%           { transform: translateY(-2px); }
-}
-
-@keyframes ph-fade-up {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: none; }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// 悬浮按钮（FAB）：一枚猩红方印，不是玻璃胶囊
+// 悬浮按钮（FAB）：花色渐变圆角方块
 // ─────────────────────────────────────────────────────────────────────────────
-// 位置由 index.ts 拖动后写内联 left / top，这里只负责观感。
 
 .phone-fab {
   pointer-events: auto;
   position: fixed;
   bottom: 82px;
   right: 14px;
-  width: 46px;
-  height: 46px;
-  border-radius: 0;
-  border: 1px solid var(--ph-accent-shadow);
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: none;
   background: var(--ph-fab);
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--ph-sh-3);
-  transition: transform 0.08s linear, box-shadow 0.08s linear, background 0.12s linear;
+  box-shadow: var(--ph-sh-accent);
+  transition: transform 0.2s var(--ph-ease), box-shadow 0.2s ease, opacity 0.15s ease;
   z-index: 9101;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  animation: ph-fab-in 0.34s var(--ph-ease) both;
+  animation: ph-fab-in 0.4s var(--ph-ease) both;
 
   svg { width: 20px; height: 20px; }
 
-  // 反色 hover：整块变墨白、图标变猩红
   &:hover {
-    background: var(--ph-ink);
-    border-color: var(--ph-ink);
-    color: var(--ph-accent);
-
-    svg { stroke: var(--ph-accent); }
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: var(--ph-sh-accent-lg);
   }
 
-  // 按压：位移 2px，硬投影归零
   &:active {
-    transform: translate(2px, 2px);
-    box-shadow: none;
+    transform: scale(0.96);
+    box-shadow: var(--ph-sh-1);
   }
 
-  // 拖动中：必须保留 transition: none，否则按钮跟不上手指
   &.is-dragging,
   &.is-dragging:hover,
   &.is-dragging:active {
     transition: none;
     cursor: grabbing;
     transform: none;
-    box-shadow: var(--ph-sh-3);
+    box-shadow: var(--ph-sh-accent);
   }
 }
 
 .phone-fab-badge {
   position: absolute;
-  top: -7px;
-  right: -7px;
-  min-width: 17px;
-  height: 17px;
-  border-radius: 0;
-  background: var(--ph-bubble-out);
-  border: 1px solid var(--ph-bg);
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--ph-bubble-out-solid);
+  border: 2px solid var(--ph-bg);
   color: #ffffff;
-  font-family: var(--ph-mono);
   font-size: 10px;
   font-weight: 700;
-  line-height: 15px;
+  line-height: 14px;
   text-align: center;
-  padding: 0 3px;
+  padding: 0 4px;
   display: none;
   pointer-events: none;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 手机外壳：单色机身屏幕，2px 圆角 + 1px 描边
+// 手机外壳：大圆角机身，深紫色调，边缘细高光
 // ─────────────────────────────────────────────────────────────────────────────
 
 .phone-shell {
@@ -296,25 +289,24 @@
   overflow: hidden;
   z-index: 9200;
   opacity: 0;
-  // 外壳只做淡入：浮起交给主应用面板层（.phone-frame）
-  transition: opacity 0.2s ease;
-  border-radius: 2px;
-  box-shadow: inset 0 0 0 1px var(--ph-shell-edge);
+  transition: opacity 0.3s ease;
+  border-radius: 26px;
+  box-shadow:
+    inset 0 0 0 1px var(--ph-shell-edge),
+    var(--ph-sh-3);
 
   &.is-open {
     opacity: 1;
     pointer-events: auto;
   }
 
-  // 小窗模式：受限宽度浮窗（宽高与 left/top 全部由 syncShellViewport 写内联）
   &.is-mini {
-    border-radius: 2px;
+    border-radius: 20px;
     box-shadow:
       0 0 0 1px var(--ph-shell-edge),
       var(--ph-sh-3);
   }
 
-  // 小窗按住顶部状态栏可拖动：抓手光标 + 禁掉浏览器手势
   &.is-mini .phone-status-bar {
     cursor: grab;
     touch-action: none;
@@ -326,30 +318,32 @@
     cursor: grabbing;
   }
 
-  // 顶部中段一小段「握把」：两条等宽短线
+  // 顶部「握把」：两条圆润短线
   &.is-mini .phone-status-bar::before {
     background:
-      linear-gradient(var(--ph-ink-faint), var(--ph-ink-faint)) 50% 50% / 18px 1px no-repeat,
-      linear-gradient(var(--ph-ink-faint), var(--ph-ink-faint)) 50% calc(50% + 3px) / 18px 1px no-repeat;
+      linear-gradient(var(--ph-ink-faint), var(--ph-ink-faint)) 50% 50% / 20px 2px no-repeat,
+      linear-gradient(var(--ph-ink-faint), var(--ph-ink-faint)) 50% calc(50% + 4px) / 12px 2px no-repeat;
+    border-radius: 2px;
   }
 }
 
 .phone-close-btn,
 .phone-mode-btn {
   position: absolute;
-  top: calc(9px + env(safe-area-inset-top, 0px));
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--ph-border);
-  background: transparent;
-  border-radius: 0;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: rgba(245, 236, 232, 0.10);
+  border-radius: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ph-ink-soft);
   z-index: 10;
-  transition: background 0.12s linear, color 0.12s linear, transform 0.08s linear;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+  backdrop-filter: blur(4px);
 
   svg {
     width: 11px;
@@ -358,62 +352,39 @@
   }
 
   &:hover {
-    background: var(--ph-bubble-out);
-    border-color: var(--ph-bubble-out);
-    color: #fff;
+    background: var(--ph-accent-faint);
+    color: var(--ph-accent);
   }
 
-  &:active { transform: translate(1px, 1px); }
+  &:active { transform: scale(0.92); }
   &:focus-visible { outline: 2px solid var(--ph-accent); outline-offset: 2px; }
 }
 
-.phone-close-btn {
-  right: 14px;
-}
-
-.phone-mode-btn {
-  right: 44px;
-}
+.phone-close-btn { right: 14px; }
+.phone-mode-btn  { right: 46px; }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 顶部状态栏：刊头式细条，时间等宽
+// 顶部状态栏：柔和信息带
 // ─────────────────────────────────────────────────────────────────────────────
 
 .phone-status-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  // 最小高度要盖住绝对定位的 24px 关闭键（9 + 24 + 9），否则按钮会压到内容区
   min-height: calc(42px + env(safe-area-inset-top, 0px));
-  padding: calc(9px + env(safe-area-inset-top, 0px)) 76px 9px 14px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 76px 10px 16px;
   background: var(--ph-topbar);
   color: var(--ph-ink);
   font-size: 10px;
   flex-shrink: 0;
   position: relative;
   border-bottom: 1px solid var(--ph-border);
-
-  // 关闭键与状态栏之间的一条竖向分隔
-  &::after {
-    content: '';
-    position: absolute;
-    right: 74px;
-    top: 50%;
-    width: 1px;
-    height: 12px;
-    margin-top: -6px;
-    background: var(--ph-border);
-  }
 }
 
-// 时间用等宽数字，避免跳动
 .phone-time {
-  font-family: var(--ph-mono);
   font-weight: 700;
   font-size: 12px;
-  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-  position: relative;
   color: var(--ph-ink);
 }
 
@@ -421,7 +392,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  position: relative;
   color: var(--ph-ink-soft);
 
   svg {
@@ -429,7 +399,7 @@
     height: 13px;
     fill: currentColor;
     stroke: none;
-    opacity: 0.9;
+    opacity: 0.85;
   }
 }
 
@@ -447,7 +417,7 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 底部页签：文字 + 顶部 2px 选中条（随选中项滑动）
+// 底部页签：圆角药丸指示器
 // ─────────────────────────────────────────────────────────────────────────────
 
 .phone-navbar {
@@ -455,27 +425,30 @@
   background: var(--ph-topbar);
   border-top: 1px solid var(--ph-border);
   flex-shrink: 0;
-  padding-bottom: calc(1px + env(safe-area-inset-bottom, 0px));
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   position: relative;
+  gap: 4px;
 
-  // 页面切换后重绘时，选中条也同步滑动
+  // 药丸指示器：花色底，随选中项滑动
   &::after {
     content: '';
     position: absolute;
-    top: -1px;
-    left: 0;
-    width: 25%;
-    height: 2px;
-    background: var(--ph-accent);
+    bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    left: 8px;
+    width: calc(25% - 3px);
+    height: calc(100% - 12px - env(safe-area-inset-bottom, 0px));
+    background: var(--ph-accent-faint);
+    border-radius: 12px;
     transform: translateX(0);
-    transition: transform 0.32s var(--ph-ease);
+    transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
     pointer-events: none;
+    border: 1px solid rgba(232, 160, 184, 0.20);
   }
 }
 
-.phone-navbar:has(.phone-tab:nth-child(2).is-active)::after { transform: translateX(100%); }
-.phone-navbar:has(.phone-tab:nth-child(3).is-active)::after { transform: translateX(200%); }
-.phone-navbar:has(.phone-tab:nth-child(4).is-active)::after { transform: translateX(300%); }
+.phone-navbar:has(.phone-tab:nth-child(2).is-active)::after { transform: translateX(calc(100% + 4px)); }
+.phone-navbar:has(.phone-tab:nth-child(3).is-active)::after { transform: translateX(calc(200% + 8px)); }
+.phone-navbar:has(.phone-tab:nth-child(4).is-active)::after { transform: translateX(calc(300% + 12px)); }
 
 .phone-tab {
   flex: 1;
@@ -484,49 +457,40 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  min-height: 44px;
-  padding: 10px 0 11px;
+  min-height: 40px;
+  padding: 8px 0;
   border: none;
-  border-right: 1px solid var(--ph-border-soft);
   background: none;
   color: var(--ph-ink-faint);
   cursor: pointer;
-  transition: color 0.12s linear, background 0.12s linear;
+  transition: color 0.18s ease;
   position: relative;
   min-width: 0;
+  border-radius: 12px;
+  z-index: 1;
 
-  &:last-child { border-right: 0; }
-
-  // 页签只留文字：图标收起来，靠字距与 2px 选中条区分
   svg { display: none; }
 
-  &.is-active {
-    color: var(--ph-ink);
-  }
-
-  &:hover { color: var(--ph-ink); }
-  &:active { background: var(--ph-chip); }
-  &:focus-visible { outline: 2px solid var(--ph-accent); outline-offset: -3px; }
+  &.is-active { color: var(--ph-accent); }
+  &:hover { color: var(--ph-ink-soft); }
+  &:active { opacity: 0.8; }
+  &:focus-visible { outline: 2px solid var(--ph-accent); outline-offset: -3px; border-radius: 12px; }
 }
 
 .phone-tab-label {
-  font-family: var(--ph-mono);
   font-size: 11px;
-  letter-spacing: 0.14em;
-  font-weight: 600;
-  /* 自己声明颜色：主应用的 color: inherit 重置只作用在 button 上，
-     页签文字必须自己扛住，否则选中态与未选中态分不开 */
+  font-weight: 500;
   color: var(--ph-ink-faint);
-  transition: color 0.12s linear;
+  transition: color 0.18s ease, font-weight 0.18s ease;
 }
 
 .phone-tab.is-active .phone-tab-label {
-  color: var(--ph-ink);
+  color: var(--ph-accent);
   font-weight: 700;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 通用
+// 通用页面容器
 // ─────────────────────────────────────────────────────────────────────────────
 
 .wc-page {
@@ -535,11 +499,11 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  animation: ph-fade-up 0.2s var(--ph-ease) both;
+  animation: ph-fade-up 0.22s var(--ph-ease) both;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 聊天列表：目录式条目，序号式预览，行间 1px 线
+// 聊天列表
 // ─────────────────────────────────────────────────────────────────────────────
 
 .wc-chatlist {
@@ -557,15 +521,12 @@
   padding: 24px;
   background: var(--ph-bg);
 
-  // 空态题注：等宽小字，像一条编者按
   &::after {
-    content: 'COMMS · NO ENTRIES';
-    margin-top: 18px;
+    content: '还没有聊天哦';
+    margin-top: 16px;
     color: var(--ph-ink-faint);
-    font-family: var(--ph-mono);
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.04em;
   }
 }
 
@@ -574,64 +535,39 @@
   z-index: 0;
   width: 148px;
   padding: 10px;
-  border: 1px solid var(--ph-border);
+  border-radius: 16px;
   background: var(--ph-surface);
   box-shadow: var(--ph-sh-2);
   animation: ph-fade-up 0.3s var(--ph-ease) both;
 
-  // SVG 里那团柔光圆不符合编辑风：只留线稿花朵
-  svg > circle:first-of-type {
-    display: none;
-  }
-
-  svg {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
+  svg > circle:first-of-type { display: none; }
+  svg { display: block; width: 100%; height: auto; }
 }
 
 .wc-chat-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 13px 14px;
+  padding: 13px 16px;
   cursor: pointer;
-  transition: background 0.12s linear;
+  transition: background 0.18s ease;
   position: relative;
   border-bottom: 1px solid var(--ph-border-soft);
 
-  // 左侧一条 2px 竖线：hover 时才亮起猩红
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: transparent;
-    transition: background 0.12s linear;
-  }
-
-  &:hover {
-    background: var(--ph-chip);
-
-    &::before { background: var(--ph-accent); }
-  }
-
+  &:hover { background: var(--ph-chip); }
   &:active { background: var(--ph-accent-faint); }
 }
 
 .wc-item-avatar {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   position: relative;
 
   svg {
-    width: 42px;
-    height: 42px;
-    border-radius: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     box-shadow: 0 0 0 1px var(--ph-border);
     display: block;
   }
@@ -654,7 +590,6 @@
   font-size: 14px;
   font-weight: 700;
   color: var(--ph-ink);
-  letter-spacing: -0.01em;
 }
 
 .wc-item-preview {
@@ -668,12 +603,11 @@
 }
 
 .wc-item-sub {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
-  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   line-height: 1.4;
 }
 
@@ -709,22 +643,19 @@
 
 .wc-chat-title {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ph-ink);
-  letter-spacing: -0.02em;
 }
 
 .wc-chat-subtitle {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .wc-icon-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: none;
   cursor: pointer;
@@ -732,8 +663,8 @@
   align-items: center;
   justify-content: center;
   color: var(--ph-ink-soft);
-  border-radius: 0;
-  transition: background 0.12s linear, color 0.12s linear;
+  border-radius: 10px;
+  transition: background 0.18s ease, color 0.18s ease;
   flex-shrink: 0;
 
   svg { width: 16px; height: 16px; }
@@ -755,30 +686,22 @@
   background: var(--ph-bg);
 }
 
-// 时间分隔条：—— 10月21日 21:12 ——
+// 时间分隔：极小号半透明文字
 .wc-time-divider {
   align-self: center;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 8px 0 4px;
-  padding: 0;
-  border-radius: 0;
-  background: none;
+  margin: 6px 0 2px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(245, 236, 232, 0.06);
   color: var(--ph-ink-faint);
-  font-family: var(--ph-mono);
   font-size: 10px;
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
   user-select: none;
-  letter-spacing: 0.1em;
-
-  &::before,
-  &::after {
-    content: '——';
-    color: var(--ph-ink-faint);
-    letter-spacing: -0.04em;
-  }
+  letter-spacing: 0.04em;
 }
 
 .wc-msg-row {
@@ -786,62 +709,53 @@
   align-items: flex-end;
   gap: 8px;
 
-  // 只给进页后新到的消息做入场；历史记录跟随整页淡入
-  &.is-new { animation: ph-bubble-in 0.24s var(--ph-ease) both; }
-  // 我方消息是实底块：横向擦除
-  &.is-new.wc-msg-out { animation: ph-card-in 0.3s var(--ph-ease) both; }
-
+  &.is-new { animation: ph-bubble-in 0.26s var(--ph-ease) both; }
+  &.is-new.wc-msg-out { animation: ph-card-in 0.28s var(--ph-ease) both; }
   &.wc-msg-out { flex-direction: row-reverse; }
 }
 
 .wc-bubble-avatar {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
-  position: relative;
 
   svg {
-    width: 26px;
-    height: 26px;
-    border-radius: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
     display: block;
     box-shadow: 0 0 0 1px var(--ph-border);
   }
 }
 
 .wc-bubble {
-  max-width: 214px;
-  padding: 9px 12px;
+  max-width: 220px;
+  padding: 10px 13px;
   font-size: 13px;
-  line-height: 1.62;
+  line-height: 1.65;
   word-break: break-word;
   white-space: pre-wrap;
   position: relative;
 
-  // 我方：整块猩红实底、白字、硬角
+  // 我方：花色渐变，右下尖角，圆角 18px
   .wc-msg-out &:not(.is-emoji) {
     color: var(--ph-bubble-out-ink);
     background: var(--ph-bubble-out);
-    border: 1px solid var(--ph-bubble-out);
-    border-radius: 0;
-    box-shadow: var(--ph-sh-1);
-    padding-right: 13px;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: var(--ph-sh-accent);
   }
 
-  // 对方：面板底 + 1px 线，无尾巴
+  // 对方：面板色，半透白，左下尖角，圆角 18px
   .wc-msg-in &:not(.is-emoji) {
     color: var(--ph-bubble-in-ink);
     background: var(--ph-bubble-in);
     border: 1px solid var(--ph-bubble-in-line);
-    border-radius: 0;
+    border-radius: 18px 18px 18px 4px;
   }
 
-  &.is-streaming {
-    opacity: 0.72;
-  }
+  &.is-streaming { opacity: 0.72; }
 }
 
-// 输入中三点：首个 token 写入时随 textContent 一起被替换掉；动效关闭时就是静态省略号
 .wc-typing {
   display: inline-flex;
   align-items: center;
@@ -850,18 +764,17 @@
   vertical-align: middle;
 
   i {
-    width: 4px;
-    height: 4px;
-    border-radius: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
     background: currentColor;
-    animation: ph-typing 1.2s ease-in-out infinite;
+    animation: ph-typing 1.4s ease-in-out infinite;
 
-    &:nth-child(2) { animation-delay: 0.15s; }
-    &:nth-child(3) { animation-delay: 0.3s; }
+    &:nth-child(2) { animation-delay: 0.18s; }
+    &:nth-child(3) { animation-delay: 0.36s; }
   }
 }
 
-// 单独一条表情消息：大表情（无气泡）
 .wc-msg-out .wc-bubble.is-emoji,
 .wc-msg-in .wc-bubble.is-emoji {
   background: none;
@@ -873,15 +786,13 @@
   max-width: none;
 }
 
-.wc-msg-photo .wc-bubble {
-  max-width: 250px;
-}
+.wc-msg-photo .wc-bubble { max-width: 250px; }
 
 .wc-photo-card {
   display: block;
   margin: 8px 0 1px;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 14px;
   background: var(--ph-bg2);
   border: 1px solid var(--ph-border-soft);
 }
@@ -898,12 +809,11 @@
   min-height: 96px;
   place-items: center;
   color: var(--ph-ink-faint);
-  font-family: var(--ph-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
 }
 
-// 输入栏：下划线式输入 + 猩红实底发送块
+// 输入栏：圆角，聚焦时花色柔光边框
 .wc-chat-footer {
   display: flex;
   align-items: flex-end;
@@ -917,33 +827,34 @@
 .wc-input {
   flex: 1;
   min-width: 0;
-  border: none;
-  border-bottom: 1px solid var(--ph-ink-faint);
-  border-radius: 0;
-  padding: 6px 2px;
+  border: 1.5px solid var(--ph-border);
+  border-radius: 20px;
+  padding: 8px 14px;
   font-size: 13px;
   line-height: 1.5;
   resize: none;
   outline: none;
-  background: transparent;
+  background: var(--ph-bg);
   color: var(--ph-ink);
   max-height: 96px;
   overflow-y: auto;
   font-family: inherit;
-  transition: border-color 0.12s linear;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
 
   &:focus {
-    border-bottom-color: var(--ph-accent);
+    border-color: var(--ph-accent);
+    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.15);
   }
 
   &::placeholder { color: var(--ph-ink-faint); }
 }
 
+// 发送：花色圆角方块
 .wc-send-btn {
-  width: 44px;
-  height: 34px;
-  border: 1px solid var(--ph-accent-shadow);
-  border-radius: 0;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 13px;
   background: var(--ph-bubble-out);
   color: #fff;
   cursor: pointer;
@@ -951,8 +862,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: var(--ph-sh-1);
-  transition: transform 0.08s linear, box-shadow 0.08s linear, opacity 0.12s linear;
+  box-shadow: var(--ph-sh-accent);
+  transition: transform 0.18s var(--ph-ease), box-shadow 0.18s ease, opacity 0.15s ease;
 
   svg {
     width: 14px;
@@ -961,17 +872,14 @@
     stroke: #fff;
   }
 
-  // 反色 hover：墨白底、猩红图标
   &:hover:not(:disabled) {
-    background: var(--ph-ink);
-    border-color: var(--ph-ink);
-
-    svg { stroke: var(--ph-accent); }
+    transform: scale(1.06);
+    box-shadow: var(--ph-sh-accent-lg);
   }
 
   &:active:not(:disabled) {
-    transform: translate(2px, 2px);
-    box-shadow: none;
+    transform: scale(0.94);
+    box-shadow: var(--ph-sh-1);
   }
 
   &:disabled {
@@ -986,10 +894,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 .wc-emoji-btn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--ph-border);
-  border-radius: 0;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--ph-border);
+  border-radius: 12px;
   background: transparent;
   color: var(--ph-ink-soft);
   cursor: pointer;
@@ -997,7 +905,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: border-color 0.12s linear, color 0.12s linear, background 0.12s linear;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 
   svg { width: 17px; height: 17px; }
 
@@ -1005,15 +913,14 @@
   &:active { background: var(--ph-accent-faint); }
 }
 
-// 设置页：键盘诊断读数
+// 设置页：诊断读数
 .wc-viewport-diag {
-  font-family: var(--ph-mono);
   font-size: 10px;
   line-height: 1.7;
   color: var(--ph-ink-faint);
   background: var(--ph-bg2);
-  border-radius: 0;
-  padding: 9px 11px;
+  border-radius: 12px;
+  padding: 9px 12px;
   word-break: break-all;
   font-variant-numeric: tabular-nums;
   border: 1px solid var(--ph-border-soft);
@@ -1027,10 +934,11 @@
   border-top: 1px solid var(--ph-border);
   background: var(--ph-surface);
   flex-shrink: 0;
+  border-radius: 20px 20px 0 0;
 
   &.is-open {
     display: flex;
-    animation: ph-fade-up 0.2s var(--ph-ease) both;
+    animation: ph-fade-up 0.22s var(--ph-ease) both;
   }
 }
 
@@ -1042,33 +950,28 @@
   border-bottom: 1px solid var(--ph-border-soft);
 }
 
-.wc-emoji-modes { display: flex; gap: 0; }
+.wc-emoji-modes { display: flex; gap: 6px; }
 
 .wc-emoji-mode {
-  border: 1px solid var(--ph-border);
-  border-right: none;
+  border: 1.5px solid var(--ph-border);
   background: transparent;
   color: var(--ph-ink-faint);
-  font-family: var(--ph-mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
   padding: 4px 14px;
-  border-radius: 0;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.12s linear, color 0.12s linear;
-
-  &:last-child { border-right: 1px solid var(--ph-border); }
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 
   &.is-active {
-    background: var(--ph-bubble-out);
-    border-color: var(--ph-bubble-out);
-    color: #fff;
+    background: var(--ph-accent-faint);
+    border-color: var(--ph-accent);
+    color: var(--ph-accent);
   }
 }
 
 .wc-emoji-done {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border: none;
   background: none;
   color: var(--ph-ink-faint);
@@ -1076,7 +979,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0;
+  border-radius: 10px;
 
   svg { width: 15px; height: 15px; }
   &:hover { color: var(--ph-accent); }
@@ -1097,19 +1000,17 @@
   border: none;
   background: none;
   color: var(--ph-ink-faint);
-  font-family: var(--ph-mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
   padding: 2px 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: color 0.12s linear, border-color 0.12s linear;
+  transition: color 0.18s ease, border-color 0.18s ease;
 
   &.is-active {
-    color: var(--ph-ink);
+    color: var(--ph-accent);
     border-bottom-color: var(--ph-accent);
     font-weight: 700;
   }
@@ -1134,10 +1035,10 @@
   font-size: 22px;
   line-height: 1;
   padding: 7px 0;
-  border-radius: 0;
+  border-radius: 10px;
   color: var(--ph-ink);
   font-family: inherit;
-  transition: background 0.1s linear;
+  transition: background 0.12s ease;
 
   &:hover { background: var(--ph-chip); }
   &:active { background: var(--ph-accent-faint); }
@@ -1164,20 +1065,19 @@
   border-bottom: 1px solid var(--ph-border);
 }
 
-// 搜索＝下划线式输入，与聊天输入栏同一套语言
 .wc-search-bar {
   display: flex;
   align-items: center;
   gap: 7px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--ph-ink-faint);
-  border-radius: 0;
-  padding: 4px 0 6px;
-  transition: border-color 0.12s linear;
+  background: var(--ph-bg);
+  border: 1.5px solid var(--ph-border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
 
   &:focus-within {
-    border-bottom-color: var(--ph-accent);
+    border-color: var(--ph-accent);
+    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.12);
   }
 }
 
@@ -1208,9 +1108,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 13px;
+  padding: 13px 14px;
   background: var(--ph-surface);
-  border-radius: 0;
+  border-radius: 16px;
   border: 1px solid var(--ph-border);
   gap: 10px;
   box-shadow: var(--ph-sh-2);
@@ -1232,31 +1132,26 @@
 }
 
 .wc-add-btn {
-  padding: 6px 13px;
-  border: 1px solid var(--ph-accent);
-  border-radius: 0;
+  padding: 6px 14px;
+  border: 1.5px solid var(--ph-accent);
+  border-radius: 999px;
   background: transparent;
   color: var(--ph-accent);
-  font-family: var(--ph-mono);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s linear, color 0.12s linear, transform 0.08s linear;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
 
-  // 反色 hover
-  &:hover { background: var(--ph-accent); color: var(--ph-bg); }
-  &:active { transform: translate(1px, 1px); }
+  &:hover { background: var(--ph-accent-faint); }
+  &:active { transform: scale(0.96); }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 
   &.is-done {
-    background: var(--ph-accent);
+    background: var(--ph-accent-faint);
     border-color: var(--ph-accent);
-    color: var(--ph-bg);
   }
 
-  // 被拒绝：变成不可再点的灰度按钮，和成功的实底区分开
   &.is-rejected {
     background: transparent;
     border-color: var(--ph-border);
@@ -1268,16 +1163,14 @@
 }
 
 .wc-badge {
-  padding: 3px 8px;
-  border-radius: 0;
-  font-family: var(--ph-mono);
+  padding: 3px 10px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
 }
 
 .wc-badge-added {
-  background: transparent;
+  background: var(--ph-accent-faint);
   color: var(--ph-accent);
   box-shadow: inset 0 0 0 1px var(--ph-accent);
 }
@@ -1291,45 +1184,31 @@
 }
 
 .wc-lock-sub {
-  font-family: var(--ph-mono);
   font-size: 9px;
-  letter-spacing: 0.08em;
   color: var(--ph-ink-faint);
   background: transparent;
   padding: 0;
-  border-radius: 0;
   text-align: right;
 }
 
 .wc-friend-section { padding: 0; }
 
-// 分组标签：等宽全大写 kicker + 猩红短横
 .wc-section-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 14px 7px;
-  font-family: var(--ph-mono);
-  font-size: 10px;
-  color: var(--ph-ink-faint);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 700;
+  padding: 14px 16px 6px;
+  font-size: 11px;
+  color: var(--ph-accent);
+  font-weight: 600;
   background: var(--ph-bg);
-
-  &::before {
-    content: '';
-    width: 12px;
-    height: 2px;
-    background: var(--ph-accent);
-  }
 }
 
 .wc-contact-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   background: var(--ph-bg);
   border-bottom: 1px solid var(--ph-border-soft);
 }
@@ -1345,20 +1224,15 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 16px 14px 8px;
+  padding: 14px 16px 8px;
   font-size: 11px;
   color: var(--ph-ink-faint);
 }
 
-.wc-hint-icon {
-  color: var(--ph-accent);
-  font-size: 13px;
-}
+.wc-hint-icon { color: var(--ph-accent); font-size: 13px; }
 
 .wc-no-result {
-  font-family: var(--ph-mono);
   font-size: 11px;
-  letter-spacing: 0.1em;
   color: var(--ph-ink-faint);
   text-align: center;
   padding: 18px 0;
@@ -1366,7 +1240,7 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 朋友圈页：杂志内页 —— 封面是一条压暗的版头 + 大名字
+// 朋友圈页
 // ─────────────────────────────────────────────────────────────────────────────
 
 .wc-moments { overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -1378,31 +1252,32 @@
 }
 
 .wc-moments-cover {
-  height: 92px;
-  background: var(--ph-cover);
+  height: 96px;
+  background: linear-gradient(135deg, var(--ph-bg2), var(--ph-surface));
   position: relative;
   overflow: hidden;
 
-  // 只用规则线做版式：右上角一块猩红方块 + 一条细斜线
   &::before {
     content: '';
     position: absolute;
-    top: 14px;
-    right: 16px;
-    width: 26px;
-    height: 26px;
-    background: var(--ph-accent);
+    top: 16px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ph-accent-faint);
+    border: 1.5px solid var(--ph-accent);
     pointer-events: none;
   }
 
   &::after {
     content: '';
     position: absolute;
-    left: 16px;
-    bottom: 18px;
-    width: 88px;
+    left: 18px;
+    bottom: 20px;
+    width: 72px;
     height: 1px;
-    background: var(--ph-border);
+    background: var(--ph-accent-faint);
     pointer-events: none;
   }
 }
@@ -1411,8 +1286,8 @@
   display: flex;
   align-items: flex-end;
   gap: 12px;
-  padding: 0 14px 13px;
-  margin-top: -22px;
+  padding: 0 16px 14px;
+  margin-top: -24px;
   position: relative;
 }
 
@@ -1422,8 +1297,8 @@
   svg {
     width: 50px;
     height: 50px;
-    border-radius: 0;
-    border: 1px solid var(--ph-bg);
+    border-radius: 16px;
+    border: 2px solid var(--ph-bg);
     box-shadow: var(--ph-sh-2);
     display: block;
   }
@@ -1438,17 +1313,14 @@
 
 .wc-moments-name {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ph-ink);
-  letter-spacing: 0.02em;
 }
 
 .wc-moments-tagline {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .wc-moments-locked {
@@ -1474,10 +1346,10 @@
 .wc-moment-card {
   display: flex;
   gap: 12px;
-  padding: 14px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--ph-border-soft);
   background: var(--ph-bg);
-  transition: background 0.12s linear;
+  transition: background 0.18s ease;
   animation: ph-fade-up 0.24s var(--ph-ease) both;
 
   &:hover { background: var(--ph-chip); }
@@ -1487,9 +1359,9 @@
 
 .wc-moment-avatar {
   svg {
-    width: 34px;
-    height: 34px;
-    border-radius: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
     display: block;
     box-shadow: 0 0 0 1px var(--ph-border);
   }
@@ -1502,13 +1374,10 @@
 
 .wc-moment-author {
   display: block;
-  margin-bottom: 6px;
-  font-family: var(--ph-mono);
-  font-size: 10px;
+  margin-bottom: 5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--ph-accent);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
 
 .wc-moment-text {
@@ -1527,23 +1396,18 @@
 }
 
 .wc-moment-mood {
-  padding: 2px 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--ph-accent-faint);
   color: var(--ph-accent);
-  font-family: var(--ph-mono);
   font-size: 10px;
-  letter-spacing: 0.1em;
   font-weight: 700;
-  border-bottom: 1px solid var(--ph-accent);
 }
 
 .wc-moment-time {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
 }
 
 .wc-moment-actions {
@@ -1553,8 +1417,8 @@
 }
 
 .wc-action-btn {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: none;
   cursor: pointer;
@@ -1563,26 +1427,23 @@
   justify-content: center;
   color: var(--ph-ink-faint);
   padding: 0;
-  border-radius: 0;
-  transition: color 0.12s linear;
+  border-radius: 8px;
+  transition: color 0.18s ease;
 
   svg { width: 13px; height: 13px; stroke: currentColor; }
 
   &:hover { color: var(--ph-accent); }
-
-  // 点赞：图标本身就是填充的心形，用缩放做一次短促跳动
   &:active svg { animation: ph-heart-pop 0.36s var(--ph-ease); }
 }
 
 .wc-like-count {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
   font-variant-numeric: tabular-nums;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 设置页：目录式列表
+// 设置页
 // ─────────────────────────────────────────────────────────────────────────────
 
 .wc-settings-page {
@@ -1595,68 +1456,53 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 18px 14px 8px;
-  font-family: var(--ph-mono);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--ph-ink-faint);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  padding: 18px 16px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ph-accent);
   border-bottom: 1px solid var(--ph-border-soft);
-
-  &::before {
-    content: '';
-    width: 12px;
-    height: 2px;
-    background: var(--ph-accent);
-  }
 }
 
 .wc-config-tip {
   margin: 10px 14px;
-  padding: 10px 12px;
-  background: transparent;
-  border-radius: 0;
-  border: 1px solid var(--ph-border);
-  border-left: 2px solid var(--ph-accent);
+  padding: 10px 14px;
+  background: var(--ph-accent-faint);
+  border-radius: 12px;
+  border: 1px solid rgba(232, 160, 184, 0.18);
   font-size: 11px;
   color: var(--ph-ink-soft);
   line-height: 1.6;
 }
 
 .wc-setting-row {
-  padding: 8px 14px;
+  padding: 8px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 .wc-setting-label {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-// 输入一律下划线式
 .wc-setting-input {
-  border: none;
-  border-bottom: 1px solid var(--ph-ink-faint);
-  border-radius: 0;
-  padding: 6px 2px;
+  border: 1.5px solid var(--ph-border);
+  border-radius: 12px;
+  padding: 8px 12px;
   font-size: 12px;
   color: var(--ph-ink);
-  background: transparent;
+  background: var(--ph-bg);
   outline: none;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
-  transition: border-color 0.12s linear;
-  box-shadow: none;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
 
   &:focus {
-    border-bottom-color: var(--ph-accent);
+    border-color: var(--ph-accent);
+    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.12);
   }
 
   &::placeholder { color: var(--ph-ink-faint); }
@@ -1666,32 +1512,26 @@
   resize: vertical;
   min-height: 56px;
   line-height: 1.6;
-  border: 1px solid var(--ph-border);
-  border-radius: 0;
-  padding: 8px 10px;
 }
 
 .wc-test-btn {
-  padding: 7px 15px;
-  border: 1px solid var(--ph-ink-faint);
-  border-radius: 0;
+  padding: 7px 16px;
+  border: 1.5px solid var(--ph-border);
+  border-radius: 999px;
   background: transparent;
   color: var(--ph-ink);
-  font-family: var(--ph-mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s linear, color 0.12s linear, border-color 0.12s linear, transform 0.08s linear;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   align-self: flex-start;
 
-  &:hover { background: var(--ph-ink); border-color: var(--ph-ink); color: var(--ph-bg); }
-  &:active { transform: translate(1px, 1px); }
+  &:hover { background: var(--ph-chip); border-color: var(--ph-accent); color: var(--ph-accent); }
+  &:active { transform: scale(0.97); }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .wc-test-result {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
   display: block;
@@ -1704,12 +1544,10 @@
 }
 
 .wc-advanced {
-  padding: 4px 14px;
+  padding: 4px 16px;
 
   summary.wc-adv-toggle {
-    font-family: var(--ph-mono);
     font-size: 11px;
-    letter-spacing: 0.08em;
     color: var(--ph-ink-soft);
     cursor: pointer;
     list-style: none;
@@ -1724,7 +1562,7 @@
 }
 
 .wc-about {
-  padding: 6px 14px 12px;
+  padding: 6px 16px 12px;
 
   p {
     font-size: 11px;
@@ -1735,13 +1573,13 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 状态栏铃铛（通知中心入口）
+// 状态栏铃铛
 // ─────────────────────────────────────────────────────────────────────────────
 
 .phone-bell {
   position: relative;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   border: none;
   background: none;
@@ -1751,14 +1589,14 @@
   align-items: center;
   justify-content: center;
   opacity: 0.9;
-  transition: opacity 0.12s linear, color 0.12s linear;
+  transition: opacity 0.18s ease, color 0.18s ease;
 
   svg {
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.7;
+    stroke-width: 1.6;
   }
 
   &:hover { opacity: 1; color: var(--ph-accent); }
@@ -1769,29 +1607,27 @@
   position: absolute;
   top: -2px;
   right: -2px;
-  width: 5px;
-  height: 5px;
-  border-radius: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background: var(--ph-accent);
   opacity: 0;
-  transition: opacity 0.12s linear;
+  transition: opacity 0.18s ease;
 
   &.is-on { opacity: 1; }
 }
 
-// 聊天列表的未读角标（.wc-item-name-row 是两端对齐，角标自然靠右）
 .wc-item-unread {
   flex-shrink: 0;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 0;
-  background: var(--ph-bubble-out);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--ph-bubble-out-solid);
   color: #fff;
-  font-family: var(--ph-mono);
   font-size: 10px;
   font-weight: 700;
-  line-height: 17px;
+  line-height: 18px;
   text-align: center;
 }
 
@@ -1799,42 +1635,36 @@
 // 通知中心
 // ─────────────────────────────────────────────────────────────────────────────
 
-.wc-notify-page {
-  background: var(--ph-bg);
-}
+.wc-notify-page { background: var(--ph-bg); }
 
 .wc-notify-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   flex-shrink: 0;
   color: var(--ph-ink);
   background: var(--ph-surface);
-  border-bottom: 2px solid var(--ph-ink);
+  border-bottom: 1px solid var(--ph-border);
 }
 
 .wc-notify-title {
   flex: 1;
   font-size: 14px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-weight: 700;
 }
 
 .wc-notify-clear {
-  border: 1px solid var(--ph-border);
+  border: 1.5px solid var(--ph-border);
   background: transparent;
   color: var(--ph-ink-soft);
-  border-radius: 0;
-  font-family: var(--ph-mono);
+  border-radius: 999px;
   font-size: 10px;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
+  padding: 3px 10px;
   cursor: pointer;
-  transition: background 0.12s linear, color 0.12s linear, border-color 0.12s linear;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 
-  &:hover { background: var(--ph-bubble-out); border-color: var(--ph-bubble-out); color: #fff; }
-  &:active { background: var(--ph-accent-shadow); }
+  &:hover { background: var(--ph-accent-faint); border-color: var(--ph-accent); color: var(--ph-accent); }
 }
 
 .wc-notify-list {
@@ -1847,10 +1677,7 @@
 .wc-notify-empty {
   padding: 48px 0;
   text-align: center;
-  font-family: var(--ph-mono);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 11px;
   color: var(--ph-ink-faint);
 }
 
@@ -1858,10 +1685,10 @@
   display: flex;
   align-items: flex-start;
   gap: 11px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   cursor: pointer;
   border-bottom: 1px solid var(--ph-border-soft);
-  transition: background 0.12s linear;
+  transition: background 0.18s ease;
   position: relative;
 
   &:hover { background: var(--ph-chip); }
@@ -1870,9 +1697,9 @@
 
 .wc-notify-avatar {
   display: block;
-  width: 30px;
-  height: 30px;
-  border-radius: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
   box-shadow: 0 0 0 1px var(--ph-border);
@@ -1904,36 +1731,34 @@
 }
 
 .wc-notify-time {
-  font-family: var(--ph-mono);
   font-size: 10px;
   color: var(--ph-ink-faint);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
 }
 
 .wc-notify-item.is-unread {
   background: var(--ph-chip);
 
-  // 未读：左侧 2px 猩红竖条
+  // 未读：左侧花色渐变小圆（无竖条）
   &::before {
     content: '';
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
     background: var(--ph-accent);
   }
 
   .wc-notify-name { color: var(--ph-ink); }
-  .wc-notify-text { color: var(--ph-ink); }
+  .wc-notify-text { color: var(--ph-ink-soft); }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 嵌入主应用（panel 模式）
 // ─────────────────────────────────────────────────────────────────────────────
-// 主应用把挂载点放进 #yuri-front 的观景窗：容器不再铺满整个酒馆页，
-// 而是填满宿主区块；外壳跟着容器绝对定位、尺寸交给 CSS，悬浮按钮不参与。
 
 #yuri-front #phone-root-host {
   position: absolute;
@@ -1942,7 +1767,6 @@
   width: 100%;
   height: 100%;
   min-height: 280px;
-  // 屏幕四角随设备框的 2px 圆角切掉
   border-radius: inherit;
   overflow: hidden;
 }
@@ -1957,28 +1781,25 @@
   box-shadow: none;
 }
 
-/* 主应用对 button / input / textarea 有 color: inherit 的重置（优先级 1,0,1），
-   会把手机这几个带文字的控件的配色整个吃掉。图标类控件已经用 svg 的 stroke
-   绕开了，这里把带文字的补回来。 */
+/* 补回主应用 color: inherit 重置吃掉的颜色 */
 #yuri-front #phone-root-host {
   .wc-add-btn { color: var(--ph-accent); }
-  .wc-add-btn.is-done { color: var(--ph-bg); }
+  .wc-add-btn.is-done { color: var(--ph-accent); }
   .wc-add-btn.is-rejected { color: var(--ph-ink-faint); }
   .wc-test-btn { color: var(--ph-ink); }
   .wc-emoji-mode { color: var(--ph-ink-faint); }
-  .wc-emoji-mode.is-active { color: #fff; }
+  .wc-emoji-mode.is-active { color: var(--ph-accent); }
   .wc-emoji-chip { color: var(--ph-ink-faint); }
-  .wc-emoji-chip.is-active { color: var(--ph-ink); }
+  .wc-emoji-chip.is-active { color: var(--ph-accent); }
   .wc-input { color: var(--ph-ink); }
   .wc-search-input { color: var(--ph-ink); }
   .wc-setting-input { color: var(--ph-ink); }
   .phone-tab-label { color: var(--ph-ink-faint); }
-  .phone-tab.is-active .phone-tab-label { color: var(--ph-ink); }
+  .phone-tab.is-active .phone-tab-label { color: var(--ph-accent); }
   .wc-notify-clear { color: var(--ph-ink-soft); }
-  .wc-notify-clear:hover { color: #fff; }
+  .wc-notify-clear:hover { color: var(--ph-accent); }
 }
 
-// 关闭动态效果时外壳直接显隐，显隐时序交给面板层的 data-state
 #yuri-front[data-animate='false'] #phone-root-host .phone-shell {
   transition: none;
 }

@@ -1,74 +1,78 @@
+@use '../../界面/共用/motion.scss' as m;
+
 /*
- * 故事流的动效层：楼层横向擦入、正文逐行升起、说话人的猩红短横擦入。
- * 只在真正新到的一条上播一次（.is-arriving），列表重建不重放整表。
+ * 故事流动效层：花开入场（scale+fade）、说话人花徽扩展、正文逐行升起。
+ * 只在真正新到的楼层上播一次（.is-arriving）。
  */
 
 .story-list > .story-msg {
   animation: none;
 }
 
-/* 新到楼层：整块从左向右擦出，硬、快、无回弹 */
+/* 新到楼层：花开入场 — scale 0.96→1 + opacity 0→1，320ms ease-out */
 .story-msg.is-arriving {
-  animation: story-wipe-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: story-bloom-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--arrive-delay, 0ms);
 }
 
-@keyframes story-wipe-in {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-/* 说话人前面的猩红短横：随楼层擦入 */
-.story-msg.is-arriving .story-speaker::before {
-  animation: story-dash-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--arrive-delay, 0ms) + 90ms);
-  transform-origin: left center;
-}
-
-@keyframes story-dash-in {
+@keyframes story-bloom-in {
   from {
     opacity: 0;
-    transform: scaleX(0);
+    transform: scale(0.96) translateY(4px);
   }
 
   to {
     opacity: 1;
-    transform: scaleX(1);
+    transform: none;
   }
 }
 
-/* 正文逐行升起：外层裁切，内层从下沿顶上来，相邻行错开 40ms */
+/* 说话人花徽（圆点）扩展入场 */
+.story-msg.is-arriving .story-speaker::before {
+  animation: speaker-dot-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--arrive-delay, 0ms) + 60ms);
+}
+
+@keyframes speaker-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 正文逐行升起：外层裁切，内层从下沿顶上来，相邻行错开 36ms */
 .story-bubble.story-text {
   overflow: hidden;
 }
 
 .story-msg.is-arriving .story-line {
-  animation: story-line-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: story-line-rise 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes story-line-rise {
   from {
-    transform: translateY(110%);
+    transform: translateY(100%);
+    opacity: 0;
   }
 
   to {
     transform: none;
+    opacity: 1;
   }
 }
 
 @for $line from 1 through 12 {
   .story-msg.is-arriving .story-line:nth-child(#{$line}) {
-    animation-delay: calc(var(--arrive-delay, 0ms) + 60ms + #{($line - 1) * 40}ms);
+    animation-delay: calc(var(--arrive-delay, 0ms) + 80ms + #{($line - 1) * 36}ms);
   }
 }
 
-/* 墨涨：满宽铺底，只让 scaleX 变（transform-origin 在左端，从左侧涨开） */
-
+/* 进度条：满宽铺底，scaleX 变化 */
 .obs-meter-track > .obs-meter-fill,
 .obs-gate-track > .obs-gate-fill {
   width: 100%;
@@ -82,8 +86,7 @@
   transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 门槛满足：一条玉色细线扫过一次，不发光 */
-
+/* 门槛满足：渐变扫过一次 */
 .obs-gate-fill {
   position: relative;
 }
@@ -91,7 +94,7 @@
 .obs-gate-fill.is-sweeping::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(143, 195, 173, 0.85), transparent);
+  background: linear-gradient(90deg, transparent, rgba(123, 170, 146, 0.72), transparent);
   content: '';
   transform: translateX(-100%);
   animation: gate-sweep 700ms ease-out 1 both;

@@ -339,11 +339,12 @@ async function enterForm() {
   box-sizing: border-box;
 }
 
+/* 暮紫深色渐变背景 */
 :global(body) {
   margin: 0;
   min-width: 0;
-  background: #08080b;
-  color: #f4f2ec;
+  background: #241a28;
+  color: #f5ece8;
   font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 }
 
@@ -356,23 +357,23 @@ async function enterForm() {
   cursor: pointer;
 }
 
-/* ── 封面 ───────────────────────────────────────────────────────────── */
+/* ── 介绍页：游戏标题画面感 ───────────────────────────────────────── */
 
 .intro-shell {
-  --nt-bg: #08080b;
-  --nt-panel: #121218;
-  --nt-ink: #f4f2ec;
-  --nt-ink-soft: #c8c5cf;
-  --nt-ink-faint: #8b8896;
-  --nt-line: rgba(244, 242, 236, 0.16);
-  --nt-rule: rgba(244, 242, 236, 0.09);
-  --nt-accent: #ff3b5c;
-  --nt-fill: #e01b3f;
-  --nt-ok: #6fd3b0;
-  --nt-err: #ff8296;
-  --nt-hard: 6px 6px 0 rgba(0, 0, 0, 0.55);
-  --nt-hard-sm: 3px 3px 0 rgba(0, 0, 0, 0.5);
-  --nt-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Roboto Mono', Menlo, Consolas, monospace;
+  --nt-bg: linear-gradient(180deg, #241a28, #1c151f);
+  --nt-panel: rgba(42, 34, 56, 0.85);
+  --nt-ink: #f5ece8;
+  --nt-ink-soft: #d4bec8;
+  --nt-ink-faint: #9a8492;
+  --nt-line: rgba(245, 236, 232, 0.12);
+  --nt-rule: rgba(245, 236, 232, 0.07);
+  --nt-accent: #e8a0b8;
+  --nt-fill: linear-gradient(135deg, #e8a0b8, #c9708a);
+  --nt-fill-solid: #c9708a;
+  --nt-ok: #7baa92;
+  --nt-err: #e8a0b8;
+  --nt-soft: 0 2px 12px rgba(0, 0, 0, 0.18);
+  --nt-soft-sm: 0 1px 6px rgba(0, 0, 0, 0.14);
   --nt-sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 
   position: relative;
@@ -390,26 +391,39 @@ async function enterForm() {
   font-family: var(--nt-sans);
 }
 
+/* 极淡花影装饰 */
+.intro-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(184, 154, 212, 0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 90%, rgba(232, 160, 184, 0.05) 0%, transparent 70%);
+}
+
 @media (prefers-color-scheme: light) {
   :global(body) {
-    background: #f5f3ee;
-    color: #101016;
+    background: #faf5f2;
+    color: #3d2d33;
   }
 
   .intro-shell {
-    --nt-bg: #f5f3ee;
-    --nt-panel: #fffefb;
-    --nt-ink: #101016;
-    --nt-ink-soft: #3b3b45;
-    --nt-ink-faint: #6a6a76;
-    --nt-line: rgba(16, 16, 22, 0.22);
-    --nt-rule: rgba(16, 16, 22, 0.1);
-    --nt-accent: #d61a38;
-    --nt-fill: #d61a38;
-    --nt-ok: #157a5b;
-    --nt-err: #b3142d;
-    --nt-hard: 6px 6px 0 rgba(16, 16, 22, 0.2);
-    --nt-hard-sm: 3px 3px 0 rgba(16, 16, 22, 0.16);
+    --nt-bg: linear-gradient(180deg, #faf5f2, #f3ebe8);
+    --nt-panel: rgba(255, 250, 248, 0.92);
+    --nt-ink: #3d2d33;
+    --nt-ink-soft: #5c4450;
+    --nt-ink-faint: #8c6e78;
+    --nt-line: rgba(61, 45, 51, 0.12);
+    --nt-rule: rgba(61, 45, 51, 0.07);
+    --nt-accent: #c9708a;
+    --nt-fill: linear-gradient(135deg, #e8a0b8, #c9708a);
+    --nt-fill-solid: #c9708a;
+    --nt-ok: #6b8a6f;
+    --nt-err: #c9708a;
+    --nt-soft: 0 2px 12px rgba(61, 45, 51, 0.10);
+    --nt-soft-sm: 0 1px 6px rgba(61, 45, 51, 0.08);
   }
 }
 
@@ -711,21 +725,8 @@ h1 {
   transform: translateY(1px);
 }
 
-.link-glyph {
-  display: grid;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 1px solid currentColor;
-  border-radius: 0;
-  color: var(--nt-accent);
-  font-family: var(--nt-mono);
-  font-size: 13px;
-}
-
 .link-card:hover .link-glyph {
-  color: inherit;
+  /* hover stays flower gradient; no override needed */
 }
 
 .link-copy {
@@ -739,7 +740,7 @@ h1 {
 .link-copy strong {
   color: inherit;
   font-size: 12.5px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .link-copy small {
@@ -748,22 +749,12 @@ h1 {
   line-height: 1.5;
 }
 
-.link-card:hover .link-copy small {
-  color: inherit;
-  opacity: 0.82;
-}
-
 .link-arrow {
   color: var(--nt-accent);
-  font-family: var(--nt-mono);
   font-size: 13px;
 }
 
-.link-card:hover .link-arrow {
-  color: inherit;
-}
-
-/* ── 目录：编号 + 标题 + 页码 ───────────────────────────────────────── */
+/* ── 目录 ───────────────────────────────────────────────────────────── */
 
 .guide-list {
   display: flex;
@@ -779,7 +770,7 @@ h1 {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  padding: 9px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--nt-rule);
   color: var(--nt-ink);
   font-size: 12px;
@@ -789,26 +780,15 @@ h1 {
 .guide-list li::before {
   flex: 0 0 22px;
   color: var(--nt-accent);
-  font-family: var(--nt-mono);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
   content: counter(guide, decimal-leading-zero);
   counter-increment: guide;
 }
 
-.guide-list li::after {
-  flex: 0 0 auto;
-  color: var(--nt-ink-faint);
-  font-family: var(--nt-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.12em;
-  content: 'P.0' counter(guide);
-}
-
 .guide-list b {
   flex: 0 0 auto;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -829,25 +809,24 @@ h1 {
 }
 
 .cleanup-button {
-  padding: 9px 16px;
-  border: 1px solid var(--nt-line);
-  border-radius: 0;
+  padding: 10px 18px;
+  border: 1.5px solid var(--nt-line);
+  border-radius: 999px;
   background: transparent;
   color: var(--nt-ink);
-  font-family: var(--nt-mono);
   font-size: 10.5px;
-  letter-spacing: 0.1em;
+  font-weight: 500;
   transition:
-    background 0.12s linear,
-    color 0.12s linear,
-    border-color 0.12s linear,
-    transform 0.08s linear;
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s ease;
 }
 
 .cleanup-button:hover:not(:disabled) {
   border-color: var(--nt-accent);
   background: var(--nt-accent);
-  color: var(--nt-bg);
+  color: #fff;
 }
 
 .cleanup-button:focus-visible:not(:disabled) {
@@ -857,7 +836,7 @@ h1 {
 }
 
 .cleanup-button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: scale(0.97);
 }
 
 .cleanup-button:disabled {
@@ -866,15 +845,16 @@ h1 {
 }
 
 .cleanup-button.is-confirm {
-  border-color: var(--nt-fill);
+  border-color: transparent;
   background: var(--nt-fill);
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .cleanup-button.is-done {
   border-color: var(--nt-ok);
   color: var(--nt-ok);
+  background: transparent;
 }
 
 .cleanup-status {
@@ -884,7 +864,7 @@ h1 {
   line-height: 1.8;
 }
 
-/* ── 进入按钮：猩红实底块 + 硬投影 ─────────────────────────────────── */
+/* ── 进入按钮：花色渐变大圆角，白字，hover 稍亮，柔光 ─────────────── */
 
 .primary-button {
   display: inline-flex;
@@ -892,30 +872,27 @@ h1 {
   justify-content: center;
   gap: 12px;
   min-width: 126px;
-  min-height: 42px;
-  padding: 12px 18px;
-  border: 1px solid var(--nt-fill);
-  border-radius: 0;
+  min-height: 44px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 999px;
   background: var(--nt-fill);
   color: #ffffff;
   font-family: var(--nt-sans);
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  box-shadow: var(--nt-hard-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 16px rgba(232, 160, 184, 0.32);
   transition:
-    transform 0.08s linear,
-    background 0.12s linear,
-    color 0.12s linear,
-    border-color 0.12s linear,
-    box-shadow 0.08s linear,
-    opacity 0.12s linear;
+    transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1),
+    filter 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.15s ease;
 }
 
 .primary-button:hover:not(:disabled) {
-  background: var(--nt-ink);
-  border-color: var(--nt-ink);
-  color: var(--nt-bg);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px rgba(232, 160, 184, 0.40);
 }
 
 .primary-button:focus-visible:not(:disabled) {
@@ -925,7 +902,7 @@ h1 {
 
 .primary-button:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(232, 160, 184, 0.16);
 }
 
 .primary-button:disabled {
@@ -935,7 +912,6 @@ h1 {
 }
 
 .button-arrow {
-  font-family: var(--nt-mono);
   font-size: 15px;
 }
 
@@ -947,9 +923,7 @@ h1 {
 .swipe-hint {
   margin: 12px 0 4px;
   color: var(--nt-ink-faint);
-  font-family: var(--nt-mono);
   font-size: 9.5px;
-  letter-spacing: 0.14em;
   text-align: center;
 }
 

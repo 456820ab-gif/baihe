@@ -1,15 +1,74 @@
 @use '../../界面/共用/motion.scss' as m;
 
 /*
- * NIGHT EDITION 的常驻层只留一件事：刊头的时间与压线。
- * 纸息、灯带、花影是上一版的光雾语言，这一版不再生成，也不启动它们的循环。
+ * 花信氛围层：花瓣飘落 + 时漏（时间/日期字下柔光扫过）。
+ * 花瓣极慢、极淡，触屏端关闭。
  */
 
-#yuri-front .front-lamp {
-  display: none;
+/* 花瓣飘落容器（由 chat.ts 写入 .front-petal-i） */
+#yuri-front .front-petals {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-/* ── 时漏：时间/日期走字时，一条猩红短线在字下擦过一次 ─────────── */
+#yuri-front .front-petal {
+  position: absolute;
+  top: var(--py, -8%);
+  left: var(--px, 50%);
+  width: var(--ps, 12px);
+  height: var(--ps, 12px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 花瓣本体：SVG 绘制，由 JS 注入；这里控制动画节奏 */
+#yuri-front[data-animate='true'] .front-petal {
+  animation:
+    petal-fall calc(var(--pd, 22s)) linear var(--pdelay, 0s) infinite,
+    petal-sway calc(var(--pd, 22s) * 0.62) ease-in-out var(--pdelay, 0s) infinite alternate;
+}
+
+@keyframes petal-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0deg);
+  }
+
+  6% {
+    opacity: var(--po, 0.13);
+  }
+
+  88% {
+    opacity: var(--po, 0.13);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(110vh) rotate(calc(var(--pr, 1) * 280deg));
+  }
+}
+
+@keyframes petal-sway {
+  from {
+    margin-left: calc(var(--psway, 28px) * -1);
+  }
+
+  to {
+    margin-left: var(--psway, 28px);
+  }
+}
+
+/* 触屏端不渲染花瓣 */
+@media (hover: none), (pointer: coarse) {
+  #yuri-front .front-petal {
+    display: none;
+  }
+}
+
+/* ── 时漏：时间/日期字下柔光扫过（一次性，不循环） ────────── */
 
 #yuri-front .front-time,
 #yuri-front .front-date {
@@ -20,30 +79,31 @@
 #yuri-front .front-date::after {
   position: absolute;
   right: 0;
-  bottom: -5px;
+  bottom: -4px;
   left: 0;
   height: 2px;
-  background: var(--accent);
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 2px;
   opacity: 0;
   transform: scaleX(0);
-  transform-origin: left center;
+  transform-origin: center;
   content: '';
   pointer-events: none;
 }
 
 #yuri-front .front-time.is-ticking::after,
 #yuri-front .front-date.is-ticking::after {
-  animation: masthead-tick 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: time-glow 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes masthead-tick {
+@keyframes time-glow {
   0% {
     opacity: 0;
     transform: scaleX(0);
   }
 
-  28% {
-    opacity: 1;
+  30% {
+    opacity: 0.7;
     transform: scaleX(1);
   }
 
@@ -53,36 +113,20 @@
   }
 }
 
-/* ── 开场：刊头压线上的猩红一截从左擦到右，只播一次 ─────────────── */
-
-#yuri-front[data-dawn='true'][data-animate='true'] .front-head::after {
-  animation: masthead-rule-in 480ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;
+/* 开场：顶栏轻微下滑淡入 */
+#yuri-front[data-dawn='true'][data-animate='true'] .front-head {
+  animation: head-rise 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes masthead-rule-in {
+@keyframes head-rise {
   from {
-    transform: scaleX(0);
+    opacity: 0.4;
+    transform: translateY(-4px);
   }
 
   to {
-    transform: scaleX(1);
-  }
-}
-
-/* 故事栏头的猩红粗线跟着刊头一起擦入 */
-#yuri-front[data-dawn='true'][data-animate='true'] .front-chat::before {
-  animation: story-section-in 520ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
-}
-
-@keyframes story-section-in {
-  from {
-    border-top-color: transparent;
-    clip-path: inset(0 100% 0 0);
-  }
-
-  to {
-    border-top-color: var(--accent);
-    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -97,8 +141,12 @@
 @media (prefers-reduced-motion: reduce) {
   #yuri-front .front-time.is-ticking::after,
   #yuri-front .front-date.is-ticking::after,
-  #yuri-front[data-dawn='true'][data-animate='true'] .front-head::after,
-  #yuri-front[data-dawn='true'][data-animate='true'] .front-chat::before {
+  #yuri-front[data-dawn='true'][data-animate='true'] .front-head {
     animation: none;
+  }
+
+  #yuri-front[data-animate='true'] .front-petal {
+    animation: none;
+    opacity: 0;
   }
 }

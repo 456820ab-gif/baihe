@@ -1,5 +1,5 @@
 /*
- * motion.overlay.scss — 浮层转场（观景窗 / 手机面板 / 通知横幅）
+ * motion.overlay.scss — 浮层转场（观景窗 / 手机面板 / 通知横幅）花信版
  *
  * 由 observatory.ts 以 ?raw 注入宿主 <head>，排在 styles.scss 之后，
  * 只负责转场与遮罩强度，不改布局、文案与配色。
@@ -8,12 +8,21 @@
  *   .obs-layer[data-state]    closed / opening / open / closing
  *   .phone-layer[data-state]  closed / opening / open / closing
  *   .phone-banner.is-leaving  离场中（140ms 后由 phone-banner.ts 摘掉）
+ *
+ * 动效清单（花信）：
+ *   obs-window 开合：scale 0.95→1 + opacity，280ms ease-out（无 clip-path）
+ *   obs-body 内容：opacity+translateY(4px)→0，180ms ease-out
+ *   phone-frame：translateY(10px)+opacity，260ms
+ *   phone-banner 入场：translateY(-6px)→0，220ms
+ *   hover 上浮：translateY(-1px)，120ms（在本文件定义，styles.scss 不重复）
+ *   动作按钮 hover：filter brightness，120ms（由 styles.scss 各自定义）
+ *   所有动效接 data-animate=false 与 prefers-reduced-motion
  */
 
-$wipe-ease: cubic-bezier(0.16, 1, 0.3, 1);
-$wipe-open: 320ms;
-$wipe-close: 180ms;
-$content-in: 160ms;
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$obs-open: 280ms;
+$obs-close: 180ms;
+$content-in: 180ms;
 $panel-open: 260ms;
 $banner-in: 220ms;
 $banner-out: 140ms;
@@ -39,46 +48,49 @@ $banner-out: 140ms;
   pointer-events: none;
 }
 
-/* 窗口：横向擦除。切开的是版面本身，不是缩放或浮起 */
+/* 窗口：scale 0.95→1 + opacity（像花慢慢绽开，不用 clip-path 擦除） */
 #yuri-front .obs-window {
-  clip-path: inset(0 100% 0 0);
   opacity: 0.001;
+  transform: scale(0.95);
+  transform-origin: center center;
   transition:
-    clip-path $wipe-open $wipe-ease,
+    transform $obs-open $ease-out,
     opacity 90ms linear;
 }
 
 #yuri-front .obs-layer[data-state='open'] .obs-window {
-  clip-path: inset(0);
   opacity: 1;
+  transform: scale(1);
 }
 
-/* 收起：从右缘向左擦掉 */
+/* 收起：scale 0.95 淡出 */
 #yuri-front .obs-layer[data-state='closing'] .obs-window {
-  clip-path: inset(0 0 0 100%);
   opacity: 0.001;
+  transform: scale(0.95);
   transition:
-    clip-path $wipe-close cubic-bezier(0.5, 0, 0.85, 0.4),
-    opacity 60ms linear $wipe-close;
+    transform $obs-close cubic-bezier(0.5, 0, 0.85, 0.4),
+    opacity 60ms linear $obs-close;
 }
 
-/* 入场交给 clip-path，styles.scss 里不再挂关键帧 */
+/* 入场交给 scale，styles.scss 里不再挂关键帧 */
 #yuri-front[data-animate='true'] .obs-layer:not([hidden]) .obs-window {
   animation: none;
 }
 
-/* 页签内容：160ms 淡入（render(true) 会整块重建 body，只做容器级一次淡入） */
+/* 页签内容：180ms 淡入 + 微微上移（render(true) 会整块重建 body，只做容器级一次淡入） */
 #yuri-front .obs-layer[data-state='open'] .obs-body > * {
-  animation: obs-content-in $content-in linear both;
+  animation: obs-content-in $content-in ease-out both;
 }
 
 @keyframes obs-content-in {
   from {
     opacity: 0;
+    transform: translateY(4px);
   }
 
   to {
     opacity: 1;
+    transform: none;
   }
 }
 
@@ -92,15 +104,23 @@ $banner-out: 140ms;
 #yuri-front .map-zoom-button:active:not(:disabled),
 #yuri-front .node-detail .node-close:active,
 #yuri-front .travel-button:active {
-  transform: translate(1px, 1px);
+  transform: translateY(1px);
   transition-duration: 80ms;
+}
+
+/* hover 上浮：translateY(-1px) + 投影稍深，120ms */
+#yuri-front[data-animate='true'] .obs-char-item:hover,
+#yuri-front[data-animate='true'] .obs-rel-action:hover,
+#yuri-front[data-animate='true'] .travel-button:hover {
+  transform: translateY(-1px);
+  transition: transform 120ms ease, background 120ms ease, filter 120ms ease, box-shadow 120ms ease;
 }
 
 /* ── 手机面板层 ──────────────────────────────────────────── */
 
 #yuri-front .phone-layer-scrim {
   opacity: 0;
-  transition: opacity $panel-open $wipe-ease;
+  transition: opacity $panel-open $ease-out;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-layer-scrim {
@@ -112,8 +132,8 @@ $banner-out: 140ms;
   opacity: 0;
   transform: translateY(10px);
   transition:
-    opacity $banner-in $wipe-ease,
-    transform $panel-open $wipe-ease;
+    opacity $banner-in $ease-out,
+    transform $panel-open $ease-out;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-frame {
@@ -130,7 +150,7 @@ $banner-out: 140ms;
 
 /* 入场 220ms 落 6px（同一批的延迟由 phone-banner.ts 写 animation-delay） */
 #yuri-front .phone-banner {
-  animation: phone-banner-drop $banner-in $wipe-ease both;
+  animation: phone-banner-drop $banner-in $ease-out both;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
@@ -173,7 +193,7 @@ $banner-out: 140ms;
 }
 
 #yuri-front[data-animate='false'] .obs-window {
-  clip-path: none;
+  transform: none;
   opacity: 1;
 }
 
@@ -189,7 +209,7 @@ $banner-out: 140ms;
   transform: none;
 }
 
-/* 无动效时退场只等时序，不再多停 180/300ms */
+/* 无动效时退场只等时序，不再多停 */
 #yuri-front[data-animate='false'] .obs-layer[data-state='closing'],
 #yuri-front[data-animate='false'] .obs-layer[data-state='closing'] .obs-window,
 #yuri-front[data-animate='false'] .phone-layer[data-state='closing'] .phone-layer-scrim,
@@ -221,7 +241,7 @@ $banner-out: 140ms;
   }
 
   #yuri-front .obs-window {
-    clip-path: none;
+    transform: none;
     opacity: 1;
   }
 
