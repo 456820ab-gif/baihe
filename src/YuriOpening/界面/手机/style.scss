@@ -20,20 +20,20 @@
 
 #phone-root-host {
   // ── 花色：百合粉→玫瑰渐变，作为主色调
-  --ph-accent:        #e8a0b8;
-  --ph-accent-mid:    #c9708a;
+  --ph-accent:        #ff6097;
+  --ph-accent-mid:    #d6427a;
   --ph-accent-light:  #f0b8cc;
-  --ph-accent-faint:  rgba(232, 160, 184, 0.14);
-  --ph-accent-deep:   #c9708a;
+  --ph-accent-faint:  rgba(255, 96, 151, 0.14);
+  --ph-accent-deep:   #d6427a;
   --ph-accent-shadow: #b05878;
   // SVG 头像底纹（wechat.ts 内联引用）
-  --ph-petal-soft:    rgba(232, 160, 184, 0.10);
+  --ph-petal-soft:    rgba(255, 96, 151, 0.10);
 
   // ── 紫藤紫：辅色
-  --ph-violet:        #b89ad4;
-  --ph-violet-soft:   #9882c4;
-  --ph-rouge:         #c9708a;
-  --ph-gold:          #7baa92;
+  --ph-violet:        #9d4edd;
+  --ph-violet-soft:   #7b53c9;
+  --ph-rouge:         #d6427a;
+  --ph-gold:          #4fd6c0;
   --ph-gold-light:    #9ec8ae;
 
   // ── 中性
@@ -48,14 +48,14 @@
   --ph-border-soft:   rgba(245, 236, 232, 0.07);
   --ph-hairline:      rgba(245, 236, 232, 0.08);
   --ph-glass:         rgba(30, 26, 44, 0.96);
-  --ph-chip:          rgba(232, 160, 184, 0.07);
+  --ph-chip:          rgba(255, 96, 151, 0.07);
   --ph-shell-edge:    rgba(255, 255, 255, 0.10);
-  --ph-ok:            #7baa92;
-  --ph-err:           #e8a0b8;
+  --ph-ok:            #4fd6c0;
+  --ph-err:           #ff6097;
 
   // ── 气泡：我方花色渐变，对方面板底
-  --ph-bubble-out:      linear-gradient(135deg, #e8a0b8, #c9708a);
-  --ph-bubble-out-solid:#c9708a;
+  --ph-bubble-out:      linear-gradient(135deg, #ff6097, #d6427a);
+  --ph-bubble-out-solid:#d6427a;
   --ph-bubble-out-ink:  #ffffff;
   --ph-bubble-in:       #2d2340;
   --ph-bubble-in-ink:   #f5ece8;
@@ -68,7 +68,7 @@
   // ── 顶栏 / 封面 / 悬浮键
   --ph-topbar: #241d30;
   --ph-cover:  #1c151f;
-  --ph-fab:    linear-gradient(135deg, #e8a0b8, #c9708a);
+  --ph-fab:    linear-gradient(135deg, #ff6097, #d6427a);
 
   // ── 圆角：柔软感
   --ph-r-sm:   8px;
@@ -80,8 +80,8 @@
   --ph-sh-1: 0 2px 8px rgba(0, 0, 0, 0.18);
   --ph-sh-2: 0 4px 16px rgba(0, 0, 0, 0.22);
   --ph-sh-3: 0 8px 28px rgba(0, 0, 0, 0.28);
-  --ph-sh-accent: 0 4px 16px rgba(201, 112, 138, 0.28);
-  --ph-sh-accent-lg: 0 8px 24px rgba(201, 112, 138, 0.32);
+  --ph-sh-accent: 0 4px 16px rgba(214, 66, 122, 0.28);
+  --ph-sh-accent-lg: 0 8px 24px rgba(214, 66, 122, 0.32);
 
   // ── 动效：柔和曲线
   --ph-ease:    cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -100,18 +100,18 @@
 
 // ── 浅色：暖米粉版
 #yuri-front[data-theme='light'] #phone-root-host {
-  --ph-accent:        #c9708a;
+  --ph-accent:        #d6427a;
   --ph-accent-mid:    #b05878;
   --ph-accent-light:  #d98aa0;
-  --ph-accent-faint:  rgba(201, 112, 138, 0.10);
+  --ph-accent-faint:  rgba(214, 66, 122, 0.10);
   --ph-accent-deep:   #b05878;
   --ph-accent-shadow: #924668;
-  --ph-petal-soft:    rgba(201, 112, 138, 0.07);
+  --ph-petal-soft:    rgba(214, 66, 122, 0.07);
 
-  --ph-violet:        #9882c4;
+  --ph-violet:        #7b53c9;
   --ph-violet-soft:   #7c63a9;
   --ph-gold:          #6b8a6f;
-  --ph-gold-light:    #7baa92;
+  --ph-gold-light:    #4fd6c0;
 
   --ph-bg:            #faf5f2;
   --ph-bg2:           #f3ebe8;
@@ -124,13 +124,13 @@
   --ph-border-soft:   rgba(61, 45, 51, 0.08);
   --ph-hairline:      rgba(61, 45, 51, 0.07);
   --ph-glass:         rgba(250, 245, 242, 0.96);
-  --ph-chip:          rgba(201, 112, 138, 0.06);
+  --ph-chip:          rgba(214, 66, 122, 0.06);
   --ph-shell-edge:    rgba(61, 45, 51, 0.14);
   --ph-ok:            #6b8a6f;
-  --ph-err:           #c9708a;
+  --ph-err:           #d6427a;
 
-  --ph-bubble-out:      linear-gradient(135deg, #e8a0b8, #c9708a);
-  --ph-bubble-out-solid:#c9708a;
+  --ph-bubble-out:      linear-gradient(135deg, #ff6097, #d6427a);
+  --ph-bubble-out-solid:#d6427a;
   --ph-bubble-out-ink:  #ffffff;
   --ph-bubble-in:       #fffaf8;
   --ph-bubble-in-ink:   #3d2d33;
@@ -141,13 +141,13 @@
 
   --ph-topbar: #fffaf8;
   --ph-cover:  #f3ebe8;
-  --ph-fab:    linear-gradient(135deg, #e8a0b8, #c9708a);
+  --ph-fab:    linear-gradient(135deg, #ff6097, #d6427a);
 
   --ph-sh-1: 0 2px 8px rgba(61, 45, 51, 0.10);
   --ph-sh-2: 0 4px 16px rgba(61, 45, 51, 0.12);
   --ph-sh-3: 0 8px 28px rgba(61, 45, 51, 0.14);
-  --ph-sh-accent: 0 4px 16px rgba(201, 112, 138, 0.22);
-  --ph-sh-accent-lg: 0 8px 24px rgba(201, 112, 138, 0.26);
+  --ph-sh-accent: 0 4px 16px rgba(214, 66, 122, 0.22);
+  --ph-sh-accent-lg: 0 8px 24px rgba(214, 66, 122, 0.26);
 
   color-scheme: light;
 }
@@ -442,7 +442,7 @@
     transform: translateX(0);
     transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1);
     pointer-events: none;
-    border: 1px solid rgba(232, 160, 184, 0.20);
+    border: 1px solid rgba(255, 96, 151, 0.20);
   }
 }
 
@@ -843,7 +843,7 @@
 
   &:focus {
     border-color: var(--ph-accent);
-    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.15);
+    box-shadow: 0 0 0 3px rgba(255, 96, 151, 0.15);
   }
 
   &::placeholder { color: var(--ph-ink-faint); }
@@ -1077,7 +1077,7 @@
 
   &:focus-within {
     border-color: var(--ph-accent);
-    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.12);
+    box-shadow: 0 0 0 3px rgba(255, 96, 151, 0.12);
   }
 }
 
@@ -1468,7 +1468,7 @@
   padding: 10px 14px;
   background: var(--ph-accent-faint);
   border-radius: 12px;
-  border: 1px solid rgba(232, 160, 184, 0.18);
+  border: 1px solid rgba(255, 96, 151, 0.18);
   font-size: 11px;
   color: var(--ph-ink-soft);
   line-height: 1.6;
@@ -1502,7 +1502,7 @@
 
   &:focus {
     border-color: var(--ph-accent);
-    box-shadow: 0 0 0 3px rgba(232, 160, 184, 0.12);
+    box-shadow: 0 0 0 3px rgba(255, 96, 151, 0.12);
   }
 
   &::placeholder { color: var(--ph-ink-faint); }

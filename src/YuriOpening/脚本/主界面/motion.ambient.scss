@@ -1,11 +1,119 @@
 @use '../../界面/共用/motion.scss' as m;
 
 /*
- * 花信氛围层：花瓣飘落 + 时漏（时间/日期字下柔光扫过）。
- * 花瓣极慢、极淡，触屏端关闭。
+ * 流光花嫁 · 幻夜星庭 氛围动效层：
+ * 1. 极光流彩天幕（aurora-drift / nebula-breathe）
+ * 2. 双环旋转星轨魔法阵（astrolabe-cw 24s / astrolabe-ccw 16s）
+ * 3. 漫天花瓣雨与星芒光粒（petal 3D翻转飘落 / star 十字闪烁升腾 / orb 萤火呼吸浮动）
+ * 4. 双生发光花枝摇曳（specimen-sway / specimen-echo-sway）
+ * 5. 顶栏与玩家栏常驻流光（aurora-bar / spin / shimmer-sweep / badge-pulse）
+ * 全设备统一开启，严禁在触屏端隐藏粒子或阉割动效。
  */
 
-/* 花瓣飘落容器（由 chat.ts 写入 .front-petal-i） */
+/* ── 1. 极光流彩天幕动画 ──────────────────────────────── */
+
+#yuri-front[data-animate='true'] .front-wash {
+  animation: aurora-drift 8s ease-in-out infinite alternate;
+}
+
+#yuri-front[data-animate='true'] .front-nocturne {
+  animation: nebula-breathe 11s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-2.5%, -1.5%, 0) scale(1) rotate(0deg);
+    filter: hue-rotate(0deg) saturate(1.08);
+  }
+
+  50% {
+    transform: translate3d(2%, 2.5%, 0) scale(1.09) rotate(3.5deg);
+    filter: hue-rotate(14deg) saturate(1.25);
+  }
+
+  100% {
+    transform: translate3d(-1.5%, 3%, 0) scale(1.05) rotate(-3deg);
+    filter: hue-rotate(-12deg) saturate(1.18);
+  }
+}
+
+@keyframes nebula-breathe {
+  0% {
+    opacity: 0.68;
+    transform: scale(1) rotate(0deg);
+  }
+
+  50% {
+    opacity: 0.94;
+    transform: scale(1.08) rotate(-4deg);
+  }
+
+  100% {
+    opacity: 0.78;
+    transform: scale(1.04) rotate(4deg);
+  }
+}
+
+/* ── 2. 双环旋转星轨魔法阵动画 ────────────────────────── */
+
+#yuri-front[data-animate='true'] .front-paper {
+  animation: astrolabe-cw 24s linear infinite;
+}
+
+#yuri-front[data-animate='true'] .front-paper::before {
+  animation: astrolabe-pulse 6s ease-in-out infinite alternate;
+}
+
+#yuri-front[data-animate='true'] .front-lamp {
+  animation: astrolabe-ccw 16s linear infinite;
+}
+
+#yuri-front[data-animate='true'] .front-lamp::before {
+  animation: astrolabe-cw 18s linear infinite;
+}
+
+@keyframes astrolabe-cw {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.035);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes astrolabe-ccw {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(-180deg) scale(0.965);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg) scale(1);
+  }
+}
+
+@keyframes astrolabe-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.97);
+  }
+
+  100% {
+    opacity: 0.95;
+    transform: scale(1.03);
+  }
+}
+
+/* ── 3. 花瓣雨容器（chat.ts 注入）与 24 颗全屏星庭粒子 ── */
+
 #yuri-front .front-petals {
   position: absolute;
   inset: 0;
@@ -18,57 +126,266 @@
   position: absolute;
   top: var(--py, -8%);
   left: var(--px, 50%);
-  width: var(--ps, 12px);
-  height: var(--ps, 12px);
+  width: var(--ps, 14px);
+  height: var(--ps, 14px);
   opacity: 0;
+  filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.75));
   pointer-events: none;
 }
 
-/* 花瓣本体：SVG 绘制，由 JS 注入；这里控制动画节奏 */
 #yuri-front[data-animate='true'] .front-petal {
   animation:
-    petal-fall calc(var(--pd, 22s)) linear var(--pdelay, 0s) infinite,
-    petal-sway calc(var(--pd, 22s) * 0.62) ease-in-out var(--pdelay, 0s) infinite alternate;
+    petal-fall calc(var(--pd, 18s) * 0.78) linear var(--pdelay, 0s) infinite,
+    petal-sway calc(var(--pd, 18s) * 0.45) ease-in-out var(--pdelay, 0s) infinite alternate;
 }
 
 @keyframes petal-fall {
   0% {
     opacity: 0;
-    transform: translateY(0) rotate(0deg);
+    transform: translate3d(0, -4vh, 0) rotate3d(1, 0.6, 0.3, 0deg) scale(0.85);
   }
 
-  6% {
-    opacity: var(--po, 0.13);
+  10% {
+    opacity: calc(var(--po, 0.42) * 1.65);
   }
 
-  88% {
-    opacity: var(--po, 0.13);
+  85% {
+    opacity: calc(var(--po, 0.42) * 1.55);
   }
 
   100% {
     opacity: 0;
-    transform: translateY(110vh) rotate(calc(var(--pr, 1) * 280deg));
+    transform: translate3d(-48px, 112vh, 0) rotate3d(1, 0.8, 0.4, calc(var(--pr, 1) * 420deg)) scale(1.05);
   }
 }
 
 @keyframes petal-sway {
   from {
-    margin-left: calc(var(--psway, 28px) * -1);
+    margin-left: calc(var(--psway, 34px) * -1);
   }
 
   to {
-    margin-left: var(--psway, 28px);
+    margin-left: var(--psway, 34px);
   }
 }
 
-/* 触屏端不渲染花瓣 */
-@media (hover: none), (pointer: coarse) {
-  #yuri-front .front-petal {
-    display: none;
+/* 24 个 .front-motes i[data-kind="petal|star|orb"] 分类型复合动画 */
+#yuri-front[data-animate='true'] .front-motes i[data-kind='petal'] {
+  animation:
+    mote-petal-fall calc(var(--d, 9s) * 1.12) linear var(--delay, 0s) infinite,
+    mote-petal-sway calc(var(--d, 9s) * 0.52) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+#yuri-front[data-animate='true'] .front-motes i[data-kind='star'] {
+  animation: mote-star-twinkle calc(var(--d, 7s) * 0.62) ease-in-out var(--delay, 0s) infinite;
+}
+
+#yuri-front[data-animate='true'] .front-motes i[data-kind='orb'] {
+  animation: mote-orb-float calc(var(--d, 8s) * 0.85) ease-in-out var(--delay, 0s) infinite alternate;
+}
+
+@keyframes mote-petal-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(30px, -18vh, 0) rotate3d(1, 0.7, 0.4, 0deg) scale(0.8);
+  }
+
+  14% {
+    opacity: 0.88;
+  }
+
+  84% {
+    opacity: 0.82;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(-90px, 88vh, 0) rotate3d(1, 0.7, 0.4, 540deg) scale(1.12);
   }
 }
 
-/* ── 时漏：时间/日期字下柔光扫过（一次性，不循环） ────────── */
+@keyframes mote-petal-sway {
+  from {
+    margin-left: -26px;
+  }
+
+  to {
+    margin-left: 26px;
+  }
+}
+
+@keyframes mote-star-twinkle {
+  0% {
+    opacity: 0.15;
+    transform: translateY(10px) scale(0.45) rotate(0deg);
+  }
+
+  45% {
+    opacity: 0.98;
+    transform: translateY(-16px) scale(1.38) rotate(90deg);
+  }
+
+  75% {
+    opacity: 0.65;
+    transform: translateY(-28px) scale(0.92) rotate(150deg);
+  }
+
+  100% {
+    opacity: 0.12;
+    transform: translateY(-42px) scale(0.4) rotate(180deg);
+  }
+}
+
+@keyframes mote-orb-float {
+  0% {
+    opacity: 0.28;
+    transform: translate3d(-14px, 12px, 0) scale(0.82);
+  }
+
+  50% {
+    opacity: 0.86;
+    transform: translate3d(12px, -18px, 0) scale(1.26);
+  }
+
+  100% {
+    opacity: 0.42;
+    transform: translate3d(-8px, -32px, 0) scale(0.96);
+  }
+}
+
+/* ── 4. 双生发光花枝随风摇曳 ──────────────────────────── */
+
+#yuri-front[data-animate='true'] .front-specimen {
+  animation: specimen-sway 5s ease-in-out infinite alternate;
+}
+
+#yuri-front[data-animate='true'] .front-specimen-echo {
+  animation: specimen-echo-sway 6.2s ease-in-out infinite alternate;
+}
+
+@keyframes specimen-sway {
+  0% {
+    transform: rotate(-5deg) translateY(0) scale(1);
+    filter: drop-shadow(0 0 14px rgba(255, 107, 157, 0.55));
+  }
+
+  50% {
+    transform: rotate(2.5deg) translateY(-5px) scale(1.025);
+    filter: drop-shadow(0 0 22px rgba(179, 107, 255, 0.72));
+  }
+
+  100% {
+    transform: rotate(-1.5deg) translateY(3px) scale(0.99);
+    filter: drop-shadow(0 0 18px rgba(255, 209, 128, 0.6));
+  }
+}
+
+@keyframes specimen-echo-sway {
+  0% {
+    transform: rotate(162deg) translateY(0) scale(1);
+    filter: drop-shadow(0 0 12px rgba(179, 107, 255, 0.45));
+  }
+
+  100% {
+    transform: rotate(170deg) translateY(-6px) scale(1.03);
+    filter: drop-shadow(0 0 18px rgba(255, 107, 157, 0.58));
+  }
+}
+
+/* ── 5. 顶栏与玩家栏常驻流光动画 ──────────────────────── */
+
+@keyframes aurora-bar {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
+@keyframes aurora-vertical {
+  0% {
+    background-position: 50% 0%;
+  }
+
+  100% {
+    background-position: 50% 300%;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes time-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0%,
+  18% {
+    transform: translateX(-140%) skewX(-24deg);
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 0.9;
+  }
+
+  58%,
+  100% {
+    transform: translateX(220%) skewX(-24deg);
+    opacity: 0;
+  }
+}
+
+@keyframes badge-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(255, 107, 157, 0.75),
+      0 0 12px rgba(255, 107, 157, 0.65);
+    transform: scale(1);
+  }
+
+  60% {
+    box-shadow:
+      0 0 0 8px rgba(255, 107, 157, 0),
+      0 0 16px rgba(179, 107, 255, 0.8);
+    transform: scale(1.08);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(255, 107, 157, 0),
+      0 0 12px rgba(255, 107, 157, 0.65);
+    transform: scale(1);
+  }
+}
+
+/* ── 时漏：时间/日期字下柔光扫过 ──────────────────────── */
 
 #yuri-front .front-time,
 #yuri-front .front-date {
@@ -82,7 +399,7 @@
   bottom: -4px;
   left: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  background: linear-gradient(90deg, transparent, #ff6b9d, #ffd180, #b36bff, transparent);
   border-radius: 2px;
   opacity: 0;
   transform: scaleX(0);
@@ -93,7 +410,7 @@
 
 #yuri-front .front-time.is-ticking::after,
 #yuri-front .front-date.is-ticking::after {
-  animation: time-glow 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: time-glow 540ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes time-glow {
@@ -102,8 +419,8 @@
     transform: scaleX(0);
   }
 
-  30% {
-    opacity: 0.7;
+  35% {
+    opacity: 0.95;
     transform: scaleX(1);
   }
 
@@ -113,15 +430,15 @@
   }
 }
 
-/* 开场：顶栏轻微下滑淡入 */
+/* 开场：顶栏星光下滑浮现 */
 #yuri-front[data-dawn='true'][data-animate='true'] .front-head {
-  animation: head-rise 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: head-rise 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes head-rise {
   from {
-    opacity: 0.4;
-    transform: translateY(-4px);
+    opacity: 0.35;
+    transform: translateY(-8px);
   }
 
   to {
@@ -129,6 +446,8 @@
     transform: none;
   }
 }
+
+/* ── 动效总闸 ─────────────────────────────────────────── */
 
 @include m.still('.front-time.is-ticking::after') {
   animation: none;
@@ -138,15 +457,53 @@
   animation: none;
 }
 
+#yuri-front[data-animate='false'] {
+  .front-wash,
+  .front-nocturne,
+  .front-paper,
+  .front-paper::before,
+  .front-lamp,
+  .front-lamp::before,
+  .front-petal,
+  .front-motes i,
+  .front-specimen,
+  .front-specimen-echo,
+  .front-head::after,
+  .front-weather-mark::before,
+  .front-time,
+  .front-action::after,
+  .front-action-badge,
+  .front-player::after,
+  .front-player-mark::before,
+  .front-player-mark::after,
+  .front-row::after {
+    animation: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #yuri-front .front-time.is-ticking::after,
   #yuri-front .front-date.is-ticking::after,
-  #yuri-front[data-dawn='true'][data-animate='true'] .front-head {
-    animation: none;
-  }
-
-  #yuri-front[data-animate='true'] .front-petal {
-    animation: none;
-    opacity: 0;
+  #yuri-front[data-dawn='true'][data-animate='true'] .front-head,
+  #yuri-front[data-animate='true'] .front-wash,
+  #yuri-front[data-animate='true'] .front-nocturne,
+  #yuri-front[data-animate='true'] .front-paper,
+  #yuri-front[data-animate='true'] .front-paper::before,
+  #yuri-front[data-animate='true'] .front-lamp,
+  #yuri-front[data-animate='true'] .front-lamp::before,
+  #yuri-front[data-animate='true'] .front-petal,
+  #yuri-front[data-animate='true'] .front-motes i,
+  #yuri-front[data-animate='true'] .front-specimen,
+  #yuri-front[data-animate='true'] .front-specimen-echo,
+  #yuri-front .front-head::after,
+  #yuri-front .front-weather-mark::before,
+  #yuri-front .front-time,
+  #yuri-front .front-action::after,
+  #yuri-front .front-action-badge,
+  #yuri-front .front-player::after,
+  #yuri-front .front-player-mark::before,
+  #yuri-front .front-player-mark::after,
+  #yuri-front .front-row::after {
+    animation: none !important;
   }
 }

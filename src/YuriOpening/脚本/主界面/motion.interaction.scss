@@ -2,17 +2,26 @@
 
 $targets: m.$press-targets;
 
-/* ── 柔光按压：微微下沉 1px + 投影收拢；松开 180ms 回位 ─── */
+/*
+ * 交互动效层（流光花嫁 · 幻夜星庭）：
+ * 1. 全控件弹性悬停放大与霓虹外发光 + 按压星芒内聚
+ * 2. 主按钮与发送键持续三色流光 + 周期性斜向扫光 + 触发光波
+ * 3. 输入区聚焦彩虹极光生长与发送星尘飘落
+ * 4. 观景窗页签流光滑块与卡片悬停悬浮发光
+ */
 
 #yuri-front :is(#{$targets}) {
   position: relative;
   @include m.pressable;
   @include m.focus-ring;
 
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+  }
+
   &:active:not(:disabled) {
-    transform: translateY(1px);
-    box-shadow: none;
-    filter: brightness(0.97);
+    transform: translateY(1px) scale(0.98);
+    filter: brightness(0.98);
   }
 
   &:disabled {
@@ -20,22 +29,59 @@ $targets: m.$press-targets;
   }
 }
 
-@include m.coarse-pointer {
-  #yuri-front :is(#{$targets}):hover {
-    transform: none;
-  }
+/* ── 主按钮与发送按钮：表面斜向扫光 + 触发脉冲 ────────── */
+
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button) {
+  overflow: hidden;
 }
 
-/* ── 花色按钮按下后：底部柔光扫过一次 ──────────────────── */
+#yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 44%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.48) 50%,
+    transparent 100%
+  );
+  transform: translateX(-160%) skewX(-24deg);
+  pointer-events: none;
+  content: '';
+}
+
+#yuri-front[data-animate='true'] :is(.front-primary, .story-send, .opening-shell .primary-button)::before {
+  animation: button-shimmer-sweep 3.2s ease-in-out infinite;
+}
+
+@keyframes button-shimmer-sweep {
+  0%,
+  20% {
+    transform: translateX(-160%) skewX(-24deg);
+    opacity: 0;
+  }
+
+  40% {
+    opacity: 0.95;
+  }
+
+  65%,
+  100% {
+    transform: translateX(280%) skewX(-24deg);
+    opacity: 0;
+  }
+}
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.5);
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #ffd180, #ffffff, #64dfdf);
   opacity: 0;
   transform: scaleX(0);
   transform-origin: center;
@@ -44,18 +90,20 @@ $targets: m.$press-targets;
 }
 
 #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button).is-sealed::after {
-  animation: fired-glow 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fired-glow 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes fired-glow {
   0% {
-    opacity: 0.8;
+    opacity: 1;
     transform: scaleX(0);
+    box-shadow: 0 0 18px rgba(255, 209, 128, 0.95);
   }
 
   100% {
     opacity: 0;
-    transform: scaleX(1);
+    transform: scaleX(1.08);
+    box-shadow: 0 0 28px rgba(255, 107, 157, 0);
   }
 }
 
@@ -63,76 +111,102 @@ $targets: m.$press-targets;
   position: relative;
 }
 
-@include m.reduced-motion {
-  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled) {
-    transform: none;
+@keyframes gem-flow {
+  0% {
+    background-position: 0% 50%;
   }
 
-  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
-    display: none;
+  50% {
+    background-position: 100% 50%;
   }
 
-  #yuri-front :is(#{$targets}) {
-    transition-duration: m.$hover !important;
-  }
-
-  #yuri-front :is(#{$targets}):active:not(:disabled) {
-    transition-duration: m.$press !important;
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-/* ── 输入区聚焦：底部线从中间向两侧展开（花枝生长），280ms ── */
+@keyframes composer-aura {
+  0%,
+  100% {
+    box-shadow:
+      0 8px 28px rgba(10, 5, 20, 0.38),
+      0 0 18px rgba(255, 107, 157, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  50% {
+    box-shadow:
+      0 10px 34px rgba(10, 5, 20, 0.44),
+      0 0 28px rgba(179, 107, 255, 0.38),
+      0 0 14px rgba(255, 209, 128, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+}
+
+/* ── 输入区聚焦：底部彩虹极光流光线展开 + 发送星尘飘落 ── */
 
 #yuri-front .story-input {
   caret-color: var(--accent);
 }
 
-/* 聚焦指示器现在通过 .story-composer border+shadow 实现，
-   这里为旧式底线提供补充动效（composer 本身没有 ::after） */
-
 #yuri-front .story-composer::after {
   position: absolute;
   z-index: 2;
-  right: 12px;
+  right: 14px;
   bottom: -1px;
-  left: 12px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0;
-  transform: scaleX(0);
+  left: 14px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #ff6b9d 20%,
+    #ffd180 45%,
+    #b36bff 70%,
+    #64dfdf 88%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  opacity: 0.42;
+  transform: scaleX(0.65);
   transform-origin: center;
   transition:
-    transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 120ms linear;
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms ease;
   content: '';
   pointer-events: none;
 }
 
-#yuri-front .story-composer:focus-within::after {
-  opacity: 0.6;
-  transform: scaleX(1);
+#yuri-front[data-animate='true'] .story-composer::after {
+  animation: gem-flow 4s linear infinite;
 }
 
-/* 发出时：底线落下淡出 */
+#yuri-front .story-composer:focus-within::after {
+  opacity: 1;
+  transform: scaleX(1);
+  box-shadow: 0 0 14px rgba(255, 107, 157, 0.75);
+}
+
+/* 发出时：底线化作流光花瓣落下淡出 */
 #yuri-front .story-composer.is-sent::after {
-  animation: composer-petal-drop 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: composer-petal-drop 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes composer-petal-drop {
   from {
-    opacity: 0.6;
+    opacity: 1;
     transform: translateY(0) scaleX(1);
   }
 
   to {
     opacity: 0;
-    transform: translateY(5px) scaleX(0.6);
+    transform: translateY(7px) scaleX(0.5);
   }
 }
 
 @include m.still('.story-composer::after') {
   transition: none;
+  animation: none;
 }
 
 @include m.still('.story-composer.is-sent::after') {
@@ -143,7 +217,7 @@ $targets: m.$press-targets;
   caret-color: var(--accent);
 }
 
-/* ── 观景窗页签：滑动下划线（复用原有逻辑，换成花色） ──── */
+/* ── 观景窗页签：流光滑动下划线 ──────────────────────── */
 
 #yuri-front .obs-tabs {
   position: relative;
@@ -154,9 +228,10 @@ $targets: m.$press-targets;
   bottom: 2px;
   left: 0;
   width: var(--obs-tab-w, 0px);
-  height: 2px;
-  border-radius: 2px;
-  background: var(--accent);
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff6b9d, #ffd180, #b36bff);
+  box-shadow: 0 0 12px rgba(255, 107, 157, 0.72);
   opacity: var(--obs-tab-o, 0);
   transform: translateX(var(--obs-tab-x, 0px));
   transition:
@@ -171,16 +246,59 @@ $targets: m.$press-targets;
   transition: none;
 }
 
-/* ── hover 上浮：translateY(-1px) + 投影稍深，120ms ──────── */
+/* ── 卡片悬停上浮发光 ─────────────────────────────────── */
 
 #yuri-front .front-row,
 #yuri-front .obs-char-item,
 #yuri-front .front-gate-card {
-  transition: transform 120ms ease, box-shadow 120ms ease, background-color 140ms ease;
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease,
+    border-color 200ms ease,
+    background-color 200ms ease;
 }
 
 #yuri-front .front-row:hover,
 #yuri-front .obs-char-item:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--hard-sm);
+  transform: translateY(-3px) scale(1.012);
+  box-shadow:
+    0 8px 24px rgba(255, 107, 157, 0.24),
+    0 0 16px rgba(179, 107, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+/* ── 动效总闸 ─────────────────────────────────────────── */
+
+#yuri-front[data-animate='false'] {
+  :is(.front-primary, .story-send, .opening-shell .primary-button)::before,
+  .story-composer,
+  .story-composer::after,
+  .story-send {
+    animation: none !important;
+  }
+}
+
+@include m.reduced-motion {
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button):active:not(:disabled) {
+    transform: none;
+  }
+
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::before,
+  #yuri-front :is(.front-primary, .story-send, .opening-shell .primary-button)::after {
+    display: none;
+  }
+
+  #yuri-front .story-composer,
+  #yuri-front .story-composer::after,
+  #yuri-front .story-send {
+    animation: none !important;
+  }
+
+  #yuri-front :is(#{$targets}) {
+    transition-duration: m.$hover !important;
+  }
+
+  #yuri-front :is(#{$targets}):active:not(:disabled) {
+    transition-duration: m.$press !important;
+  }
 }

@@ -1,68 +1,116 @@
 @use '../../界面/共用/motion.scss' as m;
 
 /*
- * 故事流动效层：花开入场（scale+fade）、说话人花徽扩展、正文逐行升起。
- * 只在真正新到的楼层上播一次（.is-arriving）。
+ * 故事流动效层（流光花嫁 · 幻夜星庭）：
+ * 1. 新消息入场：星芒展开 + 柔光浮现 + 装饰星芒闪烁
+ * 2. 说话人花徽流光绽放
+ * 3. 正文逐行流光升起（交错 36ms）
+ * 4. 进度条与门槛流光波纹
  */
 
 .story-list > .story-msg {
   animation: none;
 }
 
-/* 新到楼层：花开入场 — scale 0.96→1 + opacity 0→1，320ms ease-out */
+/* 新到楼层：星芒展开 + 柔光浮现 */
 .story-msg.is-arriving {
-  animation: story-bloom-in 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: story-bloom-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--arrive-delay, 0ms);
 }
 
 @keyframes story-bloom-in {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.96) translateY(4px);
+    transform: translateY(14px) scale(0.95);
+    filter: drop-shadow(0 0 24px rgba(255, 107, 157, 0.55));
   }
 
-  to {
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.008);
+    filter: drop-shadow(0 0 14px rgba(179, 107, 255, 0.35));
+  }
+
+  100% {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }
 
-/* 说话人花徽（圆点）扩展入场 */
+/* 说话人花徽：星芒绽放脉冲 */
 .story-msg.is-arriving .story-speaker::before {
-  animation: speaker-dot-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: speaker-dot-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--arrive-delay, 0ms) + 60ms);
 }
 
 @keyframes speaker-dot-in {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0) rotate(-90deg);
+    box-shadow: 0 0 0 0 rgba(255, 107, 157, 0.9);
   }
 
-  to {
+  60% {
+    opacity: 1;
+    transform: scale(1.35) rotate(20deg);
+    box-shadow: 0 0 16px 4px rgba(255, 107, 157, 0.75);
+  }
+
+  100% {
     opacity: 1;
     transform: none;
   }
 }
 
-/* 正文逐行升起：外层裁切，内层从下沿顶上来，相邻行错开 36ms */
+/* AI 消息画卷左侧极光柱与右上星芒常驻呼吸 */
+@keyframes story-pillar-flow {
+  0% {
+    background-position: 50% 0%;
+  }
+
+  100% {
+    background-position: 50% 200%;
+  }
+}
+
+@keyframes story-corner-star {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.88) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.22) rotate(18deg);
+  }
+}
+
+/* 正文逐行流光升起：外层裁切，内层从下沿带柔光升起 */
 .story-bubble.story-text {
   overflow: hidden;
 }
 
 .story-msg.is-arriving .story-line {
-  animation: story-line-rise 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: story-line-rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes story-line-rise {
-  from {
+  0% {
     transform: translateY(100%);
     opacity: 0;
+    filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.5));
   }
 
-  to {
+  70% {
+    opacity: 1;
+  }
+
+  100% {
     transform: none;
     opacity: 1;
+    filter: none;
   }
 }
 
@@ -72,7 +120,7 @@
   }
 }
 
-/* 进度条：满宽铺底，scaleX 变化 */
+/* 进度条：满宽铺底，scaleX 变化 + 表面流光波纹 */
 .obs-meter-track > .obs-meter-fill,
 .obs-gate-track > .obs-gate-fill {
   width: 100%;
@@ -83,10 +131,10 @@
 
 .obs-meter-track > .obs-meter-fill.is-updating,
 .obs-gate-track > .obs-gate-fill.is-updating {
-  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 门槛满足：渐变扫过一次 */
+/* 门槛满足：璀璨星芒流光扫过 */
 .obs-gate-fill {
   position: relative;
 }
@@ -94,10 +142,17 @@
 .obs-gate-fill.is-sweeping::after {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(123, 170, 146, 0.72), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 209, 128, 0.85),
+    rgba(255, 107, 157, 0.85),
+    rgba(100, 223, 223, 0.8),
+    transparent
+  );
   content: '';
   transform: translateX(-100%);
-  animation: gate-sweep 700ms ease-out 1 both;
+  animation: gate-sweep 760ms ease-out 1 both;
 }
 
 @keyframes gate-sweep {
@@ -106,7 +161,7 @@
     transform: translateX(-100%);
   }
 
-  20% {
+  25% {
     opacity: 1;
   }
 
@@ -116,10 +171,14 @@
   }
 }
 
+/* ── 动效总闸 ─────────────────────────────────────────── */
+
 #yuri-front[data-animate='false'] .story-msg.is-arriving,
 #yuri-front[data-animate='false'] .story-msg.is-arriving .story-speaker::before,
-#yuri-front[data-animate='false'] .story-msg.is-arriving .story-line {
-  animation: none;
+#yuri-front[data-animate='false'] .story-msg.is-arriving .story-line,
+#yuri-front[data-animate='false'] .story-msg-assistant .story-content::before,
+#yuri-front[data-animate='false'] .story-msg-assistant .story-content::after {
+  animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -127,9 +186,11 @@
   .story-msg.is-arriving,
   .story-msg.is-arriving .story-speaker::before,
   .story-msg.is-arriving .story-line,
+  .story-msg-assistant .story-content::before,
+  .story-msg-assistant .story-content::after,
   .obs-gate-fill.is-sweeping::after {
-    animation: none;
-    animation-delay: 0s;
+    animation: none !important;
+    animation-delay: 0s !important;
   }
 
   .obs-meter-track > .obs-meter-fill,

@@ -1,38 +1,30 @@
 /*
- * motion.overlay.scss — 浮层转场（观景窗 / 手机面板 / 通知横幅）花信版
+ * motion.overlay.scss — 浮层转场（观景窗 / 手机面板 / 通知横幅）
+ * 「流光花嫁 · 幻夜星庭（Luminous Bloom · Starlight Reverie）」版
  *
  * 由 observatory.ts 以 ?raw 注入宿主 <head>，排在 styles.scss 之后，
- * 只负责转场与遮罩强度，不改布局、文案与配色。
+ * 负责观景窗、手机面板与通知横幅的弹性缩放、星光柔化展开、流光上浮与交互爆发反馈。
  *
  * 状态契约：
  *   .obs-layer[data-state]    closed / opening / open / closing
  *   .phone-layer[data-state]  closed / opening / open / closing
  *   .phone-banner.is-leaving  离场中（140ms 后由 phone-banner.ts 摘掉）
- *
- * 动效清单（花信）：
- *   obs-window 开合：scale 0.95→1 + opacity，280ms ease-out（无 clip-path）
- *   obs-body 内容：opacity+translateY(4px)→0，180ms ease-out
- *   phone-frame：translateY(10px)+opacity，260ms
- *   phone-banner 入场：translateY(-6px)→0，220ms
- *   hover 上浮：translateY(-1px)，120ms（在本文件定义，styles.scss 不重复）
- *   动作按钮 hover：filter brightness，120ms（由 styles.scss 各自定义）
- *   所有动效接 data-animate=false 与 prefers-reduced-motion
  */
 
-$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-$obs-open: 280ms;
+$ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-in-back: cubic-bezier(0.5, 0, 0.85, 0.35);
+$obs-open: 300ms;
 $obs-close: 180ms;
-$content-in: 180ms;
-$panel-open: 260ms;
-$banner-in: 220ms;
+$content-in: 280ms;
+$panel-open: 300ms;
+$banner-in: 260ms;
 $banner-out: 140ms;
 
-/* ── 观景窗 ──────────────────────────────────────────────── */
+/* ── 观景窗：弹性缩放 + 星光柔化展开 ─────────────────────── */
 
-/* 遮罩：只做透明度，没有模糊也没有光晕 */
 #yuri-front .obs-layer {
   opacity: 0;
-  transition: opacity 200ms ease-out;
+  transition: opacity 240ms $ease-spring;
 }
 
 #yuri-front .obs-layer[data-state='open'] {
@@ -40,7 +32,7 @@ $banner-out: 140ms;
 }
 
 #yuri-front .obs-layer[data-state='closing'] {
-  transition-duration: 140ms;
+  transition-duration: 160ms;
 }
 
 #yuri-front .obs-layer[data-state='opening'],
@@ -48,97 +40,147 @@ $banner-out: 140ms;
   pointer-events: none;
 }
 
-/* 窗口：scale 0.95→1 + opacity（像花慢慢绽开，不用 clip-path 擦除） */
+/* 观景窗本体：弹性缩放 + 星芒微光展开（300ms cubic-bezier(0.22, 1, 0.36, 1)） */
 #yuri-front .obs-window {
   opacity: 0.001;
-  transform: scale(0.95);
-  transform-origin: center center;
+  transform: translateY(12px) scale(0.935);
+  transform-origin: center 38%;
+  filter: brightness(1.18) drop-shadow(0 0 28px rgba(255, 107, 157, 0.42));
   transition:
-    transform $obs-open $ease-out,
-    opacity 90ms linear;
+    transform $obs-open $ease-spring,
+    opacity 140ms ease-out,
+    filter $obs-open $ease-spring;
 }
 
 #yuri-front .obs-layer[data-state='open'] .obs-window {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(0) scale(1);
+  filter: brightness(1) drop-shadow(0 0 0 rgba(255, 107, 157, 0));
 }
 
-/* 收起：scale 0.95 淡出 */
+/* 收起：轻盈向星心收拢淡出 */
 #yuri-front .obs-layer[data-state='closing'] .obs-window {
   opacity: 0.001;
-  transform: scale(0.95);
+  transform: translateY(8px) scale(0.95);
+  filter: brightness(1.08);
   transition:
-    transform $obs-close cubic-bezier(0.5, 0, 0.85, 0.4),
-    opacity 60ms linear $obs-close;
+    transform $obs-close $ease-in-back,
+    opacity 110ms linear 50ms,
+    filter $obs-close ease-in;
 }
 
-/* 入场交给 scale，styles.scss 里不再挂关键帧 */
+/* 入场统一由 scale + filter 驱动 */
 #yuri-front[data-animate='true'] .obs-layer:not([hidden]) .obs-window {
   animation: none;
 }
 
-/* 页签内容：180ms 淡入 + 微微上移（render(true) 会整块重建 body，只做容器级一次淡入） */
+/* 页签内容切换：流光上浮淡入（render(true) 重建 body 时触发） */
 #yuri-front .obs-layer[data-state='open'] .obs-body > * {
-  animation: obs-content-in $content-in ease-out both;
+  animation: obs-content-in $content-in $ease-spring both;
 }
 
 @keyframes obs-content-in {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(10px) scale(0.985);
+    filter: brightness(1.22) drop-shadow(0 6px 18px rgba(255, 107, 157, 0.28));
   }
 
-  to {
+  65% {
     opacity: 1;
-    transform: none;
+    filter: brightness(1.04) drop-shadow(0 2px 8px rgba(179, 107, 255, 0.14));
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: none;
   }
 }
 
-/* 按压：整体下沉 1px，按钮上不出现任何投影 */
+/* ── 交互爆发反馈：悬停弹性上浮与星芒放大 ─────────────────── */
+
+#yuri-front[data-animate='true'] .obs-char-item:hover,
+#yuri-front[data-animate='true'] .obs-rel-action:hover,
+#yuri-front[data-animate='true'] .travel-button:hover,
+#yuri-front[data-animate='true'] .reset-button:hover,
+#yuri-front[data-animate='true'] .obs-reset:hover,
+#yuri-front[data-animate='true'] .obs-rail-back:hover,
+#yuri-front[data-animate='true'] .obs-setting:hover {
+  transform: translateY(-2px);
+  transition:
+    transform 180ms $ease-spring,
+    background 200ms ease,
+    border-color 200ms ease,
+    filter 180ms ease,
+    box-shadow 220ms $ease-spring;
+}
+
+#yuri-front[data-animate='true'] .obs-tab:hover:not(.is-active) {
+  transform: translateY(-1.5px);
+}
+
+#yuri-front[data-animate='true'] .obs-rail-item:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+#yuri-front[data-animate='true'] .obs-close:hover {
+  transform: rotate(90deg) scale(1.08);
+}
+
+/* 按压反馈：干脆微缩下沉 */
 #yuri-front .obs-tab:active,
-#yuri-front .obs-close:active,
 #yuri-front .obs-reset:active,
 #yuri-front .obs-rel-action:active,
 #yuri-front .obs-rail-item:active,
+#yuri-front .obs-rail-back:active,
 #yuri-front .obs-char-item:active,
 #yuri-front .map-zoom-button:active:not(:disabled),
 #yuri-front .node-detail .node-close:active,
-#yuri-front .travel-button:active {
-  transform: translateY(1px);
-  transition-duration: 80ms;
+#yuri-front .travel-button:active,
+#yuri-front .reset-button:active {
+  transform: translateY(1px) scale(0.98);
+  transition-duration: 70ms;
 }
 
-/* hover 上浮：translateY(-1px) + 投影稍深，120ms */
-#yuri-front[data-animate='true'] .obs-char-item:hover,
-#yuri-front[data-animate='true'] .obs-rel-action:hover,
-#yuri-front[data-animate='true'] .travel-button:hover {
-  transform: translateY(-1px);
-  transition: transform 120ms ease, background 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+#yuri-front .obs-close:active {
+  transform: rotate(90deg) scale(0.94);
+  transition-duration: 70ms;
 }
 
-/* ── 手机面板层 ──────────────────────────────────────────── */
+/* ── 手机面板层：星光浮起展开 ─────────────────────────────── */
 
 #yuri-front .phone-layer-scrim {
   opacity: 0;
-  transition: opacity $panel-open $ease-out;
+  transition: opacity 240ms $ease-spring;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-layer-scrim {
   opacity: 1;
 }
 
-/* 设备框：从下方 10px 浮起 */
 #yuri-front .phone-frame {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(16px) scale(0.95);
+  filter: brightness(1.14) drop-shadow(0 0 24px rgba(255, 107, 157, 0.36));
   transition:
-    opacity $banner-in $ease-out,
-    transform $panel-open $ease-out;
+    opacity 200ms $ease-spring,
+    transform $panel-open $ease-spring,
+    filter $panel-open $ease-spring;
 }
 
 #yuri-front .phone-layer[data-state='open'] .phone-frame {
   opacity: 1;
-  transform: none;
+  transform: translateY(0) scale(1);
+  filter: none;
+}
+
+#yuri-front .phone-layer[data-state='closing'] .phone-frame {
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition:
+    opacity 140ms ease-in,
+    transform 180ms $ease-in-back;
 }
 
 #yuri-front .phone-layer[data-state='opening'],
@@ -146,14 +188,14 @@ $banner-out: 140ms;
   pointer-events: none;
 }
 
-/* ── 通知横幅 ────────────────────────────────────────────── */
+/* ── 通知横幅：流光坠落与轻盈离场 ─────────────────────────── */
 
-/* 入场 220ms 落 6px（同一批的延迟由 phone-banner.ts 写 animation-delay） */
 #yuri-front .phone-banner {
-  animation: phone-banner-drop $banner-in $ease-out both;
+  animation: phone-banner-drop $banner-in $ease-spring both;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
+    box-shadow 0.2s ease,
     opacity $banner-out ease,
     transform $banner-out ease;
 }
@@ -161,23 +203,25 @@ $banner-out: 140ms;
 #yuri-front .phone-banner.is-leaving {
   animation: none;
   opacity: 0;
-  transform: translateX(8px);
+  transform: translateX(12px) scale(0.96);
   pointer-events: none;
 }
 
 @keyframes phone-banner-drop {
   from {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-10px) scale(0.96);
+    filter: brightness(1.2);
   }
 
   to {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }
 
-/* ── 关闭动态效果：直接显隐，功能不变 ────────────────────── */
+/* ── 关闭动态效果总闸：data-animate='false' 与 reduced-motion ── */
 
 #yuri-front[data-animate='false'] .obs-layer,
 #yuri-front[data-animate='false'] .obs-window,
@@ -195,6 +239,7 @@ $banner-out: 140ms;
 #yuri-front[data-animate='false'] .obs-window {
   transform: none;
   opacity: 1;
+  filter: none;
 }
 
 #yuri-front[data-animate='false'] .obs-body > *,
@@ -207,9 +252,9 @@ $banner-out: 140ms;
 #yuri-front[data-animate='false'] .phone-layer:not([hidden]) .phone-frame {
   opacity: 1;
   transform: none;
+  filter: none;
 }
 
-/* 无动效时退场只等时序，不再多停 */
 #yuri-front[data-animate='false'] .obs-layer[data-state='closing'],
 #yuri-front[data-animate='false'] .obs-layer[data-state='closing'] .obs-window,
 #yuri-front[data-animate='false'] .phone-layer[data-state='closing'] .phone-layer-scrim,
@@ -217,7 +262,6 @@ $banner-out: 140ms;
   opacity: 0;
 }
 
-/* 关掉动态效果：观景窗内部所有过渡与动画一并停下（悬停仍有颜色变化，只是不再有位移） */
 #yuri-front[data-animate='false'] .obs-window *,
 #yuri-front[data-animate='false'] .obs-window *::before,
 #yuri-front[data-animate='false'] .obs-window *::after {
@@ -243,6 +287,7 @@ $banner-out: 140ms;
   #yuri-front .obs-window {
     transform: none;
     opacity: 1;
+    filter: none;
   }
 
   #yuri-front .obs-body > *,
@@ -255,6 +300,7 @@ $banner-out: 140ms;
   #yuri-front .phone-layer:not([hidden]) .phone-frame {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 
   #yuri-front .obs-layer[data-state='closing'],
@@ -264,7 +310,6 @@ $banner-out: 140ms;
     opacity: 0;
   }
 
-  /* 减少动效：观景窗内部所有过渡与动画一并停下 */
   #yuri-front .obs-window *,
   #yuri-front .obs-window *::before,
   #yuri-front .obs-window *::after {
