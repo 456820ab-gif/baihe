@@ -8015,3 +8015,16 @@
 #yuri-front .opening-shell .profile-write-note {
   margin-top: 12px;
 }
+
+/* 楼层模式：根节点直接 fixed 覆盖视口。
+   测试卡的楼层界面可能被渲染进 iframe，也可能直接渲染在消息里（无 frameElement），
+   只有 position:fixed 两种情况下都能铺满，不再依赖 iframe 提升是否成功。 */
+#yuri-front[data-embed='floor'] {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  display: grid;
+  width: 100%;
+  height: 100dvh;
+  place-items: center;
+}
