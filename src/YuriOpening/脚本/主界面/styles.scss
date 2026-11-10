@@ -7440,3 +7440,17 @@
     height: 30px;
   }
 }
+
+/* 楼层模式：测试卡会把 iframe 提升为全屏，旧的固定 760px 会让纸面贴在顶部。
+   改为填满视口并居中，纸与桌边四周留等距。 */
+#yuri-front[data-embed='floor'] {
+  display: grid;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  place-items: center;
+}
+
+#yuri-front[data-embed='floor'] .front-shell {
+  height: min(870px, calc(100dvh - 32px));
+}
