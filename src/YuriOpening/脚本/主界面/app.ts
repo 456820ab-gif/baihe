@@ -552,6 +552,8 @@ export function mountApp(options: { floor?: boolean } = {}) {
 
   function nativeView() {
     phoneHost.close();
+    /* 进入即提升过 iframe，这里必须还原，否则全屏遮罩会盖住聊天 */
+    if (isFloorMode()) restoreFloorFrame();
     nativeMode = true;
     mode = 'closed';
     open = false;
