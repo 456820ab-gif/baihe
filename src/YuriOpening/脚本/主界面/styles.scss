@@ -7709,3 +7709,309 @@
 #yuri-front .opening-shell .step-content {
   padding-bottom: 8px;
 }
+
+/* ── 全屏化：纸面铺满视口，不再留桌边色（用户要求彻底去掉外圈） ── */
+
+#yuri-front .front-shell {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#yuri-front[data-embed='floor'] .front-shell {
+  height: 100dvh;
+}
+
+/* 纸纹铺满后，装订线改为贯穿整列高度 */
+#yuri-front .front-head::before {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  height: auto;
+  width: 2px;
+}
+
+/* 纸面本身也去掉 1px 外边线与圆角，避免边缘出现一条异色缝 */
+#yuri-front {
+  background-color: var(--paper-face);
+}
+
+/* ── 开局表单：整块垂直居中，消除底部大片留白 ── */
+
+#yuri-front .front-opening {
+  display: flex;
+  width: min(100%, 980px);
+  flex-direction: column;
+  padding: 28px 24px 24px;
+}
+
+/* margin:auto 在内容超高时会自动塌成 0，不会裁掉顶部 */
+#yuri-front .front-opening .opening-shell {
+  margin: auto 0;
+  width: min(100%, 820px);
+  align-self: center;
+  min-height: 0;
+}
+
+#yuri-front .opening-shell .stepper {
+  margin-bottom: 20px;
+}
+
+/* 内容与底部按钮之间收紧：按钮紧跟内容，不再被推到屏幕最下方 */
+#yuri-front .opening-shell .step-content {
+  padding-bottom: 4px;
+}
+
+#yuri-front .opening-shell .form-actions {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--paper-line);
+}
+
+/* ── 表单整页布局：步骤条固定顶部、内容居中、操作条贴底 ── */
+
+#yuri-front[data-mode='opening'] .front-stage {
+  align-items: stretch;
+}
+
+#yuri-front .front-opening {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-inline: auto;
+  padding: 26px 24px 20px;
+}
+
+#yuri-front .front-opening .opening-shell {
+  display: flex;
+  width: min(100%, 860px);
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-self: center;
+  margin: 0 auto;
+  min-height: 0;
+}
+
+#yuri-front .opening-shell .stepper {
+  flex: 0 0 auto;
+}
+
+#yuri-front .opening-shell form {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+/* 内容区自己滚；首尾 auto 留白让内容在中段居中，超出时自动塌成 0 */
+#yuri-front .opening-shell .step-content {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+}
+
+#yuri-front .opening-shell .step-content > :first-child {
+  margin-top: auto;
+}
+
+#yuri-front .opening-shell .step-content > :last-child {
+  margin-bottom: auto;
+}
+
+#yuri-front .opening-shell .form-actions {
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding-top: 18px;
+  padding-bottom: 4px;
+  border-top: 1px solid var(--paper-line);
+}
+
+/* 锁定态同样居中 */
+#yuri-front .opening-shell .locked-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 表单竖向链路：shell(flex) > main.form-panel(flex) > form(flex) > step-content(flex) > actions */
+#yuri-front[data-mode='opening'] .front-shell {
+  /* 开局时玩家栏不渲染，底部 96px 那一行必须收起，否则留下一整条空白 */
+  grid-template-rows: 62px minmax(0, 1fr) 0;
+}
+
+#yuri-front .opening-shell > main,
+#yuri-front .opening-shell > .form-panel {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+#yuri-front .opening-shell .form-panel > form {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+#yuri-front .opening-shell .form-panel > form > .step-content {
+  flex: 1 1 auto;
+}
+
+/* 首步「自我呈现」是长文本框：让它吃掉剩余高度，页面不再上紧下空 */
+#yuri-front .opening-shell .step-content > :first-child {
+  margin-top: 0;
+}
+
+#yuri-front .opening-shell .step-content > :last-child {
+  margin-bottom: 0;
+}
+
+#yuri-front .opening-shell .step-content > .field:last-of-type {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+#yuri-front .opening-shell .step-content > .field:last-of-type textarea {
+  flex: 1 1 auto;
+  min-height: 108px;
+  resize: none;
+}
+
+/* 第 5 步确认页：粉色圆角卡片改成与舞台一致的纸面 */
+#yuri-front .opening-shell .preview-sheet {
+  padding: 26px 22px 22px;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-deep);
+  box-shadow: none;
+}
+
+#yuri-front .opening-shell .preview-ribbon {
+  top: 0;
+  right: 20px;
+  padding: 4px 12px;
+  border-radius: 0 0 3px 3px;
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+
+#yuri-front .opening-shell .preview-avatar {
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  border-radius: 50%;
+}
+
+#yuri-front .opening-shell .preview-header {
+  border-bottom: 1px solid var(--paper-line);
+}
+
+/* 键值行：标签定宽，值占满剩余，长文本正常换行不再串行 */
+#yuri-front .opening-shell .preview-lines > div {
+  display: grid;
+  align-items: baseline;
+  gap: 4px 12px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  padding: 5px 0;
+}
+
+#yuri-front .opening-shell .preview-lines > div > span {
+  color: var(--paper-muted);
+  letter-spacing: 0.08em;
+}
+
+#yuri-front .opening-shell .preview-lines > div > strong {
+  color: var(--paper-ink);
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+#yuri-front .opening-shell .preview-scene {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-face);
+}
+
+/* 确认页「初遇 / 第一幕」小块：符号与文字分栏，不再各自占一行 */
+#yuri-front .opening-shell .preview-scene {
+  display: grid;
+  align-items: start;
+  gap: 4px 12px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  grid-template-columns: 30px minmax(0, 1fr);
+}
+
+#yuri-front .opening-shell .preview-scene > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+  font-family: var(--paper-serif);
+  font-size: 13px;
+}
+
+#yuri-front .opening-shell .preview-scene small {
+  color: var(--paper-muted);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+}
+
+#yuri-front .opening-shell .preview-scene strong {
+  display: block;
+  margin: 2px 0 5px;
+  color: var(--paper-ink);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+#yuri-front .opening-shell .preview-scene p {
+  margin: 0;
+  color: var(--paper-ink-soft);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+/* 确认页信息密度：收紧内边距与行距，尽量一屏装下 */
+#yuri-front .opening-shell .preview-sheet {
+  padding: 20px 20px 16px;
+}
+
+#yuri-front .opening-shell .preview-header {
+  padding-bottom: 12px;
+}
+
+#yuri-front .opening-shell .preview-lines > div {
+  padding: 3px 0;
+}
+
+#yuri-front .opening-shell .preview-scene {
+  margin-top: 10px;
+  padding: 11px 14px;
+}
+
+#yuri-front .opening-shell .preview-abilities {
+  margin-top: 14px;
+}
+
+#yuri-front .opening-shell .profile-write-note {
+  margin-top: 12px;
+}
