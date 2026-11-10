@@ -41,13 +41,6 @@ export function renderSettingsView(options: SettingsViewOptions): HTMLElement {
     make('p', 'obs-subtitle', '只保留会改变观感的部分；故事数据不在这里修改。'),
   );
 
-  wrap.append(toggleRow(
-    '浅色模式',
-    '墨玻璃换成日光纸面，地图与星图同步变亮。',
-    settings.theme === 'light',
-    checked => commit({ theme: checked ? 'light' : 'dark' }),
-  ));
-
   const toggles: Array<['animate' | 'scene', string, string]> = [
     ['animate', '动态效果', '天气、花期、星图与窗口转场。'],
     ['scene', '场景跟随', '让底纹颜色随着时间、天气和剧情变化。'],
@@ -61,7 +54,7 @@ export function renderSettingsView(options: SettingsViewOptions): HTMLElement {
   const reset = make('button', 'obs-reset', '恢复默认');
   reset.type = 'button';
   reset.addEventListener('click', () => {
-    commit({ animate: true, scene: true, theme: 'dark' });
+    commit({ animate: true, scene: true });
   });
   wrap.append(reset);
   return wrap;

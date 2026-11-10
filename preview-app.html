@@ -39,6 +39,12 @@
       { message_id: 2, role: 'assistant', message: '林清在沙发另一头坐下，外套没有收走，只是搭在椅背上。她侧过脸看你，像是在等一个不必急着回答的问题。', is_hidden: false },
     ];
     window.getLastMessageId = () => 2;
+    /* ?opening=1：清空楼层，让前端进入开局表单视图 */
+    if (new URLSearchParams(location.search).get('opening') === '1') {
+      previewMessages.length = 0;
+      window.getLastMessageId = () => -1;
+      window.getCurrentMessageId = () => 0;
+    }
     window.getCurrentMessageId = () => 2;
     window.getChatMessages = () => previewMessages;
     window.getVariables = () => ({ stat_data: previewState });
@@ -82,7 +88,13 @@
     };
   </script>
   <script src="/cards/YuriOpening/脚本/花期图集.js"></script>
-  <script src="./dist/YuriOpening/脚本/主界面/index.js"></script>
+  <script src="./node_modules/vue/dist/vue.global.prod.js"></script>
+  <script src="./node_modules/lodash/lodash.min.js"></script>
+  <!-- zod 先挂到 window.z，再导入产物：模块按顺序求值，顺序才有保证 -->
+  <script type="module">
+    await import('./zod-global.js');
+    await import('./dist/YuriOpening/脚本/主界面/index.js');
+  </script>
   <script>
     const auto = new URLSearchParams(location.search).get('auto') === '1';
     if (auto) {

@@ -29,14 +29,12 @@ export type ThemeState = {
 export type AppSettings = {
   animate: boolean;
   scene: boolean;
-  theme: 'dark' | 'light';
 };
 
 const SETTINGS_KEY = 'YuriOpening:frontstage:settings:v1';
 const DEFAULT_SETTINGS: AppSettings = {
   animate: true,
   scene: true,
-  theme: 'dark',
 };
 
 export function getPath(value: unknown, path: string, fallback?: unknown): unknown {
@@ -139,7 +137,6 @@ function normalizeSettings(raw: unknown): AppSettings {
   return {
     animate: typeof value.animate === 'boolean' ? value.animate : DEFAULT_SETTINGS.animate,
     scene: typeof value.scene === 'boolean' ? value.scene : DEFAULT_SETTINGS.scene,
-    theme: value.theme === 'light' ? 'light' : 'dark',
   };
 }
 

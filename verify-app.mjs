@@ -217,12 +217,7 @@ async function run() {
     doc.querySelectorAll('.obs-settings select, .obs-settings input:not([type="checkbox"])').length === 0);
   const settingRows = [...doc.querySelectorAll('.obs-setting')];
   const toggleFor = label => settingRows.find(row => row.textContent?.includes(label))?.querySelector('input');
-  const themeToggle = toggleFor('浅色模式');
-  if (themeToggle) {
-    themeToggle.checked = true;
-    themeToggle.dispatchEvent(new window.Event('change', { bubbles: true }));
-  }
-  check('浅色模式写回画布主题', root?.dataset.theme === 'light', root?.dataset.theme ?? '无');
+  check('设置页不再有浅色模式开关', !toggleFor('浅色模式'));
   const animateToggle = toggleFor('动态效果');
   if (animateToggle) {
     animateToggle.checked = false;
@@ -236,9 +231,9 @@ async function run() {
   }
   check('场景跟随写回画布场景属性', root?.dataset.scene === 'false', root?.dataset.scene ?? '无');
   doc.querySelector('.obs-reset')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  check('恢复默认同时复位主题/动画/场景',
-    root?.dataset.theme === 'dark' && root?.dataset.animate === 'true' && root?.dataset.scene === 'true',
-    `${root?.dataset.theme}/${root?.dataset.animate}/${root?.dataset.scene}`);
+  check('恢复默认同时复位动画/场景',
+    root?.dataset.animate === 'true' && root?.dataset.scene === 'true',
+    `${root?.dataset.animate}/${root?.dataset.scene}`);
   doc.querySelector('.obs-close')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 
   const input = doc.querySelector('.story-input');

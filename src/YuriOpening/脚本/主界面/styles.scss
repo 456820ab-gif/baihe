@@ -5898,3 +5898,1545 @@
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   纸光舞台（第 6 版落地）
+   令牌取自 界面/状态栏/style.scss 的纸光花影；结构取「顶部窄带 /
+   中央窄栏 / 底部状态带」。写在文件末尾以覆盖上方霓光星芒规则，
+   上方规则保留作为未命中类名的兜底，不做批量删除。
+   ═══════════════════════════════════════════════════════════ */
+
+#yuri-front {
+  --paper-ink: #33282e;
+  --paper-ink-soft: #6d5f68;
+  --paper-muted: #9c8d95;
+  --paper-line: #e3d5d9;
+  --paper-face: #fdfaf6;
+  --paper-deep: #f6eee9;
+  --paper-accent: #a84b68;
+  --paper-accent-soft: #f3dfe5;
+  --paper-jade: #5f8b79;
+  --paper-glow: rgba(184, 98, 127, 0.14);
+  --paper-shadow: rgba(97, 63, 79, 0.1);
+  --paper-serif: 'DejaVu Serif', Georgia, 'Times New Roman', 'Noto Serif SC', 'Songti SC', serif;
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='168' height='168'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='168' height='168' filter='url(%23g)' opacity='0.13'/%3E%3C/svg%3E");
+
+  /* 把旧令牌统一改指纸面，地图/星图/关系页等复用组件随之换肤 */
+  --ink: var(--paper-ink);
+  --ink-soft: var(--paper-ink-soft);
+  --ink-faint: var(--paper-muted);
+  --muted: var(--paper-muted);
+  --line: var(--paper-line);
+  --line-strong: var(--paper-line);
+  --paper: var(--paper-face);
+  --paper-deep: #f6eee9;
+  --panel: var(--paper-face);
+  --panel-deep: var(--paper-deep);
+  --accent: var(--paper-accent);
+  --accent-soft: var(--paper-accent-soft);
+  --accent-2: var(--paper-jade);
+  --accent-2-soft: rgba(95, 139, 121, 0.12);
+  --jade: var(--paper-jade);
+  --glow: var(--paper-glow);
+  --shadow: var(--paper-shadow);
+  --rule: var(--paper-line);
+  --rule-soft: rgba(227, 213, 217, 0.5);
+  --seal: var(--paper-accent);
+  --seal-lift: #c06987;
+  --seal-wash: var(--paper-accent-soft);
+  --letter: rgba(168, 75, 104, 0.06);
+  --serif: var(--paper-serif);
+  --story-size: 15.5px;
+  --story-leading: 2.05;
+  --story-measure: 720px;
+
+  background:
+    radial-gradient(66% 56% at 50% -8%, #3a3038, transparent 70%),
+    linear-gradient(180deg, #221b21, #1a1519);
+  color: var(--paper-ink);
+  font-family: 'Noto Sans CJK SC', 'Noto Sans SC', 'PingFang SC', sans-serif;
+}
+
+/* 氛围层：只留纸面暖光 */
+#yuri-front .front-paper,
+#yuri-front .front-wash,
+#yuri-front .front-nocturne,
+#yuri-front .front-vignette,
+#yuri-front .front-motes,
+#yuri-front .front-specimen-echo {
+  display: none;
+}
+
+#yuri-front .front-lamp {
+  background:
+    radial-gradient(46% 36% at 22% 6%, rgba(168, 75, 104, 0.12), transparent 70%),
+    radial-gradient(40% 34% at 84% 94%, rgba(95, 139, 121, 0.1), transparent 72%);
+  animation: paper-lamp 14s ease-in-out infinite alternate;
+}
+
+@keyframes paper-lamp {
+  from { opacity: 0.75; }
+  to { opacity: 1; }
+}
+
+/* 天气铺层在纸面上压到极淡，避免抢正文 */
+#yuri-front .front-weather {
+  opacity: 0.1;
+  mix-blend-mode: multiply;
+}
+
+/* ── 整张纸：三段网格 ── */
+
+#yuri-front .front-shell {
+  display: grid;
+  width: min(1400px, calc(100% - 32px));
+  height: min(870px, calc(100% - 32px));
+  margin: auto;
+  padding: 0;
+  grid-template-rows: 62px minmax(0, 1fr) 96px;
+  grid-template-areas:
+    'head'
+    'stage'
+    'player';
+  overflow: hidden;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background-color: var(--paper-face);
+  background-image: var(--paper-grain);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.3),
+    0.4px 1px 1px var(--paper-shadow),
+    2px 6px 14px var(--paper-shadow),
+    8px 22px 48px rgba(40, 24, 34, 0.45);
+}
+
+/* 纸面暖光晕与斜纹 */
+#yuri-front .front-shell::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(120% 80% at 92% 2%, var(--paper-glow), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.011) 0 2px, transparent 2px 5px);
+  content: '';
+  pointer-events: none;
+}
+
+/* 左侧装订线：粉→玉→粉，缓慢流动 */
+#yuri-front .front-head::before {
+  position: absolute;
+  top: 10px;
+  bottom: auto;
+  left: -1px;
+  z-index: 4;
+  width: 2px;
+  height: 42px;
+  background: linear-gradient(180deg, var(--paper-accent), var(--paper-jade), var(--paper-accent));
+  background-size: 100% 200%;
+  content: '';
+  animation: paper-spine 6s linear infinite;
+}
+
+@keyframes paper-spine {
+  from { background-position: 0 0; }
+  to { background-position: 0 200%; }
+}
+
+/* ── 顶部：62px 环境窄带 ── */
+
+#yuri-front .front-head {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px 0 26px;
+  border-bottom: 1px solid var(--paper-line);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#yuri-front .front-head::after {
+  display: none;
+}
+
+#yuri-front .front-env {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* 天气图标块 → 齿孔邮票 */
+#yuri-front .front-weather-mark {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  order: 0;
+  place-items: center;
+  border: 1px solid var(--paper-line);
+  border-radius: 1px;
+  background: var(--paper-deep);
+  color: var(--paper-accent);
+  transform: rotate(-4deg);
+  box-shadow: 0 1.5px 2px var(--paper-shadow);
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+#yuri-front .front-head:hover .front-weather-mark {
+  transform: rotate(0deg) scale(1.06);
+}
+
+/* 齿孔：与底纸同色的圆点虚线压在边框内侧 */
+#yuri-front .front-weather-mark::before {
+  position: absolute;
+  inset: 3px;
+  border: 3px dotted var(--paper-face);
+  border-radius: 1px;
+  content: '';
+  pointer-events: none;
+}
+
+#yuri-front .front-weather-mark::after {
+  display: block;
+  position: absolute;
+  inset: 6px;
+  border: 0.8px solid var(--paper-accent);
+  border-radius: 1px;
+  opacity: 0.55;
+  content: '';
+}
+
+#yuri-front .front-weather-mark svg {
+  position: relative;
+  z-index: 1;
+  width: 20px;
+  height: 20px;
+}
+
+#yuri-front .front-weather-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+#yuri-front .front-weather-label {
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+#yuri-front .front-date {
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+}
+
+#yuri-front .front-time-copy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  order: 3;
+  flex: 0 0 auto;
+}
+
+#yuri-front .front-time {
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+#yuri-front .front-place {
+  color: var(--paper-ink-soft);
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+}
+
+#yuri-front .front-place::before {
+  margin-right: 5px;
+  color: var(--paper-accent);
+  content: '◉';
+}
+
+/* 天气备注：窄带放不下整句，收成右侧一行小字 */
+#yuri-front .front-weather-note {
+  order: 2;
+  margin-left: auto;
+  padding-right: 12px;
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+#yuri-front .front-actions {
+  display: flex;
+  order: 4;
+  align-items: center;
+  gap: 12px;
+  padding-left: 6px;
+}
+
+#yuri-front .front-action {
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--paper-muted);
+  font-family: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+#yuri-front .front-action:hover {
+  border-bottom-color: var(--paper-accent);
+  background: transparent;
+  color: var(--paper-accent);
+  transform: none;
+}
+
+#yuri-front .front-action-quiet {
+  color: var(--paper-muted);
+  opacity: 0.7;
+}
+
+#yuri-front .front-action-badge {
+  top: -6px;
+  right: -8px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  font-size: 8.5px;
+  line-height: 14px;
+  letter-spacing: 0;
+}
+
+/* ── 彩旗：挂在纸的顶端 ── */
+
+#yuri-front .front-garland {
+  position: absolute;
+  top: 62px;
+  right: 26px;
+  left: 26px;
+  z-index: 3;
+  height: 22px;
+  pointer-events: none;
+}
+
+#yuri-front .front-garland svg {
+  display: block;
+  width: 100%;
+  height: 20px;
+  overflow: visible;
+}
+
+#yuri-front .front-garland path {
+  fill: none;
+  stroke: var(--paper-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+#yuri-front .front-garland i {
+  position: absolute;
+  width: 6px;
+  height: 7px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  background: var(--paper-accent);
+  box-shadow: 0 0 5px 1px var(--paper-glow);
+  transform: translateX(-50%);
+}
+
+#yuri-front .front-garland i:nth-of-type(odd) {
+  background: var(--paper-jade);
+}
+
+#yuri-front .front-garland i:nth-of-type(3n) {
+  background: #e7b75f;
+}
+
+#yuri-front[data-animate='true'] .front-garland i {
+  animation: paper-twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes paper-twinkle {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ── 舞台：中央窄栏 ── */
+
+#yuri-front .front-body {
+  display: contents;
+}
+
+#yuri-front .front-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  grid-area: stage;
+  padding: 34px 24px 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+}
+
+#yuri-front .front-chat,
+#yuri-front .front-stage-head,
+#yuri-front .front-opening {
+  width: min(100%, 720px);
+}
+
+#yuri-front .front-chat {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+#yuri-front[data-mode='opening'] .front-stage {
+  padding: 0 clamp(16px, 3vw, 40px) 20px;
+  align-items: stretch;
+}
+
+/* ── 底部：96px 状态带 ── */
+
+#yuri-front .front-player {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+  grid-area: player;
+  padding: 0 24px 0 26px;
+  overflow: hidden;
+  border-right: 0;
+  border-top: 1px solid var(--paper-line);
+  background: var(--paper-deep);
+  scrollbar-width: none;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 240ms ease;
+}
+
+/* 演员表：身份块压成左侧一条纸带 */
+#yuri-front .front-player-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 0 0;
+  border-right: 1px solid var(--paper-line);
+  border-bottom: 0;
+}
+
+#yuri-front .front-player-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--paper-accent);
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  color: var(--paper-accent);
+  font-family: var(--paper-serif);
+  font-size: 13px;
+  animation: none;
+}
+
+#yuri-front .front-player-copy strong {
+  color: var(--paper-ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+#yuri-front .front-player-copy small {
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+
+#yuri-front .front-player-toggle {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  color: var(--paper-ink-soft);
+  font-size: 12px;
+}
+
+#yuri-front .front-player-toggle:hover {
+  border-color: var(--paper-accent);
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
+
+/* 六项状态：横排，编号用衬线小字 */
+#yuri-front .front-player-body {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  padding-top: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#yuri-front .front-row {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 14px;
+  border: 0;
+  border-left: 1px solid var(--paper-line);
+  border-radius: 0;
+  background: transparent;
+  transition: color 0.18s ease;
+}
+
+#yuri-front .front-row:hover {
+  border-color: var(--paper-line);
+  background: transparent;
+  transform: none;
+}
+
+#yuri-front .front-row-index {
+  color: var(--paper-accent);
+  font-family: var(--paper-serif);
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+#yuri-front .front-row-label {
+  color: var(--paper-muted);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+
+#yuri-front .front-row-value {
+  margin-left: auto;
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 13.5px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+#yuri-front .front-row:hover .front-row-value {
+  color: var(--paper-accent);
+}
+
+/* 收起：整条带滑出 */
+#yuri-front[data-player='closed'] .front-player {
+  position: relative;
+  top: auto;
+  bottom: auto;
+  left: auto;
+  z-index: 1;
+  width: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(100%);
+}
+
+#yuri-front[data-player='closed'] .front-shell {
+  grid-template-rows: 62px minmax(0, 1fr) 0;
+}
+
+/* 底部导航：四个方形灯位 */
+#yuri-front .front-player-nav {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding-left: 18px;
+  border-left: 1px solid var(--paper-line);
+}
+
+#yuri-front .front-nav-key {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-face);
+  color: var(--paper-muted);
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+#yuri-front .front-nav-key svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+#yuri-front .front-nav-key:hover {
+  border-color: var(--paper-accent);
+  color: var(--paper-accent);
+}
+
+#yuri-front .front-nav-key:active {
+  transform: none;
+}
+
+/* 收起后的把手：贴在底边 */
+#yuri-front .front-player-handle {
+  border: 1px solid var(--paper-line);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: var(--paper-deep);
+  color: var(--paper-ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+/* 花枝：放进纸内右下，不压内容 */
+#yuri-front .front-specimen {
+  right: 28px;
+  bottom: 104px;
+  width: 62px;
+  height: 84px;
+  opacity: 0.34;
+  filter: none;
+  transform: rotate(-5deg);
+  animation: paper-sway 9s ease-in-out infinite alternate;
+}
+
+@keyframes paper-sway {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(-2deg); }
+}
+
+#yuri-front .front-specimen .sprig-stem {
+  stroke: var(--paper-jade);
+}
+
+#yuri-front .front-specimen .sprig-leaf {
+  stroke: var(--paper-jade);
+  fill: rgba(95, 139, 121, 0.12);
+}
+
+#yuri-front .front-specimen .sprig-bud,
+#yuri-front .front-specimen .sprig-petal {
+  stroke: var(--paper-accent);
+  fill: var(--paper-accent-soft);
+}
+
+#yuri-front .front-specimen .sprig-stamen {
+  stroke: var(--paper-accent);
+}
+
+#yuri-front .front-specimen .sprig-anther {
+  fill: var(--paper-accent);
+}
+
+/* ── 故事：剧本式排版（第 6 版） ── */
+
+#yuri-front .story-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+}
+
+#yuri-front .story-list {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0;
+}
+
+#yuri-front .story-msg {
+  gap: 7px;
+  padding: 22px 0 20px;
+  border-bottom: 1px solid rgba(227, 213, 217, 0.7);
+  animation: paper-cue 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes paper-cue {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+#yuri-front .story-head {
+  gap: 10px;
+  padding-bottom: 0;
+  border: 0;
+  background: none;
+}
+
+#yuri-front .story-speaker {
+  gap: 0;
+  color: var(--paper-accent);
+  font-family: var(--paper-serif);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+}
+
+#yuri-front .story-speaker::before {
+  display: none;
+}
+
+#yuri-front .story-msg-user .story-speaker {
+  color: var(--paper-jade);
+  font-weight: 400;
+}
+
+#yuri-front .story-meta {
+  color: var(--paper-muted);
+  font-family: var(--paper-serif);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+}
+
+#yuri-front .story-id,
+#yuri-front .story-time {
+  color: var(--paper-muted);
+}
+
+#yuri-front .story-actions {
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+#yuri-front .story-msg:hover .story-actions,
+#yuri-front .story-head:hover .story-actions,
+#yuri-front .story-head:focus-within .story-actions {
+  opacity: 1;
+}
+
+#yuri-front .story-action {
+  border-radius: 2px;
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+}
+
+#yuri-front .story-action:hover {
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
+
+/* AI 正文：无卡片，衬线正文 + 台词缩进 */
+#yuri-front .story-msg-assistant .story-content {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--paper-ink-soft);
+  font-size: var(--story-size);
+  line-height: var(--story-leading);
+}
+
+#yuri-front .story-msg-assistant .story-content::before,
+#yuri-front .story-msg-assistant .story-content::after {
+  display: none;
+}
+
+#yuri-front .story-msg-assistant .story-bubble {
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .story-msg-assistant .story-bubble-html {
+  padding: 0;
+}
+
+/* 引号台词：浅粉竖线 + 衬线 */
+#yuri-front .story-msg-assistant .story-line.is-quote {
+  margin: 10px 0 2px;
+  padding-left: 14px;
+  border-left: 2px solid var(--paper-accent-soft);
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+#yuri-front .story-msg-assistant .story-line.is-emphasis {
+  color: var(--paper-ink);
+  font-weight: 600;
+}
+
+/* 玩家：右对齐、无框、斜体衬线 */
+#yuri-front .story-msg-user {
+  max-width: 74%;
+  margin-left: auto;
+  align-items: flex-end;
+  border-bottom: 0;
+}
+
+#yuri-front .story-msg-user .story-head {
+  justify-content: flex-end;
+}
+
+#yuri-front .story-msg-user .story-speaker {
+  order: 2;
+}
+
+#yuri-front .story-msg-user .story-bubble {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--paper-ink-soft);
+  font-family: var(--paper-serif);
+  font-size: 14.5px;
+  font-style: italic;
+  line-height: 1.95;
+  text-align: right;
+}
+
+#yuri-front .story-msg-user .story-bubble::before {
+  display: none;
+}
+
+/* 正文里的 HTML 楼层 iframe：保留，不加外框 */
+#yuri-front .story-frame,
+#yuri-front .story-page-frame {
+  border: 0;
+  background: transparent;
+}
+
+#yuri-front .story-typing {
+  padding: 16px 0 4px;
+  color: var(--paper-muted);
+  font-family: var(--paper-serif);
+  font-size: 10.5px;
+  font-style: italic;
+  letter-spacing: 0.16em;
+}
+
+#yuri-front .story-typing::before {
+  display: none;
+}
+
+/* 输入：一条下划线，聚焦变玫红 */
+#yuri-front .story-composer {
+  align-items: flex-end;
+  gap: 12px;
+  margin: 4px auto 0;
+  padding: 10px 0 22px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#yuri-front .story-composer:focus-within {
+  border: 0;
+  box-shadow: none;
+}
+
+#yuri-front .story-input {
+  min-height: 34px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--paper-line);
+  color: var(--paper-ink);
+  font-size: 14px;
+}
+
+#yuri-front .story-input::placeholder {
+  color: var(--paper-muted);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+#yuri-front .story-composer:focus-within .story-input {
+  border-bottom-color: var(--paper-accent);
+}
+
+#yuri-front .story-send {
+  height: auto;
+  padding: 6px 16px;
+  border: 1px solid var(--paper-accent);
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--paper-accent);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+#yuri-front .story-send:hover {
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  transform: none;
+}
+
+#yuri-front .story-status {
+  width: min(100%, var(--story-measure));
+  margin: 0 auto;
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+}
+
+/* ── 观景窗：自底部升起的纸面 ── */
+
+#yuri-front .obs-layer {
+  align-items: end;
+  justify-items: center;
+  background: rgba(28, 20, 26, 0.58);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#yuri-front .obs-window {
+  width: min(680px, 92%);
+  max-height: 88%;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px 3px 0 0;
+  background-color: var(--paper-face);
+  background-image: var(--paper-grain);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 -20px 50px -30px rgba(40, 24, 34, 0.6);
+  transform: translateY(0);
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.3, 1), opacity 200ms ease;
+}
+
+/* 顶端彩旗：与舞台同一装饰语汇 */
+#yuri-front .obs-window::before {
+  top: 0;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: var(--paper-line);
+  animation: none;
+}
+
+#yuri-front .obs-window::after {
+  display: none;
+}
+
+#yuri-front[data-mode] #yuri-front .obs-window {
+  transform: none;
+}
+
+#yuri-front .obs-layer[data-state='opening'] .obs-window,
+#yuri-front .obs-layer[data-state='closed'] .obs-window {
+  opacity: 0;
+  transform: translateY(48px);
+}
+
+#yuri-front .obs-layer[data-state='closing'] .obs-window {
+  opacity: 0;
+  transform: translateY(48px);
+}
+
+#yuri-front .obs-layer[data-state='open'] .obs-window {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#yuri-front .obs-ornament {
+  top: 4px;
+  right: 24px;
+  width: 52px;
+  height: 70px;
+  opacity: 0.3;
+  transform: rotate(8deg);
+}
+
+#yuri-front .obs-ornament .sprig-stem,
+#yuri-front .obs-ornament .sprig-leaf {
+  stroke: var(--paper-jade);
+}
+
+#yuri-front .obs-ornament .sprig-bud,
+#yuri-front .obs-ornament .sprig-petal,
+#yuri-front .obs-ornament .sprig-stamen {
+  stroke: var(--paper-accent);
+}
+
+#yuri-front .obs-head {
+  padding: 24px 26px 12px;
+  border-bottom: 1px solid var(--paper-line);
+  background: transparent;
+}
+
+#yuri-front .obs-brand .obs-kicker {
+  color: var(--paper-accent);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+}
+
+#yuri-front .obs-brand strong {
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+#yuri-front .obs-issue {
+  color: var(--paper-muted);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+
+#yuri-front .obs-close {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--paper-ink-soft);
+  font-size: 15px;
+}
+
+#yuri-front .obs-close:hover {
+  border-color: var(--paper-accent);
+  color: var(--paper-accent);
+}
+
+/* 页签：文字 + 滑动下划线 + 菱形节点 */
+#yuri-front .obs-tabs {
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+#yuri-front .obs-tab,
+#yuri-front .obs-tabs .obs-tab {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  color: var(--paper-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+
+#yuri-front .obs-tab:hover,
+#yuri-front .obs-tabs .obs-tab:hover {
+  background: rgba(243, 223, 229, 0.35);
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .obs-tab.is-active,
+#yuri-front .obs-tabs .obs-tab.is-active {
+  background: rgba(243, 223, 229, 0.62);
+  box-shadow: inset 0 -2px 0 var(--paper-accent);
+  color: var(--paper-accent);
+  font-weight: 600;
+}
+
+#yuri-front .obs-body {
+  padding: 18px 26px 26px;
+  background: transparent;
+}
+
+#yuri-front .obs-kicker {
+  color: var(--paper-accent);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+}
+
+#yuri-front .obs-title {
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 27px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+#yuri-front .obs-subtitle {
+  color: var(--paper-muted);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+}
+
+/* 设置行：纸面细线 + 玫红开关 */
+#yuri-front .obs-setting {
+  padding: 12px 0;
+  border-top: 1px solid var(--paper-line);
+}
+
+#yuri-front .obs-setting-label {
+  color: var(--paper-ink);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+}
+
+#yuri-front .obs-setting small,
+#yuri-front .obs-setting-note {
+  color: var(--paper-muted);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}
+
+#yuri-front .obs-switch {
+  border-radius: 999px;
+  background: rgba(227, 213, 217, 0.8);
+  box-shadow: none;
+}
+
+#yuri-front .obs-setting input:checked + .obs-switch {
+  background: var(--paper-accent);
+  box-shadow: none;
+}
+
+#yuri-front .obs-reset {
+  margin-top: 14px;
+  padding: 7px 16px;
+  border: 1px solid var(--paper-accent);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--paper-accent);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+#yuri-front .obs-reset:hover {
+  background: var(--paper-accent);
+  color: var(--paper-face);
+}
+
+/* 观景窗把手 */
+#yuri-front .obs-handle {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-deep);
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .obs-handle.is-open {
+  color: var(--paper-accent);
+}
+
+/* ── 横屏引导 / 全屏启动器：同一套纸面 ── */
+
+#yuri-front .front-gate {
+  background: rgba(28, 20, 26, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#yuri-front .front-gate-card {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background-color: var(--paper-face);
+  background-image: var(--paper-grain);
+  box-shadow: 0 30px 60px -30px rgba(40, 24, 34, 0.7);
+}
+
+#yuri-front .front-gate-card .front-kicker {
+  color: var(--paper-accent);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+}
+
+#yuri-front .front-gate-card h1 {
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+#yuri-front .front-gate-card p,
+#yuri-front .front-gate-card small {
+  color: var(--paper-muted);
+  font-size: 11.5px;
+}
+
+#yuri-front .front-primary {
+  border: 1px solid var(--paper-accent);
+  border-radius: 3px;
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+}
+
+#yuri-front .front-primary:hover {
+  filter: brightness(1.06);
+  transform: none;
+}
+
+#yuri-front .front-launcher {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-face);
+  color: var(--paper-accent);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  box-shadow: 0 8px 20px -12px var(--paper-shadow);
+}
+
+/* ── 窄屏：状态带横向滚动，标签只留值 ── */
+
+@media (max-width: 860px) {
+  #yuri-front .front-shell {
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    grid-template-rows: 56px minmax(0, 1fr) 82px;
+  }
+
+  #yuri-front .front-head {
+    gap: 9px;
+    padding: 0 12px 0 16px;
+  }
+
+  #yuri-front .front-garland {
+    top: 56px;
+    right: 16px;
+    left: 16px;
+  }
+
+  #yuri-front .front-weather-mark {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  #yuri-front .front-weather-label {
+    font-size: 14px;
+  }
+
+  #yuri-front .front-date,
+  #yuri-front .front-weather-note,
+  #yuri-front .front-action-quiet {
+    display: none;
+  }
+
+  #yuri-front .front-stage {
+    padding: 26px 16px 0;
+  }
+
+  #yuri-front .story-msg-user {
+    max-width: 84%;
+  }
+
+  #yuri-front .story-composer {
+    padding-bottom: 16px;
+  }
+
+  #yuri-front .front-player {
+    gap: 10px;
+    padding: 0 12px 0 16px;
+  }
+
+  #yuri-front .front-player-head {
+    padding-right: 12px;
+  }
+
+  #yuri-front .front-player-copy small {
+    display: none;
+  }
+
+  #yuri-front .front-row {
+    flex: 0 0 auto;
+    padding: 0 9px;
+  }
+
+  #yuri-front .front-row-label {
+    display: none;
+  }
+
+  #yuri-front .front-nav-key {
+    width: 30px;
+    height: 30px;
+  }
+
+  #yuri-front .obs-window {
+    width: 94%;
+  }
+}
+
+/* ── 落地修正 ── */
+
+/* 顶部窄带顺序：邮票 → 天气 → 时间地点 → 备注 → 按钮。
+   旧规则把 weather-copy 设成 order:3 且右对齐，与新排序打架。 */
+#yuri-front .front-weather-copy {
+  order: 1;
+  align-items: flex-start;
+  gap: 1px;
+  text-align: left;
+}
+
+#yuri-front .front-time-copy {
+  order: 2;
+}
+
+#yuri-front .front-weather-note {
+  order: 3;
+}
+
+#yuri-front .front-actions {
+  order: 4;
+}
+
+/* 旧规则用 data-weather 给天气名加前缀（「雨 」），与 label 文案重复 */
+#yuri-front .front-weather-label::before {
+  content: none;
+}
+
+/* 底部编号：旧规则把它做成 8px 圆点（文字靠 font-size:0 隐藏），
+   横排后必须还原成可见数字，否则数字挤在点上压住标签。 */
+#yuri-front .front-row-index {
+  width: auto;
+  height: auto;
+  flex: 0 0 auto;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  color: var(--paper-accent);
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* 玩家头像的霓光呼吸环 */
+#yuri-front[data-animate='true'] .front-player-mark {
+  animation: none;
+}
+
+#yuri-front .front-player-mark {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 50%;
+  color: var(--paper-accent);
+}
+
+/* 剧本栏从顶部排起，不再贴着输入框留一片空白 */
+#yuri-front .story-list {
+  margin-top: 0;
+  gap: 0;
+}
+
+/* 底部导航已取代观景窗把手：保留节点供脚本断言，视觉上收起 */
+#yuri-front .obs-handle {
+  display: none;
+}
+
+/* 舞台底色：旧规则是霓光径向渐变，纸面不需要 */
+#yuri-front .front-stage {
+  background: none;
+}
+
+/* 旧规则在聊天顶部画了一条分隔线（margin 18 + border-top），剧本栏不需要 */
+#yuri-front .front-chat::before {
+  display: none;
+}
+
+/* 发送按钮的霓光呼吸（chroma-send 会周期性写回粉色强投影） */
+#yuri-front[data-animate='true'] .story-send {
+  animation: none;
+}
+
+#yuri-front .story-send {
+  box-shadow: none;
+}
+
+/* 天气名前缀由 data-weather 规则注入（「雨 」），与 label 内容重复 */
+#yuri-front[data-weather] .front-weather-label::before {
+  content: none;
+}
+
+/* ── 清掉霓光装饰伪元素（写在 motion.*.scss 与旧样式里，纸面不需要） ── */
+
+#yuri-front .story-composer::after,
+#yuri-front .obs-tabs::after,
+#yuri-front .front-row::after,
+#yuri-front .front-time::after,
+#yuri-front .front-date::after {
+  display: none;
+}
+
+/* 底部数值紧跟标签，不再被 margin-left:auto 推到格子最右 */
+#yuri-front .front-row-value {
+  margin-left: 10px;
+}
+
+/* ── 手机：同一套纸面令牌（手机模块全部读 --ph-*，只换值不动它的结构） ── */
+
+#yuri-front #phone-root-host {
+  --ph-accent: #a84b68;
+  --ph-accent-mid: #8f3d58;
+  --ph-accent-light: #c06987;
+  --ph-accent-faint: rgba(168, 75, 104, 0.12);
+  --ph-accent-deep: #8f3d58;
+  --ph-accent-shadow: #7d3350;
+  --ph-petal-soft: rgba(168, 75, 104, 0.08);
+
+  --ph-violet: #5f8b79;
+  --ph-violet-soft: #527a6a;
+  --ph-rouge: #a84b68;
+  --ph-gold: #b08a3e;
+  --ph-gold-light: #c8a45c;
+
+  --ph-bg: #fdfaf6;
+  --ph-bg2: #f6eee9;
+  --ph-surface: #fdfaf6;
+  --ph-card: #f6eee9;
+  --ph-ink: #33282e;
+  --ph-ink-soft: #6d5f68;
+  --ph-ink-faint: #9c8d95;
+  --ph-border: rgba(51, 40, 46, 0.14);
+  --ph-border-soft: rgba(51, 40, 46, 0.08);
+  --ph-hairline: rgba(51, 40, 46, 0.1);
+  --ph-glass: rgba(253, 250, 246, 0.96);
+  --ph-chip: rgba(168, 75, 104, 0.07);
+  --ph-shell-edge: rgba(51, 40, 46, 0.12);
+  --ph-ok: #5f8b79;
+  --ph-err: #a84b68;
+
+  --ph-bubble-out: linear-gradient(135deg, #b85877, #a84b68);
+  --ph-bubble-out-solid: #a84b68;
+  --ph-bubble-out-ink: #fdfaf6;
+  --ph-bubble-in: #f6eee9;
+  --ph-bubble-in-ink: #33282e;
+  --ph-bubble-in-line: rgba(51, 40, 46, 0.12);
+
+  --ph-chassis: #fdfaf6;
+  --ph-chassis-edge: rgba(51, 40, 46, 0.14);
+
+  --ph-topbar: #f6eee9;
+  --ph-cover: #f6eee9;
+  --ph-fab: linear-gradient(135deg, #b85877, #a84b68);
+
+  --ph-sh-1: 0 2px 8px rgba(97, 63, 79, 0.1);
+  --ph-sh-2: 0 4px 16px rgba(97, 63, 79, 0.12);
+  --ph-sh-3: 0 8px 28px rgba(97, 63, 79, 0.16);
+  --ph-sh-accent: 0 4px 16px rgba(168, 75, 104, 0.2);
+  --ph-sh-accent-lg: 0 8px 24px rgba(168, 75, 104, 0.24);
+}
+
+/* 机身与内容区铺纸纹 */
+#yuri-front #phone-root-host .phone-shell {
+  background-color: var(--ph-bg);
+  background-image: var(--paper-grain);
+  color: var(--ph-ink);
+}
+
+#yuri-front #phone-root-host .phone-status-bar,
+#yuri-front #phone-root-host .phone-navbar {
+  background-color: var(--ph-bg2);
+  border-color: var(--ph-border);
+}
+
+/* 中宽（楼层嵌入常见 700–1100px）：状态带只留编号与数值，标签隐藏，
+   否则每格不足 100px 会把「心情」竖排换行。 */
+@media (max-width: 1120px) {
+  #yuri-front .front-row {
+    flex: 1 1 0;
+    padding: 0 10px;
+  }
+
+  #yuri-front .front-row-label {
+    display: none;
+  }
+
+  #yuri-front .front-row-value {
+    margin-left: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #yuri-front .front-player-copy small {
+    display: none;
+  }
+
+  #yuri-front .front-weather-note {
+    display: none;
+  }
+}
+
+/* 中宽修正：状态带改为横向滚动，不再压缩每格（压缩会导致数值截断、编号被挤掉） */
+@media (max-width: 1120px) {
+  #yuri-front .front-row {
+    flex: 0 0 auto;
+    min-width: 92px;
+    padding: 0 12px;
+  }
+
+  #yuri-front .front-player-body {
+    flex: 1 1 auto;
+    overflow-x: auto;
+  }
+
+  #yuri-front .front-player-copy {
+    flex: 0 0 auto;
+  }
+}
+
+/* 旧样式在「≤900 宽横屏」下把编号 display:none 并把行改成两行；
+   底部带是横排结构，这里显式复位（楼层嵌入常见 900×760，正好命中）。 */
+#yuri-front .front-row-index {
+  display: block;
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  #yuri-front .front-row {
+    grid-template-columns: none;
+    grid-template-areas: none;
+    column-gap: 6px;
+    padding: 0 12px;
+    margin-top: 0;
+  }
+
+  #yuri-front .front-row:nth-child(4) {
+    margin-top: 0;
+    padding-top: 0;
+  }
+}
+
+/* ≤1000：收窄单格，让六项在楼层宽度内基本排得下（再窄就横向滚动） */
+@media (max-width: 1000px) {
+  #yuri-front .front-row {
+    min-width: 76px;
+    padding: 0 8px;
+  }
+
+  #yuri-front .front-row-value {
+    font-size: 12.5px;
+  }
+
+  #yuri-front .front-nav-key {
+    width: 30px;
+    height: 30px;
+  }
+}

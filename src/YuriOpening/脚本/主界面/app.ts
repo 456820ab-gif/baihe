@@ -54,7 +54,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
   root.dataset.embed = options.floor ? 'floor' : 'overlay';
   root.dataset.animate = String(settings.animate);
   root.dataset.scene = String(settings.scene);
-  root.dataset.theme = settings.theme;
   root.style.display = 'none';
 
   const motion = mountMotion(root, { animate: settings.animate });
@@ -62,19 +61,8 @@ export function mountApp(options: { floor?: boolean } = {}) {
   const atmosphere = make('div', 'front-atmosphere');
   atmosphere.setAttribute('aria-hidden', 'true');
   atmosphere.innerHTML = `
-    <span class="front-paper"></span>
     <span class="front-lamp"></span>
-    <span class="front-wash"></span>
-    <span class="front-nocturne"></span>
-    <span class="front-vignette"></span>
-    <span class="front-motes">${Array.from({ length: 6 }, (_, index) => {
-      const x = 8 + ((index * 17) % 84);
-      const y = 12 + ((index * 29) % 70);
-      const size = 1.5 + (index % 3) * 0.7;
-      return `<i style="--x:${x}%;--y:${y}%;--s:${size}px;--d:${12 + (index % 5) * 3}s;--delay:${-index * 1.7}s"></i>`;
-    }).join('')}</span>
-    <span class="front-specimen">${lilySprigSvg()}</span>
-    <span class="front-specimen-echo">${lilySprigSvg()}</span>`;
+    <span class="front-specimen">${lilySprigSvg()}</span>`;
   root.append(atmosphere);
 
   const weather = make('div', 'front-weather hud-shell');
@@ -83,6 +71,15 @@ export function mountApp(options: { floor?: boolean } = {}) {
   root.append(weather);
 
   const shell = make('div', 'front-shell');
+  /* 彩旗：挂在纸的顶端，横跨整张纸 */
+  const GARLAND_BULBS: Array<[number, number]> = [
+    [7, 5], [19, 8.5], [31, 9.5], [43, 8.1], [56, 4.1], [68, 1.6], [80, 0.9], [92, 1.9],
+  ];
+  const garland = make('span', 'front-garland');
+  garland.setAttribute('aria-hidden', 'true');
+  garland.innerHTML = `<svg viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M-2,1 Q25,15 50,6 T102,4"/></svg>${GARLAND_BULBS.map(
+    ([x, y], index) => `<i style="left:${x}%;top:${y}px;animation-delay:${-index * 0.45}s"></i>`,
+  ).join('')}`;
   const head = make('header', 'front-head');
   const env = make('div', 'front-env');
   const stamp = make('span', 'front-weather-mark');
@@ -118,7 +115,25 @@ export function mountApp(options: { floor?: boolean } = {}) {
   playerToggle.setAttribute('aria-label', '收起玩家栏');
   playerHead.append(playerMark, playerCopy, playerToggle);
   const playerBody = make('div', 'front-player-body');
-  player.append(playerHead, playerBody);
+  /* 底部状态带右侧的四个方形灯位：观景窗 / 手机 / 地图 / 设置 */
+  const playerNav = make('div', 'front-player-nav');
+  const navKey = (label: string, svg: string) => {
+    const el = button('', 'front-nav-key');
+    el.innerHTML = svg;
+    el.setAttribute('aria-label', label);
+    el.title = label;
+    playerNav.append(el);
+    return el;
+  };
+  const navView = navKey('观景窗',
+    '<svg viewBox="0 0 24 24"><path d="M12,3 C7,3 3.5,7.5 2,12 C3.5,16.5 7,21 12,21 C17,21 20.5,16.5 22,12 C20.5,7.5 17,3 12,3 Z"/><circle cx="12" cy="12" r="3.2"/></svg>');
+  const navPhone = navKey('手机',
+    '<svg viewBox="0 0 24 24"><path d="M4,4.5 H20 V16.5 H12.5 L8,20.5 V16.5 H4 Z"/></svg>');
+  const navMap = navKey('地图',
+    '<svg viewBox="0 0 24 24"><path d="M3,6.5 L9,4 L15,6.5 L21,4 V18 L15,20.5 L9,18 L3,20.5 Z"/><path d="M9,4 V18"/><path d="M15,6.5 V20.5"/></svg>');
+  const navSettings = navKey('设置',
+    '<svg viewBox="0 0 24 24"><path d="M3,7 H21"/><circle cx="9" cy="7" r="2.2"/><path d="M3,17 H21"/><circle cx="16" cy="17" r="2.2"/></svg>');
+  player.append(playerHead, playerBody, playerNav);
 
   const stage = make('main', 'front-stage');
   const chatHost = make('div', 'front-chat');
@@ -141,7 +156,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     </div>`;
   gate.hidden = true;
 
-  shell.append(head, body);
+  shell.append(head, garland, body);
   root.append(shell, playerHandle, gate);
 
   const launcher = button('全屏游玩', 'front-launcher');
@@ -243,14 +258,11 @@ export function mountApp(options: { floor?: boolean } = {}) {
   let floorFrameStyle = '';
 
   function applySettings() {
-    const themeChanged = root.dataset.theme !== settings.theme;
     root.dataset.animate = String(settings.animate);
     root.dataset.scene = String(settings.scene);
-    root.dataset.theme = settings.theme;
     weather.dataset.animate = String(settings.animate);
     weather.dataset.scene = String(settings.scene);
     motion.setEnabled(settings.animate);
-    if (themeChanged) chat.retheme();
   }
 
   function renderHeader(data: HudData | null, theme: ThemeState) {
@@ -549,6 +561,10 @@ export function mountApp(options: { floor?: boolean } = {}) {
   gate.querySelector<HTMLButtonElement>('[data-action="enter"]')?.addEventListener('click', () => void enterApp());
   playerToggle.addEventListener('click', () => updatePlayer(!playerOpen));
   playerHandle.addEventListener('click', () => updatePlayer(true));
+  navView.addEventListener('click', () => observatory.openTab('character'));
+  navPhone.addEventListener('click', () => phoneHost.toggle());
+  navMap.addEventListener('click', () => observatory.openTab('map'));
+  navSettings.addEventListener('click', () => observatory.openTab('settings'));
 
   try {
     eventOn(Mvu.events.VARIABLE_INITIALIZED, renderAll);
