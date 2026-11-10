@@ -133,11 +133,13 @@ export function mountApp(options: { floor?: boolean } = {}) {
     '<svg viewBox="0 0 24 24"><path d="M3,6.5 L9,4 L15,6.5 L21,4 V18 L15,20.5 L9,18 L3,20.5 Z"/><path d="M9,4 V18"/><path d="M15,6.5 V20.5"/></svg>');
   const navSettings = navKey('设置',
     '<svg viewBox="0 0 24 24"><path d="M3,7 H21"/><circle cx="9" cy="7" r="2.2"/><path d="M3,17 H21"/><circle cx="16" cy="17" r="2.2"/></svg>');
-  player.append(playerHead, playerBody, playerNav);
+  player.append(playerHead, playerBody);
 
   const stage = make('main', 'front-stage');
   const chatHost = make('div', 'front-chat');
   stage.append(chatHost);
+  /* 四个功能键放在正文左侧的空白区，随正文区一起定位 */
+  stage.append(playerNav);
   const openingHost = make('div', 'front-opening');
   openingHost.hidden = true;
   stage.append(openingHost);

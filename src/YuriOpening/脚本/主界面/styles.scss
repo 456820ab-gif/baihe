@@ -8367,3 +8367,318 @@
     padding-bottom: 10px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   玩家状态改左侧边栏；四个功能键移到正文左侧的空白区
+   ═══════════════════════════════════════════════════════════ */
+
+#yuri-front .front-shell {
+  grid-template-columns: 264px minmax(0, 1fr);
+  grid-template-rows: 62px minmax(0, 1fr);
+  grid-template-areas:
+    'head head'
+    'player stage';
+}
+
+/* 边栏：身份在上、六项竖排、花期在底 */
+#yuri-front .front-player {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  grid-area: player;
+  padding: 20px 18px 18px;
+  overflow-y: auto;
+  border-top: 0;
+  border-right: 1px solid var(--paper-line);
+  background: linear-gradient(180deg, rgba(168, 75, 104, 0.03), transparent 46%);
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+}
+
+#yuri-front .front-player-head {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 14px;
+  border-right: 0;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+#yuri-front .front-player-body {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0;
+  padding-top: 6px;
+  overflow: visible;
+}
+
+#yuri-front .front-row {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(227, 213, 217, 0.6);
+  border-radius: 0;
+  background: none;
+}
+
+#yuri-front .front-row:hover {
+  background: linear-gradient(90deg, var(--paper-accent-soft), transparent 72%);
+}
+
+#yuri-front .front-row-index {
+  display: block;
+  color: var(--paper-accent);
+  font-family: var(--paper-serif);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
+}
+
+#yuri-front .front-row-label {
+  display: block;
+  color: var(--paper-ink-soft);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+#yuri-front .front-row-value {
+  margin-left: 0;
+  color: var(--paper-ink);
+  font-family: var(--paper-serif);
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── 四个功能键：正文左侧空白处，竖排 ── */
+
+#yuri-front .front-player-nav {
+  position: absolute;
+  top: 50%;
+  left: calc(264px + 26px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border-left: 0;
+  transform: translateY(-50%);
+}
+
+#yuri-front .front-nav-key {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: rgba(253, 250, 246, 0.72);
+  color: var(--paper-muted);
+  backdrop-filter: blur(4px);
+}
+
+#yuri-front .front-nav-key:hover {
+  border-color: var(--paper-accent);
+  background: var(--paper-face);
+  color: var(--paper-accent);
+}
+
+/* 正文列给左栏按键让出空间，避免贴太近 */
+#yuri-front .front-stage {
+  padding-left: 96px;
+  padding-right: 48px;
+}
+
+/* 开局阶段没有边栏：单列 + 无空缺 */
+#yuri-front[data-mode='opening'] .front-shell {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 0 minmax(0, 1fr);
+  grid-template-areas:
+    'head'
+    'stage';
+}
+
+#yuri-front[data-mode='opening'] .front-stage {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* 顶部信息带必须显式跨两列，否则会被塞进 264px 的边栏列 */
+#yuri-front .front-head {
+  grid-area: head;
+}
+
+/* 导航现在挂在正文区里，按正文区定位：左侧空白、垂直居中 */
+#yuri-front .front-player-nav {
+  left: 24px;
+}
+
+/* 窄屏：边栏收窄、正文左留白收窄、按键缩小，仍留在左空白 */
+@media (max-width: 1180px) {
+  #yuri-front .front-shell {
+    grid-template-columns: 196px minmax(0, 1fr);
+  }
+
+  #yuri-front .front-player {
+    padding: 16px 12px 14px;
+  }
+
+  #yuri-front .front-player-copy small {
+    display: none;
+  }
+
+  #yuri-front .front-row {
+    grid-template-columns: 22px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 9px 2px;
+  }
+
+  #yuri-front .front-row-label {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  #yuri-front .front-row-value {
+    font-size: 12.5px;
+  }
+
+  #yuri-front .front-stage {
+    padding-left: 64px;
+    padding-right: 24px;
+  }
+
+  #yuri-front .front-player-nav {
+    left: 12px;
+    gap: 6px;
+  }
+
+  #yuri-front .front-nav-key {
+    width: 32px;
+    height: 32px;
+  }
+
+  #yuri-front .front-nav-key svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* 极窄（手机横屏）：边栏再收，正文左留白压到最小 */
+@media (max-width: 900px) {
+  #yuri-front .front-shell {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+
+  #yuri-front .front-player {
+    padding: 12px 10px;
+  }
+
+  #yuri-front .front-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 7px 0;
+  }
+
+  #yuri-front .front-row-index {
+    display: none;
+  }
+
+  #yuri-front .front-stage {
+    padding-left: 46px;
+    padding-right: 14px;
+  }
+
+  #yuri-front .front-player-nav {
+    left: 6px;
+  }
+
+  #yuri-front .front-nav-key {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* 作者样式里的 display:flex 会盖掉 [hidden]，必须显式让隐藏生效，
+   否则开局容器即使 hidden 也占满剩余高度，把正文压成一条 */
+#yuri-front .front-opening[hidden],
+#yuri-front .front-player-nav[hidden] {
+  display: none;
+}
+
+/* 侧栏功能键对比度提一档 */
+#yuri-front .front-nav-key {
+  background: rgba(253, 250, 246, 0.9);
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .front-nav-key:hover {
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
+
+/* 旧样式在 ≤1120 时隐藏标签（那是给底部横带写的），侧栏必须保留标签 */
+#yuri-front .front-row-label {
+  display: block;
+}
+
+@media (max-width: 900px) {
+  #yuri-front .front-shell {
+    grid-template-columns: 172px minmax(0, 1fr);
+  }
+
+  #yuri-front .front-row-label {
+    font-size: 10.5px;
+  }
+
+  #yuri-front .front-stage {
+    padding-left: 62px;
+    padding-right: 18px;
+  }
+
+  #yuri-front .front-player-nav {
+    left: 10px;
+  }
+}
+
+/* 侧栏行改用 flex：旧样式在「≤900 横屏」会给 .front-row 写 grid-template，
+   网格模板会覆盖侧栏列定义。flex 不受这些规则影响。 */
+#yuri-front .front-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  grid-template-columns: none;
+  grid-template-areas: none;
+}
+
+#yuri-front .front-row-index {
+  flex: 0 0 auto;
+  min-width: 18px;
+}
+
+#yuri-front .front-row-label {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#yuri-front .front-row-value {
+  flex: 0 0 auto;
+  margin-left: 0;
+  text-align: right;
+}
+
+/* 窄侧栏：数值过长时省略，不要撑出边栏 */
+#yuri-front .front-row-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
