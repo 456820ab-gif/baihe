@@ -8028,3 +8028,342 @@
   height: 100dvh;
   place-items: center;
 }
+
+/* ── 开局阶段：不显示天气/时间/地点那条环境带，把整屏让给表单 ── */
+
+#yuri-front[data-mode='opening'] .front-shell {
+  grid-template-rows: 0 minmax(0, 1fr) 0;
+}
+
+/* 高度归零而不是 display:none：操作按钮还在 head 里，需要继续可点 */
+#yuri-front[data-mode='opening'] .front-head {
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  overflow: visible;
+}
+
+#yuri-front[data-mode='opening'] .front-env,
+#yuri-front[data-mode='opening'] .front-garland {
+  display: none;
+}
+
+/* 只留右上角一排操作，浮在纸上 */
+#yuri-front[data-mode='opening'] .front-actions {
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  z-index: 30;
+  gap: 16px;
+  padding: 0;
+}
+
+/* ── 关键修复：表单块被 flex-shrink 压成 0 高，字段整片消失 ── */
+
+#yuri-front .opening-shell .step-content > * {
+  flex: 0 0 auto;
+}
+
+#yuri-front .opening-shell .step-content > .field:last-of-type {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+#yuri-front .opening-shell .step-content > .field-grid {
+  flex: 0 0 auto;
+}
+
+/* 大屏放宽表单列，避免在 1920 上缩成中间一条 */
+#yuri-front .front-opening .opening-shell {
+  width: min(100%, 1040px);
+}
+
+#yuri-front .front-opening {
+  padding: 30px 28px 26px;
+}
+
+/* 字段高度与行距在大屏上更舒展 */
+#yuri-front .opening-shell .field input,
+#yuri-front .opening-shell .field select {
+  min-height: 44px;
+  padding: 11px 14px;
+}
+
+#yuri-front .opening-shell .field textarea {
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+
+/* 「自我呈现」与上方字段拉开距离，避免标签贴住上一块 */
+#yuri-front .opening-shell .step-content > .field:last-of-type {
+  margin-top: 14px;
+}
+
+/* 步进条在大屏上更宽松 */
+#yuri-front .opening-shell .step-item {
+  padding: 9px 16px 11px;
+  font-size: 13px;
+}
+
+/* 操作条：左右分开、留间距，避免「返回修改」与「继续」贴在一起 */
+#yuri-front .opening-shell .form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#yuri-front .opening-shell .form-actions .primary-button {
+  margin-left: auto;
+}
+
+/* 「返回修改」改成纸面文字链，不再是一个描边方块 */
+#yuri-front .opening-shell .text-button {
+  padding: 6px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  border-radius: 0;
+  background: none;
+  color: var(--paper-muted);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+}
+
+#yuri-front .opening-shell .text-button:hover {
+  border-bottom-color: var(--paper-accent);
+  color: var(--paper-accent);
+}
+
+/* 整行字段之间留出呼吸，标签不再贴住上一块 */
+#yuri-front .opening-shell .step-content > .field {
+  margin-top: 12px;
+}
+
+#yuri-front .opening-shell .step-content > .field:first-of-type {
+  margin-top: 0;
+}
+
+/* ── 收紧纵向占用：让 5 个步骤尽量一屏放下 ── */
+
+#yuri-front .opening-shell .step-content > .section-intro {
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+#yuri-front .opening-shell .section-symbol {
+  font-family: var(--paper-serif);
+  font-size: 15px;
+}
+
+/* 确认页：两块场景并排，关系能力列表与第 3 步重复，收进折页 */
+#yuri-front .opening-shell .preview-scene {
+  margin-top: 8px;
+  padding: 9px 12px;
+}
+
+#yuri-front .opening-shell .preview-scene strong {
+  margin: 1px 0 3px;
+}
+
+#yuri-front .opening-shell .preview-scene p {
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+#yuri-front .opening-shell .preview-abilities {
+  display: none;
+}
+
+/* 第 4 步：特长/兴趣/第一幕三组之间收紧 */
+#yuri-front .opening-shell .talent-block {
+  margin-top: 14px;
+}
+
+#yuri-front .opening-shell .talent-group {
+  margin-bottom: 6px;
+}
+
+#yuri-front .opening-shell .chip-row {
+  gap: 6px;
+}
+
+#yuri-front .opening-shell .talent-chip {
+  padding: 6px 12px;
+  min-height: 32px;
+}
+
+#yuri-front .opening-shell .scene-grid {
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#yuri-front .opening-shell .scene-option {
+  padding: 10px 12px;
+  min-height: 0;
+}
+
+/* 第 3 步：能力行收紧 */
+#yuri-front .opening-shell .ability-row {
+  padding: 8px 0;
+}
+
+#yuri-front .opening-shell .preset-strip {
+  margin-bottom: 10px;
+}
+
+/* 第 4 步：每组「标签 + 标签片」改同行，省掉竖向堆叠 */
+#yuri-front .opening-shell .talent-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+#yuri-front .opening-shell .talent-group > .group-label {
+  flex: 0 0 64px;
+  padding-top: 7px;
+}
+
+#yuri-front .opening-shell .talent-group .chip-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 确认页：两块场景并排 */
+#yuri-front .opening-shell .preview-sheet {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+#yuri-front .opening-shell .preview-sheet > .preview-ribbon,
+#yuri-front .opening-shell .preview-sheet > .preview-header,
+#yuri-front .opening-shell .preview-sheet > .preview-lines {
+  grid-column: 1 / -1;
+}
+
+#yuri-front .opening-shell .preview-sheet > .preview-scene {
+  margin-top: 10px;
+}
+
+/* 确认页：说明文字与折页内容重复，收起后可整页放下 */
+#yuri-front .opening-shell .profile-write-note {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   矮屏（手机横屏约 390–620px 高）：压缩上方装饰，把整页交给表单，
+   并改为整页滚动 + 操作条吸附底部，不再留一条几十像素的小窗口。
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-height: 620px) {
+  #yuri-front .front-opening {
+    padding: 10px 16px 8px;
+    overflow-y: auto;
+  }
+
+  #yuri-front .front-opening .opening-shell {
+    width: min(100%, 900px);
+    flex: 0 0 auto;
+  }
+
+  /* 大标题区压成一行：只留步骤标题 */
+  #yuri-front .opening-shell .section-heading {
+    gap: 0;
+    margin-bottom: 8px;
+  }
+
+  #yuri-front .opening-shell .section-kicker,
+  #yuri-front .opening-shell .section-heading .subtitle,
+  #yuri-front .opening-shell .section-heading .page-count,
+  #yuri-front .opening-shell .step-content > .section-intro,
+  #yuri-front .opening-shell .heading-flourish {
+    display: none;
+  }
+
+  #yuri-front .opening-shell .section-heading h3 {
+    font-size: 19px;
+  }
+
+  /* 步骤条：只显示序号，当前项显示文字 */
+  #yuri-front .opening-shell .stepper {
+    margin-bottom: 10px;
+  }
+
+  #yuri-front .opening-shell .step-item {
+    min-height: 30px;
+    padding: 4px 6px 6px;
+    font-size: 11px;
+  }
+
+  #yuri-front .opening-shell .step-item .step-label {
+    display: none;
+  }
+
+  #yuri-front .opening-shell .step-item.active .step-label {
+    display: inline;
+  }
+
+  /* 内容不再内部滚动，交给整页 */
+  #yuri-front .opening-shell main,
+  #yuri-front .opening-shell form,
+  #yuri-front .opening-shell .step-content {
+    overflow: visible;
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  #yuri-front .opening-shell .step-content > .field:last-of-type textarea {
+    min-height: 84px;
+  }
+
+  /* 操作条吸附在视口底部，永远可点 */
+  #yuri-front .opening-shell .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-top: 12px;
+    padding: 10px 0 8px;
+    background: var(--paper-face);
+    border-top: 1px solid var(--paper-line);
+  }
+
+  #yuri-front .opening-shell .form-actions .primary-button {
+    min-height: 34px;
+    padding: 0 16px;
+  }
+
+  #yuri-front .front-actions {
+    top: 8px;
+    right: 12px;
+    gap: 10px;
+    font-size: 10px;
+  }
+}
+
+/* 矮屏修正：标题区真实类名是 .eyebrow / h2 / .heading-description / .page-count */
+@media (max-height: 620px) {
+  #yuri-front .opening-shell .eyebrow,
+  #yuri-front .opening-shell .heading-description,
+  #yuri-front .opening-shell .page-count {
+    display: none;
+  }
+
+  #yuri-front .opening-shell h2 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    letter-spacing: 0.04em;
+  }
+
+  #yuri-front .front-opening {
+    padding-bottom: 0;
+  }
+
+  #yuri-front .opening-shell .form-actions {
+    margin-bottom: 0;
+    padding-bottom: 10px;
+  }
+}
