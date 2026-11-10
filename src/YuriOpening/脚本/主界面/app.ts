@@ -386,7 +386,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
     frame.style.setProperty('height', '100vh', 'important');
     frame.style.setProperty('max-width', 'none', 'important');
     frame.style.setProperty('z-index', '2147483000', 'important');
-    frame.style.setProperty('background', '#1c1720', 'important');
+    frame.style.setProperty('background', '#1a1519', 'important');
     floorPromoted = true;
   }
 
@@ -419,21 +419,23 @@ export function mountApp(options: { floor?: boolean } = {}) {
     const landscape = hostWindow().matchMedia('(orientation: landscape)').matches;
     const blocked = !landscape;
     const doc = hostDocument();
-    open = mode === 'main' && open;
-    const full = Boolean(doc.fullscreenElement);
-    fullButton.textContent = isFloorMode()
-      ? (floorFull ? '退出全屏' : '全屏')
-      : (full ? '退出全屏' : '全屏');
-    gate.hidden = nativeMode || mode !== 'main' || isFloorMode() || (open && !blocked);
-    const enter = gate.querySelector<HTMLButtonElement>('[data-action="enter"]');
-    if (enter) {
-      enter.disabled = blocked;
-      enter.textContent = blocked ? '请旋转设备横屏游玩' : full ? '正在全屏游玩' : '点击横屏开始游玩';
-    }
+    /* 竖屏时旧逻辑会把 open 置 false 并收起画布；楼层模式下要保留画面只盖一层引导，
+       否则用户会被丢回一个被裁小的 iframe。 */
     if (blocked && open && !isFloorMode()) {
       open = false;
       root.dataset.open = 'false';
       host.body.classList.remove('yuri-front-open');
+    }
+    const entered = open || mode === 'opening';
+    const full = Boolean(doc.fullscreenElement);
+    fullButton.textContent = isFloorMode()
+      ? (floorFull ? '退出全屏' : '全屏')
+      : (full ? '退出全屏' : '全屏');
+    gate.hidden = nativeMode || mode === 'closed' || (entered && !blocked);
+    const enter = gate.querySelector<HTMLButtonElement>('[data-action="enter"]');
+    if (enter) {
+      enter.disabled = blocked;
+      enter.textContent = blocked ? '请旋转设备横屏游玩' : full ? '正在全屏游玩' : '点击横屏开始游玩';
     }
     root.dataset.gate = String(!gate.hidden);
   }
@@ -448,6 +450,17 @@ export function mountApp(options: { floor?: boolean } = {}) {
     } catch {
       // 沉浸视图兜底
     }
+  }
+
+  /* 闸门按钮：楼层模式下只请求设备全屏并把楼层撑满，不跳过开局表单 */
+  function enterFromGate() {
+    if (isFloorMode()) {
+      promoteFloorFrame();
+      requestHostFullscreen();
+      updateGate();
+      return;
+    }
+    void enterApp();
   }
 
   async function enterApp() {
@@ -490,11 +503,15 @@ export function mountApp(options: { floor?: boolean } = {}) {
     root.dataset.open = 'true';
     launcher.hidden = true;
     openingHost.hidden = false;
+    /* 楼层模式：进入即把 iframe 提升为全屏，否则用户只看到一个被裁小的框，
+       也找不到全屏入口 */
+    if (isFloorMode()) promoteFloorFrame();
     unmountOpening = mountOpening(openingHost, {
       onSubmitStart: requestHostFullscreen,
       onSubmitted: () => openMain(),
     });
     teleportStyles();
+    updateGate();
   }
 
   function openMain() {
@@ -558,7 +575,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
   phoneButton.addEventListener('click', () => phoneHost.toggle());
   nativeButton.addEventListener('click', nativeView);
   launcher.addEventListener('click', () => openMain());
-  gate.querySelector<HTMLButtonElement>('[data-action="enter"]')?.addEventListener('click', () => void enterApp());
+  gate.querySelector<HTMLButtonElement>('[data-action="enter"]')?.addEventListener('click', () => enterFromGate());
   playerToggle.addEventListener('click', () => updatePlayer(!playerOpen));
   playerHandle.addEventListener('click', () => updatePlayer(true));
   navView.addEventListener('click', () => observatory.openTab('character'));

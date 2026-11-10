@@ -7454,3 +7454,258 @@
 #yuri-front[data-embed='floor'] .front-shell {
   height: min(870px, calc(100dvh - 32px));
 }
+
+/* ═══════════════════════════════════════════════════════════
+   开局表单适配纸光舞台
+   表单原本是「独立整页 + 圆角卡片 + 圆形步骤点 + 顶部渐变条」的
+   自成一套设计，塞进纸面后像包了一层旧界面。这里把它改成与舞台
+   同一套语言：无外层卡片、细线分隔、衬线步骤序号、纸面输入框。
+   ═══════════════════════════════════════════════════════════ */
+
+/* 表单比故事栏宽一档，避免右侧留一大片空白 */
+#yuri-front .front-opening {
+  width: min(100%, 980px);
+}
+
+#yuri-front .opening-shell {
+  /* 令牌改指纸面，表单内部大量颜色都读 --fq-* */
+  --fq-bg: transparent;
+  --fq-bg-grad: transparent;
+  --fq-panel: transparent;
+  --fq-panel-2: transparent;
+  --fq-ink: var(--paper-ink);
+  --fq-ink-soft: var(--paper-ink-soft);
+  --fq-ink-faint: var(--paper-muted);
+  --fq-line: var(--paper-line);
+  --fq-rule: rgba(227, 213, 217, 0.6);
+  --fq-hairline: rgba(227, 213, 217, 0.45);
+  --fq-accent: var(--paper-accent);
+  --fq-accent-light: var(--paper-accent);
+  --fq-accent-ink: var(--paper-accent);
+  --fq-fill: var(--paper-accent);
+  --fq-fill-solid: var(--paper-accent);
+  --fq-accent-wash: var(--paper-accent-soft);
+  --fq-ok: var(--paper-jade);
+  --fq-violet: var(--paper-jade);
+  --fq-soft: none;
+  --fq-soft-sm: none;
+
+  min-height: 0;
+  padding: 0;
+  background: none;
+  color: var(--paper-ink);
+}
+
+/* 步骤条：文字索引 + 细线，去掉圆形气泡与顶部渐变条 */
+#yuri-front .opening-shell .stepper {
+  margin: 0 0 22px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  border-radius: 0;
+  background: none;
+  gap: 0;
+}
+
+#yuri-front .opening-shell .step-item {
+  min-height: 42px;
+  padding: 8px 12px 10px;
+  border: 0;
+  border-right: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--paper-muted);
+  font-size: 12px;
+  box-shadow: none;
+  transform: none;
+}
+
+#yuri-front .opening-shell .step-item::after {
+  display: none;
+}
+
+#yuri-front .opening-shell .step-item:hover,
+#yuri-front .opening-shell .step-item:focus-visible {
+  background: none;
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .opening-shell .step-item.active {
+  background: none;
+  box-shadow: inset 0 -2px 0 var(--paper-accent);
+  color: var(--paper-accent);
+  transform: none;
+}
+
+#yuri-front .opening-shell .step-item.done {
+  color: var(--paper-jade);
+}
+
+/* 步骤序号：从圆形徽标改成衬线小号数字 */
+#yuri-front .opening-shell .step-number {
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font-family: var(--paper-serif);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  transform: none;
+  opacity: 0.85;
+}
+
+#yuri-front .opening-shell .step-item.active .step-number {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--paper-accent);
+  transform: none;
+  opacity: 1;
+}
+
+#yuri-front .opening-shell .step-item.done .step-number {
+  border: 0;
+  background: none;
+  color: var(--paper-jade);
+}
+
+#yuri-front .opening-shell .step-item.done .step-number::after {
+  display: none;
+}
+
+/* 面板：去掉卡片外壳，只留细线 */
+#yuri-front .opening-shell .form-panel,
+#yuri-front .opening-shell .locked-panel {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+#yuri-front .opening-shell .form-panel::before {
+  display: none;
+}
+
+#yuri-front .opening-shell .panel-heading {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+#yuri-front .opening-shell .panel-heading h2 {
+  font-family: var(--paper-serif);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+#yuri-front .opening-shell .subsection-heading h3 {
+  font-family: var(--paper-serif);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+#yuri-front .opening-shell .eyebrow {
+  color: var(--paper-accent);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+}
+
+#yuri-front .opening-shell .page-count strong {
+  font-family: var(--paper-serif);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* 输入框：纸面底 + 细边，聚焦变玫红 */
+#yuri-front .opening-shell .field input,
+#yuri-front .opening-shell .field select,
+#yuri-front .opening-shell .field textarea {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-deep);
+  color: var(--paper-ink);
+  box-shadow: none;
+}
+
+#yuri-front .opening-shell .field input:focus,
+#yuri-front .opening-shell .field select:focus,
+#yuri-front .opening-shell .field textarea:focus {
+  border-color: var(--paper-accent);
+  background: var(--paper-face);
+  box-shadow: 0 0 0 3px rgba(168, 75, 104, 0.1);
+}
+
+#yuri-front .opening-shell .field input::placeholder,
+#yuri-front .opening-shell .field textarea::placeholder {
+  color: var(--paper-muted);
+}
+
+/* 选项/标签：方形小签，选中用浅玫底 + 玫红字 */
+#yuri-front .opening-shell .choice-pill,
+#yuri-front .opening-shell .talent-chip,
+#yuri-front .opening-shell .preset-button,
+#yuri-front .opening-shell .scene-option {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-face);
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .opening-shell .choice-pill.selected,
+#yuri-front .opening-shell .talent-chip.selected,
+#yuri-front .opening-shell .scene-option.selected {
+  border-color: var(--paper-accent);
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
+
+#yuri-front .opening-shell .scene-option::before {
+  display: none;
+}
+
+/* 底部按钮：描边文字按钮（与舞台输入条的发送键同款） */
+#yuri-front .opening-shell .stepper-button,
+#yuri-front .opening-shell .primary-button {
+  border: 1px solid var(--paper-accent);
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--paper-accent);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+#yuri-front .opening-shell .stepper-button:hover:not(:disabled),
+#yuri-front .opening-shell .primary-button:hover:not(:disabled) {
+  background: var(--paper-accent);
+  color: var(--paper-face);
+  transform: none;
+}
+
+#yuri-front .opening-shell .stepper-button:disabled,
+#yuri-front .opening-shell .primary-button:disabled {
+  border-color: var(--paper-line);
+  color: var(--paper-muted);
+  background: transparent;
+}
+
+#yuri-front .opening-shell .profile-preview {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  background: var(--paper-deep);
+}
+
+#yuri-front .opening-shell .profile-preview pre {
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .opening-shell .step-content {
+  padding-bottom: 8px;
+}
