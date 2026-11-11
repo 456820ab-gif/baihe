@@ -8927,3 +8927,144 @@
   border-color: var(--paper-line);
   color: var(--paper-muted);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   地图：把早期霓光版留下的硬编码颜色整组接管（之前只改了部分属性，
+   节点填充仍是 --map-ground 近黑、地名仍是粉字+深色描边，所以看着发黑）
+   ═══════════════════════════════════════════════════════════ */
+
+#yuri-front .obs-map-art {
+  --map-ground: #f6eee9;
+  --map-frame: #f6eee9;
+  --map-art: #6d5f68;
+  --map-halo: rgba(253, 250, 246, 0.86);
+  --map-river: rgba(95, 139, 121, 0.34);
+}
+
+#yuri-front .map-frame {
+  border-color: var(--paper-line);
+  background: var(--paper-deep);
+}
+
+#yuri-front .map-canvas .map-ground {
+  fill: var(--paper-deep);
+}
+
+#yuri-front .map-canvas .map-water {
+  stroke: rgba(95, 139, 121, 0.45);
+  opacity: 0.42;
+}
+
+#yuri-front .map-canvas .map-water-edge {
+  stroke: rgba(95, 139, 121, 0.62);
+  opacity: 0.6;
+}
+
+#yuri-front .map-canvas .map-water-flow {
+  stroke: var(--paper-face);
+  opacity: 0.8;
+}
+
+#yuri-front .map-canvas .map-river-label {
+  fill: var(--paper-jade);
+  opacity: 0.85;
+}
+
+#yuri-front .map-canvas .map-road {
+  stroke: rgba(168, 75, 104, 0.26);
+  stroke-width: 1.1;
+}
+
+#yuri-front .map-canvas .map-road-inner {
+  stroke: var(--paper-face);
+  stroke-width: 0.6;
+  stroke-dasharray: 2 5;
+}
+
+/* 节点图标：填充同纸色（镂空效果），描边用墨灰 */
+#yuri-front .map-canvas .node-art,
+#yuri-front .map-canvas .node-art-solid {
+  fill: var(--paper-face);
+  stroke: var(--paper-ink-soft);
+  stroke-width: 0.9;
+}
+
+#yuri-front .map-canvas .node-ground {
+  fill: rgba(168, 75, 104, 0.06);
+  stroke: none;
+}
+
+#yuri-front .map-canvas .map-node.is-current .node-ground {
+  fill: rgba(168, 75, 104, 0.16);
+}
+
+#yuri-front .map-canvas .node-neon {
+  display: none;
+}
+
+/* 地名：墨色字 + 纸色描边晕（原来是粉字 + 深色粗描边） */
+#yuri-front .map-canvas .node-name {
+  fill: var(--paper-ink);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  paint-order: stroke;
+  stroke: var(--paper-deep);
+  stroke-width: 2.6px;
+  stroke-linejoin: round;
+}
+
+#yuri-front .map-canvas .map-node:hover .node-name {
+  fill: var(--paper-accent);
+}
+
+#yuri-front .map-canvas .map-label {
+  fill: color-mix(in srgb, var(--region, var(--paper-muted)) 45%, var(--paper-ink));
+  stroke: var(--paper-deep);
+  stroke-width: 2.2px;
+  paint-order: stroke;
+  font-size: 8.5px;
+}
+
+#yuri-front .map-canvas .map-label-sub {
+  fill: color-mix(in srgb, var(--region, var(--paper-muted)) 30%, var(--paper-muted));
+  stroke: var(--paper-deep);
+  stroke-width: 1.8px;
+  paint-order: stroke;
+  opacity: 0.85;
+}
+
+#yuri-front .map-canvas .heroine-pin-name {
+  fill: var(--paper-accent);
+  stroke: var(--paper-deep);
+  stroke-width: 2.4px;
+  paint-order: stroke;
+}
+
+#yuri-front .map-canvas .map-firefly,
+#yuri-front .map-canvas .node-ripple,
+#yuri-front .map-canvas .node-halo {
+  opacity: 0.35;
+}
+
+#yuri-front .map-canvas .compass-ring,
+#yuri-front .map-canvas .compass-ring-inner {
+  stroke: var(--paper-line);
+}
+
+#yuri-front .map-canvas .compass-letter,
+#yuri-front .map-canvas .cartouche-title,
+#yuri-front .map-canvas .cartouche-sub {
+  fill: var(--paper-ink-soft);
+}
+
+#yuri-front .map-canvas .cartouche-ribbon {
+  fill: var(--paper-face);
+  stroke: var(--paper-line);
+}
+
+#yuri-front .map-canvas .flora-line,
+#yuri-front .map-canvas .flora-fill {
+  stroke: rgba(95, 139, 121, 0.45);
+  fill: rgba(95, 139, 121, 0.16);
+}
