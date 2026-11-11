@@ -7,7 +7,7 @@ import {
   arenaLabel, arenaLevel, relationAxisTone, relationEnabled, relationRecentTrace, relationWoman,
   type RelationAxis, type RelationWoman,
 } from './relation';
-import { paintFill, relationActionBar } from './relation-view';
+import { paintFill } from './relation-view';
 import {
   characterNode, characterPoint, characterTrail, characterValue,
   isUnset, relationZone, type HudData, type ThemeState,
@@ -16,7 +16,6 @@ import {
 interface CharacterViewOptions {
   rerender: () => void;
   onLocate: (label: string) => void;
-  onAction: (line: string) => void;
 }
 
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) {
@@ -362,13 +361,6 @@ export class CharacterView {
     );
 
     box.append(head, meters, rows, trace);
-    if (woman) {
-      box.append(relationActionBar({
-        name: char.name,
-        place: characterValue(data, char, '所在地点'),
-        onAction: this.options.onAction,
-      }));
-    }
     return box;
   }
 }

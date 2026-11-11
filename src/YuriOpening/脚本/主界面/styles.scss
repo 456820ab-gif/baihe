@@ -8766,3 +8766,33 @@
 #yuri-front[data-mode='opening'] .front-player-nav {
   display: none;
 }
+
+/* 侧栏数值：不再单行省略，按需要换行显示 1–3 行 */
+#yuri-front .front-row {
+  align-items: baseline;
+}
+
+#yuri-front .front-row-label {
+  flex: 0 0 auto;
+}
+
+#yuri-front .front-row-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: clip;
+  text-align: right;
+  line-height: 1.55;
+}
+
+/* 行必须占满侧栏宽度：旧横带样式留了 align-items:center，会把每行收窄居中 */
+#yuri-front .front-player-body {
+  align-items: stretch;
+}
+
+#yuri-front .front-row {
+  width: 100%;
+}

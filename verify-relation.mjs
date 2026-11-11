@@ -294,33 +294,16 @@ async function scenarioActions() {
 
   click(window, doc.querySelector('.obs-tab[data-tab="relation"]'));
   const input = () => doc.querySelector('.story-input');
-  check('动作前输入框为空', (input()?.value ?? '') === '');
+  check('关系页不再有动作按钮', doc.querySelectorAll('.obs-rel-action').length === 0,
+    String(doc.querySelectorAll('.obs-rel-action').length));
 
-  click(window, doc.querySelector('.obs-rel-col[data-character="linqing"] .obs-rel-action[data-action="约她"]'));
-  check('约她只填入带标记的句子', input()?.value === '【约她】我想约林清今晚在「月见河滨公园」见面。', input()?.value ?? '空');
-  check('动作不发送', view.calls.nativeSend === 0, String(view.calls.nativeSend));
-  check('动作不产生新楼层', view.messages().length === 2, String(view.messages().length));
-  check('动作不写关系字段', view.unchanged(), '变量被改动');
-
-  if (input()) input().value = '我先说点什么。';
-  click(window, doc.querySelector('.obs-rel-col[data-character="linqing"] .obs-rel-action[data-action="去见她"]'));
-  check('输入框非空时给出提示', (doc.querySelector('.story-status')?.textContent ?? '').includes('输入框已有内容'), doc.querySelector('.story-status')?.textContent ?? '空');
-  check('输入框非空时不覆盖原文', input()?.value === '我先说点什么。', input()?.value ?? '空');
-  check('输入框非空时不发送', view.calls.nativeSend === 0, String(view.calls.nativeSend));
-
-  if (input()) input().value = '';
-  click(window, doc.querySelector('.obs-rel-col[data-character="linqing"] .obs-rel-action[data-action="去见她"]'));
-  check('去见她带上她的所在地', input()?.value === '【去见她】我想现在去铃兰公寓·客厅找林清。', input()?.value ?? '空');
-
-  if (input()) input().value = '';
   click(window, doc.querySelector('.obs-tab[data-tab="character"]'));
   click(window, doc.querySelector('.obs-char-item[data-character="linqing"]'));
-  const privateActions = doc.querySelectorAll('.obs-private .obs-rel-action');
-  check('角色私密区带同一组动作', privateActions.length === 8, String(privateActions.length));
-  click(window, doc.querySelector('.obs-private .obs-rel-action[data-action="公开"]'));
-  check('私密区动作同样只填输入框', (input()?.value ?? '').startsWith('【公开】我想把我和林清的关系公开出去。'), input()?.value ?? '空');
-  check('私密区动作不发送', view.calls.nativeSend === 0, String(view.calls.nativeSend));
-  check('动作链路没有运行时异常', view.errors.length === 0, view.errors.join(' / '));
+  check('角色私密区也不再有动作按钮', doc.querySelectorAll('.obs-private .obs-rel-action').length === 0,
+    String(doc.querySelectorAll('.obs-private .obs-rel-action').length));
+  check('关系页不写输入框', (input()?.value ?? '') === '', input()?.value ?? '空');
+  check('关系页不发送', view.calls.nativeSend === 0, String(view.calls.nativeSend));
+  check('关系渲染没有运行时异常', view.errors.length === 0, view.errors.join(' / '));
   view.close();
 }
 
@@ -388,5 +371,5 @@ if (failures.length) {
   failures.forEach(line => console.log(line));
   process.exitCode = 1;
 } else {
-  console.log('\n结论: 无关系隐藏与零写回、账本渲染、动作只填输入框、关系 100 花期不崩，全部通过。');
+  console.log('\n结论: 无关系隐藏与零写回、账本渲染、动作按钮已移除、关系 100 花期不崩，全部通过。');
 }

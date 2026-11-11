@@ -6,19 +6,6 @@ import {
 } from './relation';
 import { getPath, isUnset, playerJob, readPath, type HudData } from './state';
 
-export type RelationAction = '约她' | '去见她' | '留下痕迹' | '擦掉痕迹' | '公开' | '带去聚会' | '坦白' | '继续瞒';
-
-export const RELATION_ACTIONS: RelationAction[] = [
-  '约她',
-  '去见她',
-  '留下痕迹',
-  '擦掉痕迹',
-  '公开',
-  '带去聚会',
-  '坦白',
-  '继续瞒',
-];
-
 function make<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) {
   const el = hostDocument().createElement(tag);
   if (className) el.className = className;
@@ -58,32 +45,6 @@ function sweepGate(fill: HTMLElement, key: string) {
   sweptGates.add(key);
   fill.classList.add('is-sweeping');
   hostWindow().setTimeout(() => fill.classList.remove('is-sweeping'), 700);
-}
-
-/** 动作只生成一句带【标记】的意图，真正的叙事交给 AI */
-export function relationActionLine(action: RelationAction, name: string, place?: string) {
-  const where = place && !isUnset(place) ? place : '她现在待的地方';
-  if (action === '约她') return `【约她】我想约${name}今晚在「月见河滨公园」见面。`;
-  if (action === '去见她') return `【去见她】我想现在去${where}找${name}。`;
-  if (action === '留下痕迹') return `【留下痕迹】我想在${name}那里留下一处只有我们两个人知道的痕迹。`;
-  if (action === '擦掉痕迹') return `【擦掉痕迹】我想把那处留在${name}身上的痕迹处理掉。`;
-  if (action === '公开') return `【公开】我想把我和${name}的关系公开出去。`;
-  if (action === '带去聚会') return `【带去聚会】我想带${name}一起去今晚的朋友聚会。`;
-  if (action === '坦白') return `【坦白】我想向${name}坦白另一段关系。`;
-  return `【继续瞒】我想继续瞒着${name}，不让另一段关系被发现。`;
-}
-
-export function relationActionBar(options: { name: string; place?: string; onAction: (line: string) => void }) {
-  const bar = make('div', 'obs-rel-actions');
-  RELATION_ACTIONS.forEach(action => {
-    const button = make('button', 'obs-rel-action', action);
-    button.type = 'button';
-    button.dataset.action = action;
-    button.setAttribute('aria-label', `${action}：只填入输入框，不发送`);
-    button.addEventListener('click', () => options.onAction(relationActionLine(action, options.name, options.place)));
-    bar.append(button);
-  });
-  return bar;
 }
 
 function meter(charId: string, axis: RelationAxis, value: number | null) {
@@ -167,7 +128,7 @@ function traceList(woman: RelationWoman | null) {
   return box;
 }
 
-function column(data: HudData | null, char: CharacterDef, onAction: (line: string) => void) {
+function column(data: HudData | null, char: CharacterDef) {
   const woman = relationWoman(data, char.varRoot);
   const place = readPath(data, `${char.varRoot}.所在地点`, '');
   const identity = readPath(data, `${char.varRoot}.关系身份`);
@@ -190,11 +151,10 @@ function column(data: HudData | null, char: CharacterDef, onAction: (line: strin
   body.append(knownCircle(woman), traceList(woman));
 
   col.append(head, meters, body);
-  if (woman) col.append(relationActionBar({ name: char.name, place, onAction }));
   return col;
 }
 
-export function renderRelationView(options: { data: HudData | null; onAction: (line: string) => void }): HTMLElement {
+export function renderRelationView(options: { data: HudData | null }): HTMLElement {
   const data = options.data;
   const wrap = make('div', 'obs-relation');
   const head = make('header', 'obs-rel-head');
@@ -206,7 +166,7 @@ export function renderRelationView(options: { data: HudData | null; onAction: (l
   wrap.append(head, circles(data));
 
   const cols = make('div', 'obs-rel-cols');
-  CHARACTERS.forEach(char => cols.append(column(data, char, options.onAction)));
+  CHARACTERS.forEach(char => cols.append(column(data, char)));
   wrap.append(cols);
   return wrap;
 }

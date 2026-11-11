@@ -198,7 +198,6 @@ export function mountApp(options: { floor?: boolean } = {}) {
       mapView.focus(label);
       observatory.render(true);
     },
-    onAction: line => fillActionInput(line, '关系动作已填入输入框，发送由你决定。'),
   });
   const mapView = new MapView({
     rerender: () => observatory.render(true),
@@ -229,10 +228,7 @@ export function mountApp(options: { floor?: boolean } = {}) {
       const data = readData();
       const theme = resolveTheme(data);
       if (tab === 'relation') {
-        return renderRelationView({
-          data,
-          onAction: line => fillActionInput(line, '关系动作已填入输入框，发送由你决定。'),
-        });
+        return renderRelationView({ data });
       }
       if (tab === 'map') return mapView.render(data, theme);
       if (tab === 'settings') {
