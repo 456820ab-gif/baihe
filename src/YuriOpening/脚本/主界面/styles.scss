@@ -9068,3 +9068,61 @@
   stroke: rgba(95, 139, 121, 0.45);
   fill: rgba(95, 139, 121, 0.16);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   侧栏收起：向左平移并把网格列收成 0，正文自动回填
+   （旧规则是底部横带时代的 translateY + 行高归零，对左栏无效）
+   ═══════════════════════════════════════════════════════════ */
+
+#yuri-front[data-player='closed'] .front-shell {
+  grid-template-columns: 0 minmax(0, 1fr);
+  grid-template-rows: 62px minmax(0, 1fr);
+  grid-template-areas:
+    'head head'
+    'player stage';
+}
+
+#yuri-front[data-player='closed'] .front-player {
+  position: absolute;
+  top: 62px;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  width: 264px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-100%);
+  transition:
+    transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear 320ms;
+}
+
+/* 收起后正文左右留白对称，画面仍是居中 */
+#yuri-front[data-player='closed'] .front-stage {
+  padding-left: 92px;
+  padding-right: 92px;
+}
+
+/* 展开把手：贴在左边缘的一枚竖签，文字横排 */
+#yuri-front .front-player-handle {
+  top: 84px;
+  left: 0;
+  padding: 10px 4px;
+  border: 1px solid var(--paper-line);
+  border-left: 0;
+  border-radius: 0 3px 3px 0;
+  background: var(--paper-deep);
+  color: var(--paper-ink-soft);
+  writing-mode: horizontal-tb;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  line-height: 1;
+}
+
+#yuri-front .front-player-handle:hover {
+  border-color: var(--paper-accent);
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
