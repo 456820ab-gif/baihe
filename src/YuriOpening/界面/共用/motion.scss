@@ -22,7 +22,7 @@ $paper-rest-light: 0.5;
 $paper-sway: 0.06;
 
 // 纸边按压覆盖的控件（落款另加开局提交按钮）
-$press-targets: '.front-action, .front-primary, .story-send, .story-action, .obs-tab, .obs-char-item, .obs-rel-action, .travel-button, .map-zoom-button, .phone-banner, .story-modal-cancel, .story-modal-save, .story-modal-confirm';
+$press-targets: '.front-action, .front-primary, .story-send, .story-action, .obs-tab, .obs-char-item, .travel-button, .map-zoom-button, .phone-banner, .story-modal-cancel, .story-modal-save, .story-modal-confirm';
 
 @mixin fine-pointer {
   @media (hover: hover) and (pointer: fine) {
