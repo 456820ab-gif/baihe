@@ -8822,3 +8822,24 @@
   background: var(--paper-accent-soft);
   color: var(--paper-accent);
 }
+
+/* 花期图容器带 isolation 但底色透明时，正片叠底没有可融合的底，
+   白底会原样留在纸面上成一圈白块。给容器铺纸面底，让白色退回纸色。 */
+#yuri-front .obs-bloom {
+  background: var(--paper-face);
+  border-color: var(--paper-line);
+  box-shadow: none;
+}
+
+/* .obs-bloom.heroine-bloom-box 把底设成了 transparent，特异性高于 .obs-bloom，
+   所以要同名选择器覆盖；否则正片叠底仍没有底，白块照旧。 */
+#yuri-front .obs-bloom.heroine-bloom-box {
+  background: var(--paper-face);
+  border-color: var(--paper-line);
+  box-shadow: none;
+}
+
+/* 新图是淡彩水彩，原滤镜偏灰，稍微提一点存在感 */
+#yuri-front .obs-bloom .bloom-art {
+  filter: saturate(0.9) contrast(1.06);
+}
