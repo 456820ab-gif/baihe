@@ -184,7 +184,7 @@ export function mountChat(host: HTMLElement): ChatHandle {
     if (data.type !== 'yuri-frame-height' && data.type !== 'resizeIframe') return;
     list.querySelectorAll<HTMLIFrameElement>('iframe.story-frame, iframe.story-page-frame').forEach(frame => {
       if (frame.contentWindow === event.source) {
-        frame.style.height = `${Math.min(2600, Math.max(24, Math.ceil(data.height as number)))}px`;
+        frame.style.height = `${Math.min(2000, Math.max(24, Math.ceil(data.height as number)))}px`;
       }
     });
   };
@@ -194,13 +194,15 @@ export function mountChat(host: HTMLElement): ChatHandle {
   function heightScript() {
     const open = String.fromCharCode(60) + 'script>';
     const close = String.fromCharCode(60) + '/script>';
-    return `${open}const r=()=>parent.postMessage({type:'yuri-frame-height',height:document.documentElement.scrollHeight},'*');if(window.ResizeObserver){new ResizeObserver(r).observe(document.body);}r();${close}`;
+    /* 量 #story-content 的自然高度：预设前端常用 100vh，量 document 会形成
+       「iframe 变高 → 100vh 变高 → 再变高」的放大回路，最终顶到上限留一大片空白。 */
+    return `${open}const m=()=>{const b=document.getElementById('story-content')||document.body;const h=Math.ceil(b.getBoundingClientRect().height);const f=Math.ceil(document.body.scrollHeight);const v=h>0?h:f;if(v>0)parent.postMessage({type:'yuri-frame-height',height:v},'*');};const r=()=>requestAnimationFrame(m);if(window.ResizeObserver){new ResizeObserver(r).observe(document.getElementById('story-content')||document.body);}r();${close}`;
   }
 
   function narrativeSrcdoc(html: string) {
     const frameStyle = hostWindow().getComputedStyle(host);
     const frameColor = frameStyle.getPropertyValue('--ink').trim() || frameStyle.color;
-    const baseStyle = `html,body{margin:0;background:transparent;color:${frameColor};font-family:${frameStyle.fontFamily};font-size:${frameStyle.fontSize};line-height:${frameStyle.lineHeight};white-space:pre-line}*,*::before,*::after{box-sizing:border-box}#story-content *{float:none !important}#story-content div,#story-content section,#story-content article,#story-content header,#story-content footer,#story-content aside,#story-content nav,#story-content table,#story-content thead,#story-content tbody,#story-content tr,#story-content td,#story-content th,#story-content figure{float:none !important;position:static !important;display:block !important;width:auto !important;max-width:100% !important;margin-left:0 !important;margin-right:0 !important}#story-content img,#story-content picture,#story-content svg,#story-content video,#story-content canvas{display:block !important;float:none !important;max-width:100% !important;height:auto !important;margin-left:0 !important;margin-right:0 !important}#story-content a:has(> img){display:block !important}`;
+    const baseStyle = `html,body{margin:0;height:auto !important;min-height:0 !important;overflow:hidden;background:transparent;color:${frameColor};font-family:${frameStyle.fontFamily};font-size:${frameStyle.fontSize};line-height:${frameStyle.lineHeight};white-space:pre-line}*,*::before,*::after{box-sizing:border-box}#story-content *{float:none !important}#story-content div,#story-content section,#story-content article,#story-content header,#story-content footer,#story-content aside,#story-content nav,#story-content table,#story-content thead,#story-content tbody,#story-content tr,#story-content td,#story-content th,#story-content figure{float:none !important;position:static !important;display:block !important;width:auto !important;max-width:100% !important;margin-left:0 !important;margin-right:0 !important}#story-content img,#story-content picture,#story-content svg,#story-content video,#story-content canvas{display:block !important;float:none !important;max-width:100% !important;height:auto !important;margin-left:0 !important;margin-right:0 !important}#story-content a:has(> img){display:block !important}#story-content,#story-content>*{height:auto !important;min-height:0 !important;max-height:none !important}`;
     return `<!doctype html><html><head><meta charset="utf-8"><style>${baseStyle}</style></head><body><div id="story-content">${html}</div>${heightScript()}</body></html>`;
   }
 

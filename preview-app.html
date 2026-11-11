@@ -37,8 +37,9 @@
       { message_id: 0, role: 'user', message: '先看看窗外的雨。', is_hidden: false },
       { message_id: 1, role: 'assistant', message: '她把杯子推到你面前，杯壁还留着温度。\n\n「今晚的雨，好像不打算停。」', is_hidden: false },
       { message_id: 2, role: 'assistant', message: '林清在沙发另一头坐下，外套没有收走，只是搭在椅背上。她侧过脸看你，像是在等一个不必急着回答的问题。', is_hidden: false },
+      { message_id: 3, role: 'assistant', message: '<div data-test-banner style="min-height:100vh;padding:18px;border:1px solid #d9c6cc;border-radius:12px;background:#fdf6f8">预设前端面板（min-height:100vh）<p>用于检验 iframe 高度是否被 100vh 撑开。</p></div>', is_hidden: false },
     ];
-    window.getLastMessageId = () => 2;
+    window.getLastMessageId = () => 3;
     /* ?opening=1：清空楼层，让前端进入开局表单视图 */
     if (new URLSearchParams(location.search).get('opening') === '1') {
       previewMessages.length = 0;

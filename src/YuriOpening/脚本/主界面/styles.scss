@@ -8796,3 +8796,134 @@
 #yuri-front .front-row {
   width: 100%;
 }
+
+/* ── 楼层操作按钮：触屏没有 hover，默认就该看得见 ── */
+
+#yuri-front .story-actions {
+  opacity: 1;
+}
+
+#yuri-front .story-action {
+  color: var(--paper-ink-soft);
+  background: rgba(253, 250, 246, 0.7);
+  border: 1px solid var(--paper-line);
+  padding: 2px 9px;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+#yuri-front .story-action:hover {
+  border-color: var(--paper-accent);
+  background: var(--paper-accent-soft);
+  color: var(--paper-accent);
+}
+
+#yuri-front .story-action-danger {
+  color: #a24a4a;
+  border-color: rgba(162, 74, 74, 0.28);
+}
+
+#yuri-front .story-action-danger:hover {
+  border-color: #a24a4a;
+  background: rgba(162, 74, 74, 0.1);
+  color: #8c3a3a;
+}
+
+/* ── 地图：强制纸面配色（状态栏的场景规则会把 hud 变量改成夜色） ── */
+
+#yuri-front .hud-shell,
+#yuri-front .hud-shell[data-scene][data-daypart][data-weather],
+#yuri-front .hud-shell[data-scene='true'][data-daypart='night'][data-weather='rain'] {
+  --hud-ink: #33282e;
+  --hud-ink-soft: #6d5f68;
+  --hud-muted: #9c8d95;
+  --hud-line: #e3d5d9;
+  --hud-paper: #fdfaf6;
+  --hud-paper-deep: #f6eee9;
+  --hud-accent: #a84b68;
+  --hud-accent-soft: #f3dfe5;
+  --hud-jade: #5f8b79;
+  --hud-glow: rgba(184, 98, 127, 0.14);
+  --hud-shadow: rgba(97, 63, 79, 0.1);
+}
+
+#yuri-front .obs-map-art,
+#yuri-front .map-frame,
+#yuri-front .map-viewport {
+  background-color: var(--paper-face);
+  background-image: none;
+}
+
+#yuri-front .map-canvas .map-ground {
+  fill: var(--paper-deep);
+}
+
+#yuri-front .map-canvas .map-water {
+  stroke: rgba(95, 139, 121, 0.55);
+  opacity: 0.34;
+}
+
+#yuri-front .map-canvas .map-water-edge {
+  stroke: rgba(95, 139, 121, 0.6);
+  opacity: 0.55;
+}
+
+#yuri-front .map-canvas .map-water-flow {
+  stroke: var(--paper-face);
+  opacity: 0.85;
+}
+
+#yuri-front .map-canvas .map-river-label {
+  fill: var(--paper-jade);
+}
+
+#yuri-front .map-canvas .map-road {
+  stroke: rgba(168, 75, 104, 0.25);
+}
+
+#yuri-front .map-canvas .map-road-inner {
+  stroke: var(--paper-face);
+}
+
+#yuri-front .map-canvas .map-label {
+  fill: color-mix(in srgb, var(--region) 55%, var(--paper-ink));
+}
+
+#yuri-front .map-canvas .map-label-sub {
+  fill: color-mix(in srgb, var(--region) 35%, var(--paper-muted));
+}
+
+#yuri-front .map-node .node-art {
+  stroke: var(--paper-ink-soft);
+}
+
+#yuri-front .map-node .node-art-solid {
+  fill: var(--paper-accent-soft);
+  stroke: var(--paper-accent);
+}
+
+#yuri-front .map-node .node-name {
+  fill: var(--paper-ink-soft);
+}
+
+#yuri-front .map-node .node-ground {
+  fill: rgba(168, 75, 104, 0.1);
+}
+
+#yuri-front .map-node.is-current .node-ground {
+  fill: rgba(168, 75, 104, 0.22);
+}
+
+#yuri-front .map-zoom {
+  border-color: var(--paper-line);
+  background: var(--paper-face);
+  box-shadow: none;
+}
+
+#yuri-front .map-zoom-button {
+  color: var(--paper-ink-soft);
+}
+
+#yuri-front .map-zoom-level {
+  border-color: var(--paper-line);
+  color: var(--paper-muted);
+}
