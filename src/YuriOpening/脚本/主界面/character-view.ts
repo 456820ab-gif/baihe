@@ -69,6 +69,12 @@ function applyBloomArt(box: HTMLElement, flower: FlowerId, leaf: number, bloom: 
   svg.replaceWith(stage);
   const art = make('img', 'bloom-art');
   art.alt = '';
+  art.decoding = 'async';
+  /* 图在 CDN：断网或缓存未就绪时退回线稿，不要把空框留在界面上 */
+  art.addEventListener('error', () => {
+    box.classList.remove('has-art', 'is-closing');
+    stage.replaceWith(svg);
+  }, { once: true });
   art.src = src;
   stage.append(art, svg);
   box.classList.add('has-art');
