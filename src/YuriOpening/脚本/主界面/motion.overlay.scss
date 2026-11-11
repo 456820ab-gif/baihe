@@ -101,7 +101,6 @@ $banner-out: 140ms;
 /* ── 交互爆发反馈：悬停弹性上浮与星芒放大 ─────────────────── */
 
 #yuri-front[data-animate='true'] .obs-char-item:hover,
-#yuri-front[data-animate='true'] .obs-rel-action:hover,
 #yuri-front[data-animate='true'] .travel-button:hover,
 #yuri-front[data-animate='true'] .reset-button:hover,
 #yuri-front[data-animate='true'] .obs-reset:hover,
@@ -131,7 +130,6 @@ $banner-out: 140ms;
 /* 按压反馈：干脆微缩下沉 */
 #yuri-front .obs-tab:active,
 #yuri-front .obs-reset:active,
-#yuri-front .obs-rel-action:active,
 #yuri-front .obs-rail-item:active,
 #yuri-front .obs-rail-back:active,
 #yuri-front .obs-char-item:active,
