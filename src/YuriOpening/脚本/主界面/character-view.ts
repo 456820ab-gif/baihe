@@ -70,15 +70,16 @@ function applyBloomArt(box: HTMLElement, flower: FlowerId, leaf: number, bloom: 
   const art = make('img', 'bloom-art');
   art.alt = '';
   art.decoding = 'async';
-  /* 图在 CDN：断网或缓存未就绪时退回线稿，不要把空框留在界面上 */
+  /* 图在 CDN：断网或缓存未就绪时退回线稿，不要把空框留在界面上。
+     先把节点挂进文档再设 src，否则预加载立即失败时 stage 还没入树，replaceWith 是空操作。 */
+  stage.append(art, svg);
+  box.classList.add('has-art');
+  if (closeDown) box.classList.add('is-closing');
   art.addEventListener('error', () => {
     box.classList.remove('has-art', 'is-closing');
     stage.replaceWith(svg);
   }, { once: true });
   art.src = src;
-  stage.append(art, svg);
-  box.classList.add('has-art');
-  if (closeDown) box.classList.add('is-closing');
 }
 
 function flowerMark(char: CharacterDef) {
