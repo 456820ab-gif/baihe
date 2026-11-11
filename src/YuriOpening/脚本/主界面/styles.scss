@@ -8682,3 +8682,87 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* 功能键改到正文「右侧」空白区：竖排、垂直居中 */
+#yuri-front .front-player-nav {
+  top: 50%;
+  right: 24px;
+  left: auto;
+  transform: translateY(-50%);
+  flex-direction: column;
+}
+
+/* 正文左留白不再需要给按键让位，收回一部分 */
+#yuri-front .front-stage {
+  padding-left: 56px;
+  padding-right: 82px;
+}
+
+@media (max-width: 1180px) {
+  #yuri-front .front-stage {
+    padding-left: 28px;
+    padding-right: 62px;
+  }
+
+  #yuri-front .front-player-nav {
+    right: 12px;
+  }
+}
+
+/* 窄屏右侧没有空白可放：停靠到侧栏底部（横排） */
+@media (max-width: 980px) {
+  #yuri-front .front-stage {
+    position: static;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  #yuri-front .front-player-nav {
+    top: auto;
+    right: auto;
+    bottom: 12px;
+    left: 12px;
+    flex-direction: row;
+    gap: 6px;
+    transform: none;
+  }
+
+  #yuri-front .front-nav-key {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* 窄屏也保持在正文右侧：收窄正文右侧留白，按键缩到 28px */
+@media (max-width: 980px) {
+  #yuri-front .front-stage {
+    position: relative;
+    padding-left: 14px;
+    padding-right: 44px;
+  }
+
+  #yuri-front .front-player-nav {
+    top: 50%;
+    right: 8px;
+    bottom: auto;
+    left: auto;
+    flex-direction: column;
+    gap: 6px;
+    transform: translateY(-50%);
+  }
+
+  #yuri-front .front-nav-key {
+    width: 28px;
+    height: 28px;
+  }
+
+  #yuri-front .front-nav-key svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* 开局阶段没有故事，功能键不出现 */
+#yuri-front[data-mode='opening'] .front-player-nav {
+  display: none;
+}
